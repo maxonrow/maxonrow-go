@@ -9,9 +9,9 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	token "github.com/maxonrow/maxonrow-go/x/token/fungible"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	token "github.com/maxonrow/maxonrow-go/x/token/fungible"
 )
 
 func CreateFungibleTokenCmd(cdc *codec.Codec) *cobra.Command {
@@ -193,39 +193,3 @@ func MintFungibleToken(cdc *codec.Codec) *cobra.Command {
 	return cmd
 
 }
-
-// func ApproveTokenCmd(cdc *codec.Codec) *cobra.Command {
-// 	cmd := &cobra.Command{
-// 	// 	Use:   "token-approve [symbol]",
-// 	// 	Short: "change the token ownership",
-// 	// 	Args:  cobra.ExactArgs(1),
-// 	// 	RunE: func(cmd *cobra.Command, args []string) error {
-// 	// 		cliCtx := context.NewCLIContext().WithCodec(cdc)
-// 	// 		txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
-
-// 	// 		tokenSymbol := args[0]
-// 	// 		owner := cliCtx.GetFromAddress()
-
-// 	// 	   var pl token.Payload
-
-// 	// 		// toString := viper.GetString("to")
-// 	// 		// to, err := sdkTypes.AccAddressFromBech32(toString)
-// 	// 		// if err != nil {
-// 	// 		// 	return err
-// 	// 		// }
-
-// 	// 		totalmint := viper.GetString("value")
-// 	// 		val := sdkTypes.NewUintFromString(totalmint)
-
-// 	// 		msg := token.NewMsgSetFungibleTokenStatus(owner, tokenSymbol, to, val)
-// 	// 		if err := msg.ValidateBasic(); err != nil {
-// 	// 			return err
-// 	// 		}
-// 	// 		return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdkTypes.Msg{msg})
-// 	// 	},
-// 	}
-// 	// cmd.Flags().String("to", "", "Address to which to transfer the ownership to")
-// 	// cmd.Flags().String("value", "", "amount of token wish to mint")
-// 	return cmd
-
-// }
