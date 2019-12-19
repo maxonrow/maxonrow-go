@@ -24,6 +24,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 	"github.com/fatih/color"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,8 +34,6 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
 )
 
 var (
@@ -231,6 +231,7 @@ following delegation and commission default parameters:
 	cmd.Flags().AddFlagSet(cli.FsPk)
 	cmd.Flags().String(cli.FlagMoniker, "", "The validator's node name")
 	cmd.MarkFlagRequired(client.FlagName)
+	cmd.Flags().String(client.FlagKeyringBackend, client.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	return cmd
 }
 

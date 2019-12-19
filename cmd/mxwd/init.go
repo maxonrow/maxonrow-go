@@ -13,15 +13,15 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tendermintConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
-	"github.com/maxonrow/maxonrow-go/x/fee"
 )
 
 func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
@@ -88,10 +88,9 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 			// keyPath := filepath.Join(config.RootDir, "keys")
 			// keybase := keys.New("keys", keyPath)
-
 			keybase, kbErr := cliKeys.NewKeyringFromHomeFlag(cmd.InOrStdin())
 			if kbErr != nil {
-				return err
+				return kbErr
 			}
 
 			fmt.Println("Creating account. (All Passwords set to `12345678`)")
@@ -169,6 +168,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().String(cli.HomeFlag, DefaultNodeHome, "node's home directory")
 	cmd.Flags().String(client.FlagChainID, DefaultChainID, "genesis file chain-id")
+	cmd.Flags().String(client.FlagKeyringBackend, client.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().BoolP(flagOverwrite, "o", false, "overwrite the genesis.json file")
 
 	return cmd
