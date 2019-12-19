@@ -18,13 +18,6 @@ import (
 	sdkParams "github.com/cosmos/cosmos-sdk/x/params"
 	sdkStaking "github.com/cosmos/cosmos-sdk/x/staking"
 	sdkSupply "github.com/cosmos/cosmos-sdk/x/supply"
-	abci "github.com/tendermint/tendermint/abci/types"
-	"github.com/tendermint/tendermint/libs/common"
-	"github.com/tendermint/tendermint/libs/log"
-	rpccore "github.com/tendermint/tendermint/rpc/core"
-	rpc "github.com/tendermint/tendermint/rpc/lib/server"
-	tm "github.com/tendermint/tendermint/types"
-	dbm "github.com/tendermint/tm-db"
 	"github.com/maxonrow/maxonrow-go/genesis"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/auth"
@@ -34,6 +27,13 @@ import (
 	"github.com/maxonrow/maxonrow-go/x/maintenance"
 	"github.com/maxonrow/maxonrow-go/x/nameservice"
 	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
+	abci "github.com/tendermint/tendermint/abci/types"
+	"github.com/tendermint/tendermint/libs/common"
+	"github.com/tendermint/tendermint/libs/log"
+	rpccore "github.com/tendermint/tendermint/rpc/core"
+	rpc "github.com/tendermint/tendermint/rpc/lib/server"
+	tm "github.com/tendermint/tendermint/types"
+	dbm "github.com/tendermint/tm-db"
 	//nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 )
 
@@ -236,7 +236,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		sdkAuth.NewAppModule(app.accountKeeper),
 		sdkBank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		sdkSupply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		sdkDist.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		sdkDist.NewAppModule(app.distrKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		sdkStaking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
