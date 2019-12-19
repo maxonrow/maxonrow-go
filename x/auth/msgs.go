@@ -131,13 +131,12 @@ func (msg MsgTransferMultiSigOwner) GetSigners() []sdkTypes.AccAddress {
 
 type MsgCreateMultiSigTx struct {
 	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	TxID         uint64              `json:txID`
 	Tx           sdkTypes.Tx         `json:tx`
 	Sender       sdkTypes.AccAddress `json:sender`
 }
 
-func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, tx sdkTypes.Tx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
-	return MsgCreateMultiSigTx{groupAddress, txID, tx, sender}
+func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, tx sdkTypes.Tx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
+	return MsgCreateMultiSigTx{groupAddress, tx, sender}
 }
 
 func (msg MsgCreateMultiSigTx) Route() string {
@@ -155,10 +154,6 @@ func (msg MsgCreateMultiSigTx) ValidateBasic() sdkTypes.Error {
 
 	if msg.GroupAddress.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.GroupAddress.String())
-	}
-
-	if msg.TxID < 0 {
-		return sdkTypes.ErrInternal("TxID not allowed to be less than 0.")
 	}
 	return nil
 }

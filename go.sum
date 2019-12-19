@@ -190,6 +190,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1 h1:4hp9jkHxhMHkqkrB3Ix0j
 github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5Ld7szi9bcBfOoFv/3dc6xSMkL2PC0=
 github.com/maxonrow/cosmos-sdk v0.28.2-0.20191219044032-555472df0eae h1:jJFPFYWsRttyRD40czUYHeSEOE+T+ZCRtxZcOEQk6UI=
 github.com/maxonrow/cosmos-sdk v0.28.2-0.20191219044032-555472df0eae/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
+github.com/maxonrow/cosmos-sdk v0.28.2-0.20191219082018-a61c98013e43 h1:D2kh2F1wdOJ71AmNgufhgcXnmWDizw1exxm3uzBuFes=
+github.com/maxonrow/cosmos-sdk v0.28.2-0.20191219082018-a61c98013e43/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=

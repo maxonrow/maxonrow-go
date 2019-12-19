@@ -196,14 +196,17 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 		return sdkTypes.ErrUnknownRequest("Sender is not signer of group address.").Result()
 	}
 
-	pendingTx := sdkTypes.NewPendingTx(msg.TxID, msg.Tx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
-
 	multiSig := groupAcc.GetMultiSig()
+	txID := multiSig.GetNewTxID()
+
+	pendingTx := sdkTypes.NewPendingTx(txID, msg.Tx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
+
 	multiSig, err := multiSig.AddTx(pendingTx)
 	if err != nil {
 		return err.Result()
 	}
 
+	multiSig.AddCounter()
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
