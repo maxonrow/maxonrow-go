@@ -26,7 +26,7 @@ require (
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v0.0.0-20190519163303-3c6ee9071cf0 // indirect
-	github.com/otiai10/copy v1.0.1 // indirect
+	github.com/otiai10/copy v1.0.1
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/common v0.6.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect

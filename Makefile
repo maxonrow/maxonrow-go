@@ -12,12 +12,12 @@ deps:
 
 build:
 	go build $(LDFLAGS) $(TAGS) -mod vendor -o ./build/mxwd ./cmd/mxwd
-	#go build $(LDFLAGS) $(TAGS) -mod vendor -o ./build/mxwcli ./cmd/mxwcli
+	go build $(LDFLAGS) $(TAGS) -mod vendor -o ./build/mxwcli ./cmd/mxwcli
 
 
 install:
 	go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwd
-	#go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwcli
+	go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwcli
 
 test:
 	go test $(PACKAGES)
