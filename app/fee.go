@@ -35,53 +35,59 @@ func (app *mxwApp) CalculateFee(ctx sdkTypes.Context, tx sdkTypes.Tx) (sdkTypes.
 		var amt sdkTypes.Coins
 		var multiplier string
 		var multiplierErr sdkTypes.Error
+		var feeSetting *fee.FeeSetting
 
-		// 1- try to get fee-setting by account
-		feeSetting, _ := app.feeKeeper.GetAccFeeSetting(ctx, signer)
-		if feeSetting == nil {
+		var isCustomAction = func(msg string) bool {
+			return msg == token.MsgTypeTransferFungibleToken ||
+				msg == token.MsgTypeMintFungibleToken ||
+				msg == token.MsgTypeBurnFungibleToken ||
+				msg == token.MsgTypeTransferFungibleTokenOwnership ||
+				msg == token.MsgTypeAcceptFungibleTokenOwnership
+		}
+		r := msg.Route()
+		t := msg.Type()
+		if r == token.MsgRoute &&
+			isCustomAction(t) {
 
-			var isCustomAction = func(msg string) bool {
-				return msg == token.MsgTypeTransferFungibleToken ||
-					msg == token.MsgTypeMintFungibleToken ||
-					msg == token.MsgTypeBurnFungibleToken ||
-					msg == token.MsgTypeTransferFungibleTokenOwnership ||
-					msg == token.MsgTypeAcceptFungibleTokenOwnership
+			tokenFeeSetting, tokenAmt, feeSettingErr := app.getTokenFeeSetting(msg, ctx)
+			if feeSettingErr != nil {
+				return nil, feeSettingErr
 			}
-			r := msg.Route()
-			t := msg.Type()
-			if r == token.MsgRoute &&
-				isCustomAction(t) {
 
-				tokenFeeSetting, tokenAmt, feeSettingErr := app.getTokenFeeSetting(msg, ctx)
-				if feeSettingErr != nil {
-					return nil, feeSettingErr
-				}
+			multiplier, multiplierErr = app.feeKeeper.GetTokenFeeMultiplier(ctx)
+			if multiplierErr != nil {
+				return nil, sdkTypes.ErrInternal("Get fee multiplier failed.")
+			}
 
-				multiplier, multiplierErr = app.feeKeeper.GetTokenFeeMultiplier(ctx)
-				if multiplierErr != nil {
-					return nil, sdkTypes.ErrInternal("Get fee multiplier failed.")
-				}
+			amt = tokenAmt
+			feeSetting = tokenFeeSetting
 
-				amt = tokenAmt
-				feeSetting = tokenFeeSetting
+		} else {
 
-			} else {
+			// try to get fee-setting by msg-type
+			feeSetting, _ = app.feeKeeper.GetMsgFeeSetting(ctx, msg.Route()+"-"+msg.Type())
+			multiplier, multiplierErr = app.feeKeeper.GetFeeMultiplier(ctx)
+			if multiplierErr != nil {
+				return nil, sdkTypes.ErrInternal("Get fee multiplier failed.")
+			}
 
-				// 2- try to get fee-setting by msg-type
-				feeSetting, _ = app.feeKeeper.GetMsgFeeSetting(ctx, msg.Route()+"-"+msg.Type())
-				multiplier, multiplierErr = app.feeKeeper.GetFeeMultiplier(ctx)
-				if multiplierErr != nil {
-					return nil, sdkTypes.ErrInternal("Get fee multiplier failed.")
-				}
-
-				bankMsg, ok := msg.(bank.MsgMxwSend)
-				if ok {
-					amt = bankMsg.Amount
-				}
+			bankMsg, ok := msg.(bank.MsgMxwSend)
+			if ok {
+				amt = bankMsg.Amount
 			}
 		}
 
-		fee, _ := calculateFee(ctx, feeSetting, multiplier, amt)
+		// try to get fee-setting by account.
+		// if account have fee setting overwrite it.
+		accFeeSetting, _ := app.feeKeeper.GetAccFeeSetting(ctx, signer)
+		if accFeeSetting != nil {
+			feeSetting = accFeeSetting
+		}
+
+		fee, err := calculateFee(ctx, feeSetting, multiplier, amt)
+		if err != nil {
+			return nil, err
+		}
 		fees = fees.Add(fee)
 	}
 
@@ -103,7 +109,7 @@ func calculateFee(ctx sdkTypes.Context, feeSetting *fee.FeeSetting, mul string, 
 	percentage := sdkTypes.MustNewDecFromStr(feeSetting.Percentage)
 	multiplier := sdkTypes.MustNewDecFromStr(mul)
 
-	feeD := amount.ToDec().Mul(percentage).Mul(multiplier)
+	feeD := amount.ToDec().Mul(percentage)
 	feeD = feeD.Quo(sdkTypes.MustNewDecFromStr("100.0"))
 
 	fee := feeD.RoundInt()
@@ -113,6 +119,9 @@ func calculateFee(ctx sdkTypes.Context, feeSetting *fee.FeeSetting, mul string, 
 	if fee.GT(maxFee) {
 		fee = maxFee
 	}
+
+	feeD = fee.ToDec().Mul(multiplier)
+	fee = feeD.RoundInt()
 
 	return sdkTypes.Coins{sdkTypes.NewCoin(types.CIN, fee)}, nil
 }

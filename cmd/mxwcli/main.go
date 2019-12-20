@@ -22,16 +22,18 @@ import (
 	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/manifoldco/promptui"
+	"github.com/maxonrow/maxonrow-go/app"
+	mxwAuthCmd "github.com/maxonrow/maxonrow-go/x/auth/client/cli"
+	bankcmd "github.com/maxonrow/maxonrow-go/x/bank/client/cli"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/go-amino"
 	"github.com/tendermint/tendermint/libs/cli"
-	"github.com/maxonrow/maxonrow-go/app"
-	bankcmd "github.com/maxonrow/maxonrow-go/x/bank/client/cli"
 
 	//kycClient "github.com/maxonrow/maxonrow-go/x/kyc/client"
 	ver "github.com/maxonrow/maxonrow-go/version"
+	authClient "github.com/maxonrow/maxonrow-go/x/auth/client"
 	feeClient "github.com/maxonrow/maxonrow-go/x/fee/client"
 	maintenanceClient "github.com/maxonrow/maxonrow-go/x/maintenance/client"
 	nsClient "github.com/maxonrow/maxonrow-go/x/nameservice/client"
@@ -48,6 +50,7 @@ const (
 	storeToken       = "token"
 	storeFee         = "fee"
 	storeMaintenance = "maintenance"
+	storeAuth        = "auth"
 )
 
 var (
@@ -101,6 +104,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 	//kycModuleClient := kycClient.NewModuleClient(storeKyc, cdc)
 	tokenModuleClient := tokenClient.NewModuleClient(storeToken, cdc)
 	feeModuleClient := feeClient.NewModuleClient(storeFee, cdc)
+	authModuleClient := authClient.NewModuleClient(storeAuth, cdc)
 
 	queryCmd := &cobra.Command{
 		Use:     "query",
@@ -123,6 +127,7 @@ func queryCmd(cdc *amino.Codec) *cobra.Command {
 		feeModuleClient.GetQueryCmd(),
 		tokenModuleClient.GetQueryCmd(),
 		maintenanceModuleClient.GetQueryCmd(),
+		authModuleClient.GetQueryCmd(),
 	)
 
 	// add modules' query commands
@@ -138,6 +143,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	//kycModuleClient := kycClient.NewModuleClient(storeKyc, cdc)
 	tokenModuleClient := tokenClient.NewModuleClient(storeToken, cdc)
 	feeModuleClient := feeClient.NewModuleClient(storeFee, cdc)
+	authModuleClient := authClient.NewModuleClient(storeAuth, cdc)
 
 	txCmd := &cobra.Command{
 		Use:   "tx",
@@ -145,6 +151,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	}
 
 	txCmd.AddCommand(
+		mxwAuthCmd.CreateMultiSigAccountCmd(cdc),
 		bankcmd.SendTxCmd(cdc),
 		client.LineBreak,
 		authcmd.GetSignCommand(cdc),
@@ -160,6 +167,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		feeModuleClient.GetTxCmd(),
 		tokenModuleClient.GetTxCmd(),
 		maintenanceModuleClient.GetTxCmd(),
+		authModuleClient.GetTxCmd(),
 	)
 
 	// add modules' tx commands

@@ -37,8 +37,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1y0j6xqc8dsafx2tfv4m8765mw7wrvlespzfyfq",
@@ -49,8 +49,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1ktyq5damgnfqkj6qy2l8fqc54drnznlujckdnf",
@@ -61,8 +61,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1pcjgmatnwqqzu30q54g82ng5cg93a00palr4vk",
@@ -73,8 +73,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw126l5vx5s478khryv5l597lhdsfvnq9tmvmzfsl",
@@ -85,8 +85,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1jhcjfsqyrpmsqartw4xtsnmvpn4nxkjlnsmvf6",
@@ -97,8 +97,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw127sn3dxpr6880tjlwfk7u007cway5my4lpjl4z",
@@ -109,8 +109,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw193cra94tl3uj9zcmx2x2j7vrc3y38z39469dqy",
@@ -121,8 +121,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1w0m8xqy0fpgkf6luwu666f5hhl3tm0sq53snw5",
@@ -133,8 +133,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw14vl7sua9jkhu0vd66eur35kzgesj5tj8pmhdjw",
@@ -145,8 +145,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1g6cjz0pgtchedjyacjcsldhmxcvu2z4nrud9qt",
@@ -157,8 +157,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1mnfa7rjecg4ha0nxgz4j0shtpmxuazspqds8e0",
@@ -169,8 +169,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1lt2c9nrg4rxjw4804lw9sx5ewesxp66wxp7yc8",
@@ -181,8 +181,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1ytw2ydf7nnwt3mlyt6f00vk4tj8gwn3s4txnye",
@@ -193,8 +193,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1k9tr2cukhfvlhj356e5eur28kuw3p6a4l93h59",
@@ -205,8 +205,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw123xwuat5h9x92w6vdtn4fl2l03t7d793qugxvc",
@@ -217,8 +217,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw16aqacvvcgqph6czaxkrlqt9g38ky5y4sh5ukp8",
@@ -229,8 +229,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1lrs5lmzhdzlpgx98r8auwsm7z4gj8fn646m4qf",
@@ -241,8 +241,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1l6a7s6y5zymddyslmgqulkqzs9m9uvr68jtg9t",
@@ -253,8 +253,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1x5cf8y99ntjc8cjm00z603yfqwzxw2mawemf73",
@@ -265,8 +265,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw10za0fxan50gdkke34yrhwv9svv3a3pujycg3c6",
@@ -277,8 +277,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw13xffy4f0jt0e6qrfu8fznez9x6700vmm9kcmff",
@@ -289,8 +289,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1falq8epwennmyrs77yad08773jyj2fs9xeus96",
@@ -301,8 +301,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       },
       {
         "address": "mxw1nyk9r6347l3a6l2t0yk0mczqgumsnfuqjqwda4",
@@ -313,8 +313,8 @@
           }
         ],
         "public_key": null,
-        "account_number": "0",
-        "sequence": "0"
+        "account_number": 0,
+        "sequence": 0
       }
     ],
     "bank": {

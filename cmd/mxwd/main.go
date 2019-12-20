@@ -286,6 +286,7 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 				gen.Accounts = append(gen.Accounts, &acc)
 				gen.KycState.AuthorizedAddresses = append(gen.KycState.AuthorizedAddresses, addr)
 				gen.KycState.WhitelistedAddresses = append(gen.KycState.WhitelistedAddresses, addr)
+
 			}
 
 			config.SetRoot(nodepath[0])
@@ -318,6 +319,19 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("Unable to add account: %v", err)
 			}
 
+			//Add maintainers account
+			var accIndex1 = 8
+			genState, accIndex, err = addMainter(ctx, cdc, genState, accIndex1)
+			if err != nil {
+				return fmt.Errorf("Unable to add maintainers account: %v", err)
+			}
+
+			//Add validator account
+			genState, err = addValidatorSet(ctx, cdc, genState, accIndex1, validator)
+			if err != nil {
+				return fmt.Errorf("Unable to add validator set account: %v", err)
+			}
+
 			appStateJSON, err = codec.MarshalJSONIndent(cdc, genState)
 			if err != nil {
 				return err
@@ -331,7 +345,8 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 			copyKeyNode(keyPath, nodepath)
 			for j := 0; j < node; j++ {
 				valAddress, _ := sdkTypes.Bech32ifyConsPub(pub_keys[j])
-				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0], "--node-id", node_ids[j], "--pubkey", valAddress)
+				fmt.Println("validator-address", valAddress)
+				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0])
 				stdin, err := cmd.StdinPipe()
 				if err != nil {
 					fmt.Println(fmt.Sprint(err))
@@ -498,4 +513,25 @@ func addAccountfee(ctx *server.Context, cdc *codec.Codec, genState genesis.Genes
 		endIndex = j
 	}
 	return genState, endIndex, nil
+}
+
+//Add accounts to Maintainer
+func addMainter(ctx *server.Context, cdc *codec.Codec, genState genesis.GenesisState, startIndex int) (genesis.GenesisState, int, error) {
+	var endIndex = 0
+	acc := genState.Accounts
+	j := startIndex
+	for ; j < 15; j++ {
+		addr := acc[j].Address
+		genState.MaintenanceState.Maintainers = append(genState.MaintenanceState.Maintainers, addr)
+		endIndex = j
+	}
+	return genState, endIndex, nil
+}
+
+//Add accounts to ValidatorSet
+func addValidatorSet(ctx *server.Context, cdc *codec.Codec, genState genesis.GenesisState, startIndex int, validator []string) (genesis.GenesisState, error) {
+	for _, val := range validator {
+		genState.MaintenanceState.ValidatorSet = append(genState.MaintenanceState.ValidatorSet, val)
+	}
+	return genState, nil
 }

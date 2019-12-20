@@ -6,21 +6,22 @@ import (
 	"path/filepath"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	cliKeys "github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	tendermintConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
-	"github.com/maxonrow/maxonrow-go/x/fee"
 )
 
 func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
@@ -28,7 +29,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 		Use:   "init",
 		Short: "Initialize genesis configuration, priv-validator file and p2p-node file",
 		Args:  cobra.NoArgs,
-		RunE: func(_ *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			config := ctx.Config
 			config.SetRoot(viper.GetString(cli.HomeFlag))
 
@@ -49,6 +50,28 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 			}
 
 			gen := genesis.NewDefaultGenesisState()
+			min, _ := sdkTypes.NewIntFromString("0")
+			max, _ := sdkTypes.NewIntFromString("0")
+			feezero := []fee.GenesisFeeSetting{fee.GenesisFeeSetting{
+				Name: "zero",
+				Min: []sdkTypes.Coin{
+					sdkTypes.Coin{
+						Denom:  types.CIN,
+						Amount: min,
+					},
+				},
+				Max: []sdkTypes.Coin{
+					sdkTypes.Coin{
+						Denom:  types.CIN,
+						Amount: max,
+					},
+				},
+				Percentage: "0",
+			}}
+
+			for i := range feezero {
+				gen.FeeState.FeeSettings = append(gen.FeeState.FeeSettings, feezero[i])
+			}
 
 			feestate := []fee.AssignMsgFeeSetting{fee.AssignMsgFeeSetting{Name: "zero", MsgType: "kyc-whitelist"},
 				{Name: "zero", MsgType: "kyc-whitelist"},
@@ -63,11 +86,15 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 				gen.FeeState.AssignedMsgFeeSettings = append(gen.FeeState.AssignedMsgFeeSettings, feestate[i])
 			}
 
-			keyPath := filepath.Join(config.RootDir, "keys")
-			keybase := keys.New("keys", keyPath)
+			// keyPath := filepath.Join(config.RootDir, "keys")
+			// keybase := keys.New("keys", keyPath)
+			keybase, kbErr := cliKeys.NewKeyringFromHomeFlag(cmd.InOrStdin())
+			if kbErr != nil {
+				return kbErr
+			}
 
 			fmt.Println("Creating account. (All Passwords set to `12345678`)")
-			for i := 0; i < 20; i++ {
+			for i := 0; i < 30; i++ {
 				name := fmt.Sprintf("acc-%v", i+1)
 				info, mnemonic, err := keybase.CreateMnemonic(name, keys.English, "12345678", keys.Secp256k1)
 
@@ -86,9 +113,41 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 				gen.Accounts = append(gen.Accounts, &acc)
 				gen.KycState.AuthorizedAddresses = append(gen.KycState.AuthorizedAddresses, addr)
+				gen.KycState.WhitelistedAddresses = append(gen.KycState.WhitelistedAddresses, addr)
+
 			}
 
-			appStateJSON, err = codec.MarshalJSONIndent(cdc, gen)
+			//Add account for AccountKyc
+			genState, accIndex, err := addAccountKyc(ctx, cdc, gen)
+			if err != nil {
+				return fmt.Errorf("Unable to add account: %v", err)
+			}
+			//Add account for NameService
+			genState, accIndex, err = addAccounNameService(ctx, cdc, genState, accIndex)
+			if err != nil {
+				return fmt.Errorf("Unable to add account: %v", err)
+			}
+
+			//Add account for token
+			genState, accIndex, err = addAccounttoken(ctx, cdc, genState, accIndex)
+			if err != nil {
+				return fmt.Errorf("Unable to add account: %v", err)
+			}
+
+			//Add account for fee
+			genState, accIndex, err = addAccountfee(ctx, cdc, genState, accIndex)
+			if err != nil {
+				return fmt.Errorf("Unable to add account: %v", err)
+			}
+
+			//Add maintainers account
+			var accIndex1 = 8
+			genState, accIndex, err = addMainter(ctx, cdc, genState, accIndex1)
+			if err != nil {
+				return fmt.Errorf("Unable to add maintainers account: %v", err)
+			}
+
+			appStateJSON, err = codec.MarshalJSONIndent(cdc, genState)
 			if err != nil {
 				return err
 			}
@@ -109,6 +168,7 @@ func InitCmd(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 	cmd.Flags().String(cli.HomeFlag, DefaultNodeHome, "node's home directory")
 	cmd.Flags().String(client.FlagChainID, DefaultChainID, "genesis file chain-id")
+	cmd.Flags().String(client.FlagKeyringBackend, client.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	cmd.Flags().BoolP(flagOverwrite, "o", false, "overwrite the genesis.json file")
 
 	return cmd

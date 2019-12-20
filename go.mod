@@ -32,17 +32,17 @@ require (
 	github.com/rcrowley/go-metrics v0.0.0-20181016184325-3113b8401b8a // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
-	github.com/spf13/viper v1.5.0
+	github.com/spf13/viper v1.6.1
 	github.com/stretchr/testify v1.4.0
 	github.com/tendermint/go-amino v0.15.1
-	github.com/tendermint/tendermint v0.32.7
+	github.com/tendermint/tendermint v0.32.8
 	github.com/tendermint/tm-db v0.2.0
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20190618233249-04b924abaa25 // indirect
 	google.golang.org/appengine v1.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20190611190212-a7e196e89fd3 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
-replace github.com/cosmos/cosmos-sdk => github.com/b00f/cosmos-sdk v0.28.2-0.20191106052737-abb1e9cf3a0f
+replace github.com/cosmos/cosmos-sdk => github.com/maxonrow/cosmos-sdk v0.28.2-0.20191219093439-c594faf54843

@@ -48,7 +48,9 @@ func (mc ModuleClient) GetTxCmd() *cobra.Command {
 		feeCmd.CreateMsgAssignFeeToAcc(mc.cdc),
 		feeCmd.CreateFeeMultiplier(mc.cdc),
 		feeCmd.CreateTokenFeeMultiplier(mc.cdc),
-		feeCmd.AddSysFeeSetting(mc.cdc),
+		feeCmd.SetTokenFeeSetting(mc.cdc),
+		feeCmd.CreateMsgDeleteAccountFeeSetting(mc.cdc),
+		//feeCmd.AddSysFeeSetting(mc.cdc),
 	)...)
 
 	return txCmd

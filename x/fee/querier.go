@@ -20,11 +20,11 @@ const (
 	QueryListFeeSettings    = "list_all_fee_settings"
 	QueryIsFeeSettingExist  = "is_fee_setting_exist"
 	QueryIsFeeSettingInUsed = "is_fee_setting_in_used"
+	QueryIsTokenActionValid = "is_token_action_valid"
 )
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
 	return func(ctx sdkTypes.Context, path []string, req abci.RequestQuery) ([]byte, sdkTypes.Error) {
-		fmt.Println(path)
 		switch path[0] {
 		case QuerySysFeeSetting:
 			return querySysFeeSetting(cdc, ctx, path[1:], req, keeper)
@@ -44,6 +44,8 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
 			return queryIsFeeSettingExist(cdc, ctx, path[1:], req, keeper)
 		case QueryIsFeeSettingInUsed:
 			return queryIsFeeSettingInUsed(cdc, ctx, path[1:], req, keeper)
+		case QueryIsTokenActionValid:
+			return queryIsTokenActionValid(cdc, ctx, path[1:], req, keeper)
 		default:
 			return nil, sdkTypes.ErrUnknownRequest("unknown fee query endpoint")
 		}
@@ -106,7 +108,6 @@ func queryIsFeeSettingInUsed(cdc *codec.Codec, ctx sdkTypes.Context, path []stri
 	isExists := keeper.IsFeeSettingUsed(ctx, feeSetting)
 
 	str := strconv.FormatBool(isExists)
-	fmt.Println(str)
 	return []byte(str), nil
 }
 
@@ -128,6 +129,17 @@ func queryAccFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _
 	respData := cdc.MustMarshalJSON(feeSetting)
 
 	return respData, nil
+}
+
+func queryIsTokenActionValid(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+	if len(path) != 1 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
+	}
+
+	tokenAction := path[0]
+	isValid := ContainAction(tokenAction)
+	str := strconv.FormatBool(isValid)
+	return []byte(str), nil
 }
 
 func queryTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {

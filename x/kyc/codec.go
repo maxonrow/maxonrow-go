@@ -7,6 +7,8 @@ import (
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgWhitelist{}, "kyc/whitelist", nil)
 	cdc.RegisterConcrete(MsgRevokeWhitelist{}, "kyc/revokeWhitelist", nil)
+	cdc.RegisterConcrete(MsgKycBind{}, "kyc/kycBind", nil)
+	cdc.RegisterConcrete(MsgKycUnbind{}, "kyc/kycUnbind", nil)
 }
 
 var msgCdc = codec.New()
