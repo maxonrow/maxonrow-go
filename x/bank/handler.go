@@ -2,13 +2,13 @@ package bank
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	sdkBank "github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/maxonrow/maxonrow-go/types"
 )
 
 // NewHandler returns a handler for "bank" type messages.
-func NewHandler(k sdkBank.Keeper, accountKeeper auth.AccountKeeper) sdkTypes.Handler {
+func NewHandler(k sdkBank.Keeper, accountKeeper sdkAuth.AccountKeeper) sdkTypes.Handler {
 	return func(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.Result {
 		switch msg := msg.(type) {
 		case MsgMxwSend:
@@ -21,7 +21,7 @@ func NewHandler(k sdkBank.Keeper, accountKeeper auth.AccountKeeper) sdkTypes.Han
 }
 
 // Handle MsgSend.
-func handleMsgSend(ctx sdkTypes.Context, k sdkBank.Keeper, msg MsgMxwSend, accountKeeper auth.AccountKeeper) sdkTypes.Result {
+func handleMsgSend(ctx sdkTypes.Context, k sdkBank.Keeper, msg MsgMxwSend, accountKeeper sdkAuth.AccountKeeper) sdkTypes.Result {
 	if !k.GetSendEnabled(ctx) {
 		return sdkBank.ErrSendDisabled(k.Codespace()).Result()
 	}
@@ -34,7 +34,7 @@ func handleMsgSend(ctx sdkTypes.Context, k sdkBank.Keeper, msg MsgMxwSend, accou
 
 }
 
-func MakeBankSendEvent(ctx sdkTypes.Context, fromAddress sdkTypes.AccAddress, toAddress sdkTypes.AccAddress, amount sdkTypes.Coins, accountKeeper auth.AccountKeeper) sdkTypes.Result {
+func MakeBankSendEvent(ctx sdkTypes.Context, fromAddress sdkTypes.AccAddress, toAddress sdkTypes.AccAddress, amount sdkTypes.Coins, accountKeeper sdkAuth.AccountKeeper) sdkTypes.Result {
 
 	ownerWalletAccount := accountKeeper.GetAccount(ctx, fromAddress)
 	accountSequence := ownerWalletAccount.GetSequence()

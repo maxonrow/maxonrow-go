@@ -222,3 +222,99 @@ func (msg MsgRevokeWhitelist) GetSignBytes() []byte {
 func (msg MsgRevokeWhitelist) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Owner}
 }
+
+type MsgKycBind struct {
+	From       sdkTypes.AccAddress `json:"from"`
+	To         sdkTypes.AccAddress `json:"to"`
+	KycAddress string              `json:"kycAddress"`
+}
+
+func NewMsgKycBind(from, to sdkTypes.AccAddress, kycAddress string) MsgKycBind {
+	return MsgKycBind{
+		From:       from,
+		To:         to,
+		KycAddress: kycAddress,
+	}
+}
+
+func (msg MsgKycBind) Route() string {
+	return "kyc"
+}
+
+func (msg MsgKycBind) Type() string {
+	return "kycBind"
+}
+
+func (msg MsgKycBind) ValidateBasic() sdkTypes.Error {
+
+	if msg.From.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.From.String())
+	}
+
+	if msg.To.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.To.String())
+	}
+
+	if len(msg.KycAddress) < 1 {
+		return sdkTypes.ErrInvalidAddress(msg.KycAddress)
+	}
+	return nil
+}
+
+func (msg MsgKycBind) GetSignBytes() []byte {
+
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners get signers
+func (msg MsgKycBind) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.From}
+}
+
+type MsgKycUnbind struct {
+	From       sdkTypes.AccAddress `json:"from"`
+	To         sdkTypes.AccAddress `json:"to"`
+	KycAddress string              `json:"kycAddress"`
+}
+
+func NewMsgKycUnbind(from, to sdkTypes.AccAddress, kycAddress string) MsgKycUnbind {
+	return MsgKycUnbind{
+		From:       from,
+		To:         to,
+		KycAddress: kycAddress,
+	}
+}
+
+func (msg MsgKycUnbind) Route() string {
+	return "kyc"
+}
+
+func (msg MsgKycUnbind) Type() string {
+	return "kycUnbind"
+}
+
+func (msg MsgKycUnbind) ValidateBasic() sdkTypes.Error {
+
+	if msg.From.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.From.String())
+	}
+
+	if msg.To.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.To.String())
+	}
+
+	if len(msg.KycAddress) < 1 {
+		return sdkTypes.ErrInvalidAddress(msg.KycAddress)
+	}
+	return nil
+}
+
+func (msg MsgKycUnbind) GetSignBytes() []byte {
+
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+// GetSigners get signers
+func (msg MsgKycUnbind) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.From}
+}

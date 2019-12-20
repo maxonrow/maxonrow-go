@@ -13,11 +13,11 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/maxonrow/maxonrow-go/app"
 	cp "github.com/otiai10/copy"
 	tmCrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
-	"github.com/maxonrow/maxonrow-go/app"
 )
 
 type info struct {

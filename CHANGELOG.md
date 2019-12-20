@@ -1,3 +1,24 @@
+# Version 1.0.0
+- Updating version
+
+# Version 0.7.4
+- Added fee cli enable deleting account fee setting
+
+# Version 0.7.3
+- Fix fee multiplier/ token multiplier for fee calculation
+
+# Version 0.7.2
+- Fix fee setting multiplier cli
+- Fix get account fee setting in fee calculation
+- Add fee setting cli to enable setting fee setting for token with token action
+
+# Version 0.7.1
+- Non Fungible token implementation. (disabled)
+- Added Fee setting cli, able to edit, delete existing system fee setting
+- Added token listing rpc
+- Remove genesis rpc
+- Cosmos-sdk & tendermint upgraded
+
 # Version 0.7.0
 - Nameservice module released
 - Token module released

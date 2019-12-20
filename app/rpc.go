@@ -38,6 +38,7 @@ type Version struct {
 type FeeInfo struct {
 	Authorizers        []sdkTypes.AccAddress
 	Multiplier         string
+	TokenMultiplier    string
 	TokenFeeCollectors []sdkTypes.AccAddress
 	AliasFeeCollectors []sdkTypes.AccAddress
 	FeeSettings        []fee.FeeSetting
@@ -200,6 +201,7 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	var i FeeInfo
 	i.Authorizers = app.feeKeeper.GetAuthorisedAddresses(appCtx)
 	i.Multiplier, _ = app.feeKeeper.GetFeeMultiplier(appCtx)
+	i.TokenMultiplier, _ = app.feeKeeper.GetTokenFeeMultiplier(appCtx)
 	i.TokenFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "token")
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)

@@ -501,6 +501,30 @@ func (k *Keeper) DeleteFeeSetting(ctx sdkTypes.Context, msgDeleteSysFeeSetting M
 	}
 }
 
+func (k *Keeper) DeleteAccFeeSetting(ctx sdkTypes.Context, msgDeleteAccFeeSetting MsgDeleteAccFeeSetting) sdkTypes.Result {
+
+	accFeeSetting, err := k.GetAccFeeSetting(ctx, msgDeleteAccFeeSetting.Account)
+	if err != nil {
+		return err.Result()
+	}
+
+	if accFeeSetting == nil {
+		return sdkTypes.ErrInternal("Account Fee setting is not set, delete failed.").Result()
+	}
+
+	store := ctx.KVStore(k.key)
+	key := getAccFeeSettingKey(msgDeleteAccFeeSetting.Account)
+
+	store.Delete(key)
+
+	eventParam := []string{msgDeleteAccFeeSetting.GetSigners()[0].String(), msgDeleteAccFeeSetting.Account.String()}
+	eventSignature := "DeletedAccountFeeSetting(string,string)"
+
+	return sdkTypes.Result{
+		Events: types.MakeMxwEvents(eventSignature, msgDeleteAccFeeSetting.GetSigners()[0].String(), eventParam),
+	}
+}
+
 func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 
 	store := ctx.KVStore(k.key)

@@ -17,6 +17,7 @@ import (
 
 //Take the input from the terminal for creating the node
 func createNode() (int, error) {
+	return 1, nil
 	var n int
 	fmt.Println("Enter an integer value for node creation  : ")
 	_, err := fmt.Scanf("%d", &n)

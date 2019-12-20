@@ -3,6 +3,7 @@ package main
 // DONTCOVER
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
+	"github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	kbkeys "github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -22,6 +24,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/genutil"
 	"github.com/cosmos/cosmos-sdk/x/staking/client/cli"
 	"github.com/fatih/color"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -30,8 +34,6 @@ import (
 	tmcli "github.com/tendermint/tendermint/libs/cli"
 	"github.com/tendermint/tendermint/libs/common"
 	tmtypes "github.com/tendermint/tendermint/types"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
 )
 
 var (
@@ -95,8 +97,12 @@ following delegation and commission default parameters:
 				return err
 			}
 
-			keyPath := filepath.Join(config.RootDir, "keys")
-			kb := kbkeys.New("keys", keyPath)
+			kb, err := keys.NewKeyringFromHomeFlag(cmd.InOrStdin())
+			if err != nil {
+				return err
+			}
+			// keyPath := filepath.Join(config.RootDir, "keys")
+			// kb := kbkeys.New("keys", keyPath)
 			name := viper.GetString(client.FlagName)
 			key, err := kb.Get(name)
 			if err != nil {
@@ -135,8 +141,8 @@ following delegation and commission default parameters:
 			if err != nil {
 				return err
 			}
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc)).WithKeybase(kb)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc)).WithKeybase(kb)
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			// XXX: Set the generate-only flag here after the CLI context has
@@ -225,6 +231,7 @@ following delegation and commission default parameters:
 	cmd.Flags().AddFlagSet(cli.FsPk)
 	cmd.Flags().String(cli.FlagMoniker, "", "The validator's node name")
 	cmd.MarkFlagRequired(client.FlagName)
+	cmd.Flags().String(client.FlagKeyringBackend, client.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	return cmd
 }
 
@@ -655,8 +662,8 @@ following delegation and commission default parameters:
 
 			// Set flags for creating gentx
 			prepareFlagsForTxCreateValidator(config, nodeID, ip, chain, valPubKey, website, details, identity, moniker)
-
-			txBldr := auth.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc)).WithKeybase(kb)
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := auth.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc)).WithKeybase(kb)
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
 			viper.Set(client.FlagGenerateOnly, true)

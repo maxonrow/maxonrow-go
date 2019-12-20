@@ -18,6 +18,15 @@ import (
 	sdkParams "github.com/cosmos/cosmos-sdk/x/params"
 	sdkStaking "github.com/cosmos/cosmos-sdk/x/staking"
 	sdkSupply "github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/x/auth"
+	"github.com/maxonrow/maxonrow-go/x/bank"
+	"github.com/maxonrow/maxonrow-go/x/fee"
+	"github.com/maxonrow/maxonrow-go/x/kyc"
+	"github.com/maxonrow/maxonrow-go/x/maintenance"
+	"github.com/maxonrow/maxonrow-go/x/nameservice"
+	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -25,14 +34,6 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/lib/server"
 	tm "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
-	"github.com/maxonrow/maxonrow-go/x/bank"
-	"github.com/maxonrow/maxonrow-go/x/fee"
-	"github.com/maxonrow/maxonrow-go/x/kyc"
-	"github.com/maxonrow/maxonrow-go/x/maintenance"
-	"github.com/maxonrow/maxonrow-go/x/nameservice"
-	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
 	//nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 )
 
@@ -100,6 +101,7 @@ func init() {
 	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
 	config.SetCoinType(376)
 	config.SetFullFundraiserPath("44'/376'/0'/0/0")
+	config.SetKeyringServiceName("mxw")
 
 	config.Seal()
 
@@ -234,11 +236,12 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		sdkAuth.NewAppModule(app.accountKeeper),
 		sdkBank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		sdkSupply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		sdkDist.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		sdkDist.NewAppModule(app.distrKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		sdkStaking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
 	app.Router().
+		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.anteHandler)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
@@ -259,7 +262,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("token", fungible.NewQuerier(app.cdc, &app.tokenKeeper, &app.feeKeeper)).
 		//AddRoute("nonFungible", nonFungible.NewQuerier(app.cdc, &app.nonFungibleTokenKeeper, &app.feeKeeper)).
 		AddRoute("fee", fee.NewQuerier(app.cdc, &app.feeKeeper)).
-		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper))
+		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper)).
+		AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
 
 	app.MountStores(
 		app.keyMain,
@@ -454,6 +458,7 @@ func MakeDefaultCodec() *codec.Codec {
 	//nonFungible.RegisterCodec(cdc)
 	fee.RegisterCodec(cdc)
 	maintenance.RegisterCodec(cdc)
+	auth.RegisterCodec(cdc)
 	return cdc
 }
 

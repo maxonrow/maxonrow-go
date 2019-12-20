@@ -187,6 +187,46 @@ func (msg MsgAssignFeeToAcc) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Issuer}
 }
 
+type MsgDeleteAccFeeSetting struct {
+	Account sdkTypes.AccAddress `json:"account"`
+	Issuer  sdkTypes.AccAddress `json:"issuer"`
+}
+
+func NewMsgDeleteAccFeeSetting(account, issuer sdkTypes.AccAddress) MsgDeleteAccFeeSetting {
+	return MsgDeleteAccFeeSetting{
+		Account: account,
+		Issuer:  issuer,
+	}
+}
+
+func (msg MsgDeleteAccFeeSetting) Route() string {
+	return routeName
+}
+
+func (msg MsgDeleteAccFeeSetting) Type() string {
+	return "deleteAccFeeSetting"
+}
+
+func (msg MsgDeleteAccFeeSetting) ValidateBasic() sdkTypes.Error {
+	if msg.Issuer.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
+	}
+
+	if msg.Account.Empty() {
+		return sdkTypes.ErrInvalidCoins("Account cant be empty.")
+	}
+
+	return nil
+}
+
+func (msg MsgDeleteAccFeeSetting) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgDeleteAccFeeSetting) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.Issuer}
+}
+
 // MsgMultiplier create/update fee multiplier
 type MsgMultiplier struct {
 	Multiplier string              `json:"multiplier"`

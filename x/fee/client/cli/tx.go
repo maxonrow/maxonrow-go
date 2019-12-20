@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -38,7 +39,8 @@ func CreateMsgSysFeeSetting(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			issuer := cliCtx.GetFromAddress()
 
@@ -94,7 +96,8 @@ func EditMsgSysFeeSetting(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			issuer := cliCtx.GetFromAddress()
 
@@ -150,7 +153,8 @@ func DeleteMsgSysFeeSetting(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			issuer := cliCtx.GetFromAddress()
 
@@ -182,15 +186,76 @@ func CreateMsgAssignFeeToMsg(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
-
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			msgType := args[0]
 			issuer := cliCtx.GetFromAddress()
 
 			name := viper.GetString("name")
+			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_fee_setting_exist/%s", name), nil)
+			if err != nil {
+				return err
+			}
+
+			if string(bz) == "false" {
+				return fmt.Errorf("Fee setting name is not exist.")
+			}
 
 			msg := fee.NewMsgAssignFeeToMsg(name, msgType, issuer)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdkTypes.Msg{msg})
+		},
+	}
+
+	cmd.Flags().String("name", "default", "Fee setting name")
+
+	return cmd
+}
+
+func SetTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "token [token-symbol] [action]",
+		Short: "Assign a fee setting to a token(fungible/ nonfungible)",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			tokenSymbol := args[0]
+			tokenAction := args[1]
+
+			issuer := cliCtx.GetFromAddress()
+			name := viper.GetString("name")
+
+			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_fee_setting_exist/%s", name), nil)
+			if err != nil {
+				return err
+			}
+			if string(bz) == "false" {
+				return fmt.Errorf("Fee setting name is not exist.")
+			}
+
+			tokenData, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/token/token_data/%s", tokenSymbol), nil)
+			if tokenData == nil {
+				return fmt.Errorf("No such token symbol.")
+			}
+
+			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_token_action_valid/%s", tokenAction), nil)
+			if err != nil {
+				return err
+			}
+
+			if string(isValid) == "false" {
+				return fmt.Errorf("Token action is not valid.")
+			}
+
+			msg := fee.NewMsgAssignFeeToToken(name, tokenSymbol, tokenAction, issuer)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -212,7 +277,8 @@ func CreateMsgAssignFeeToAcc(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			accStr := args[0]
 			acc, accErr := sdkTypes.AccAddressFromBech32(accStr)
@@ -237,6 +303,46 @@ func CreateMsgAssignFeeToAcc(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
+func CreateMsgDeleteAccountFeeSetting(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "delete-acc-fee [account address]",
+		Short: "Delete account fee setting",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			accStr := args[0]
+			acc, accErr := sdkTypes.AccAddressFromBech32(accStr)
+			if accErr != nil {
+				return accErr
+			}
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryAccFeeSetting, accStr), nil)
+			if err != nil {
+				return fmt.Errorf("Could not get fee setting: %s\n", err)
+			}
+
+			if string(res) == "null" {
+				return fmt.Errorf("Account does not have any fee setting.")
+			}
+
+			issuer := cliCtx.GetFromAddress()
+
+			msg := fee.NewMsgDeleteAccFeeSetting(acc, issuer)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdkTypes.Msg{msg})
+		},
+	}
+
+	return cmd
+}
+
 func CreateFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "fee-multiplier [multiplier]",
@@ -245,13 +351,14 @@ func CreateFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			multiplier := args[0]
 
 			issuer := cliCtx.GetFromAddress()
 
-			msg := fee.NewMsgTokenMultiplier(multiplier, issuer)
+			msg := fee.NewMsgMultiplier(multiplier, issuer)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -271,7 +378,8 @@ func CreateTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			multiplier := args[0]
 
@@ -312,7 +420,8 @@ func AddSysFeeSetting(cdc *codec.Codec) *cobra.Command {
 			}
 			viper.SetDefault("fees", data.Txfee)
 			flags.GasFlagVar.Gas = 0
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			issuer := data.IssuerAddress
 			feename := data.FeeName
