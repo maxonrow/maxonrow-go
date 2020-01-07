@@ -40,7 +40,6 @@ require (
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/tools v0.0.0-20190618233249-04b924abaa25 // indirect
-	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )

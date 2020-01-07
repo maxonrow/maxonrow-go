@@ -2,6 +2,7 @@ package auth
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth"
 )
 
 const RouterKey = "auth"
@@ -131,11 +132,13 @@ func (msg MsgTransferMultiSigOwner) GetSigners() []sdkTypes.AccAddress {
 
 type MsgCreateMultiSigTx struct {
 	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	Tx           sdkTypes.Tx         `json:tx`
+	Stdtx        sdkTypes.Tx         `json:stdtx`
 	Sender       sdkTypes.AccAddress `json:sender`
 }
 
-func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, tx sdkTypes.Tx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
+// start :
+// NewMsgCreateMultiSigTx :
+func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, tx auth.StdTx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
 	return MsgCreateMultiSigTx{groupAddress, tx, sender}
 }
 
