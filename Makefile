@@ -23,4 +23,4 @@ test:
 	go test $(PACKAGES)
 
 
-.PHONY: all desp build install test
+.PHONY: all deps build install test
