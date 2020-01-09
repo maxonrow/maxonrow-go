@@ -199,9 +199,9 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 	multiSig := groupAcc.GetMultiSig()
 	txID := multiSig.GetNewTxID()
 
-	pendingTx := sdkTypes.NewPendingTx(txID, msg.Tx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
+	pendingTx := sdkTypes.NewPendingTx(txID, msg.StdTx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
 
-	multiSig, err := multiSig.AddTx(pendingTx)
+	err := multiSig.AddTx(pendingTx)
 	if err != nil {
 		return err.Result()
 	}

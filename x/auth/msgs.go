@@ -132,7 +132,7 @@ func (msg MsgTransferMultiSigOwner) GetSigners() []sdkTypes.AccAddress {
 
 type MsgCreateMultiSigTx struct {
 	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	Stdtx        sdkTypes.Tx         `json:stdtx`
+	StdTx        sdkTypes.Tx         `json:stdTx`
 	Sender       sdkTypes.AccAddress `json:sender`
 }
 
