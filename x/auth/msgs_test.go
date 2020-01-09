@@ -21,7 +21,7 @@ func MakeTestCodec() *codec.Codec {
 }
 func TestEncode(t *testing.T) {
 
-	cdc = MakeTestCodec()
+	cdc := MakeTestCodec()
 
 	// msg1 := NewMsgCreateMultiSigAccount(sdkTypes.AccAddress{1}, 1, []sdkTypes.AccAddress{sdkTypes.AccAddress{1}, sdkTypes.AccAddress{2}})
 	// stdtx := sdkAuth.StdTx{[]sdkTypes.Msg{msg1}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, ""}

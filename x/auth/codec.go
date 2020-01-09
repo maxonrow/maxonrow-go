@@ -21,6 +21,7 @@ func init() {
 
 	sdkTypes.RegisterCodec(msgCdc)
 	sdkAuth.RegisterCodec(msgCdc)
+	codec.RegisterCrypto(msgCdc)
 
 	bank.RegisterCodec(msgCdc)
 	//fungible.RegisterCodec(cdc)

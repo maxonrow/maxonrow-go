@@ -10,9 +10,7 @@ import (
 	"github.com/maxonrow/maxonrow-go/types"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth"
-	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	multisig "github.com/maxonrow/maxonrow-go/x/auth"
 	"github.com/maxonrow/maxonrow-go/x/bank"
 
@@ -213,33 +211,35 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 	acc := Account(tKeys[signer].addrStr)
 	require.NotNil(t, acc)
 
-	signMsg := authTypes.StdSignMsg{
-		AccountNumber: acc.GetAccountNumber(),
-		ChainID:       "maxonrow-chain",
-		Fee:           authTypes.NewStdFee(gas, fees),
-		Memo:          memo,
-		Msgs:          []sdkTypes.Msg{msg},
-		Sequence:      tKeys[signer].seq,
-	}
-
-	signBz, signBzErr := tCdc.MarshalJSON(signMsg)
-	if signBzErr != nil {
-		panic(signBzErr)
-	}
-
-	sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
-	if err != nil {
-		panic(err)
-	}
-
-	pub := tKeys[signer].priv.PubKey()
-	stdSig := sdkAuth.StdSignature{
-		PubKey:    pub,
-		Signature: sig,
-	}
-
 	//1. SingleSig
 	if isMultiSig == false {
+		signMsg := authTypes.StdSignMsg{
+			AccountNumber: acc.GetAccountNumber(),
+			ChainID:       "maxonrow-chain",
+			Fee:           authTypes.NewStdFee(gas, fees),
+			Memo:          memo,
+			Msgs:          []sdkTypes.Msg{msg},
+			Sequence:      tKeys[signer].seq,
+		}
+
+		signBz, signBzErr := tCdc.MarshalJSON(signMsg)
+		if signBzErr != nil {
+			panic(signBzErr)
+		}
+
+		fmt.Println("aaaaaaa " + string(signBz))
+
+		sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
+		if err != nil {
+			panic(err)
+		}
+
+		pub := tKeys[signer].priv.PubKey()
+		stdSig := authTypes.StdSignature{
+			PubKey:    pub,
+			Signature: sig,
+		}
+
 		sdtTx := authTypes.NewStdTx(signMsg.Msgs, signMsg.Fee, []authTypes.StdSignature{stdSig}, signMsg.Memo)
 		//fmt.Printf("\n============sdtTx: %v ", sdtTx.GetMsgs())
 		bz, err := tCdc.MarshalBinaryLengthPrefixed(sdtTx)
@@ -254,16 +254,42 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 	// 2. MultiSig
 	groupAddress := "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce"
 
-	stdtx := authTypes.NewStdTx(signMsg.Msgs, authTypes.NewStdFee(gas, fees), []authTypes.StdSignature{stdSig}, signMsg.Memo) // no need signatures
-	msgCreateMultiSigTx := makeCreateMultiSigTxMsg(t, groupAddress, stdtx, signer)
-	fmt.Printf("\n============msgCreateMultiSigTx : %v", msgCreateMultiSigTx)
-	stdMultiSigtx := authTypes.NewStdTx([]sdkTypes.Msg{msgCreateMultiSigTx}, signMsg.Fee, []auth.StdSignature{stdSig}, signMsg.Memo)
+	pendingTx := authTypes.NewStdTx([]sdkTypes.Msg{msg}, authTypes.NewStdFee(gas, fees), nil, memo) // no need signatures
+	msgCreateMultiSigTx := makeCreateMultiSigTxMsg(t, groupAddress, pendingTx, signer)
+
+	signMsg := authTypes.StdSignMsg{
+		AccountNumber: acc.GetAccountNumber(),
+		ChainID:       "maxonrow-chain",
+		Fee:           authTypes.NewStdFee(gas, fees),
+		Memo:          memo,
+		Msgs:          []sdkTypes.Msg{msgCreateMultiSigTx},
+		Sequence:      tKeys[signer].seq,
+	}
+
+	signBz := sdkTypes.MustSortJSON(tCdc.MustMarshalJSON(signMsg))
+	// if signBzErr != nil {
+	// 	panic(signBzErr)
+	// }
+
+	sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
+	if err != nil {
+		panic(err)
+	}
+
+	pub := tKeys[signer].priv.PubKey()
+	stdSig := authTypes.StdSignature{
+		PubKey:    pub,
+		Signature: sig,
+	}
+
+	stdMultiSigtx := authTypes.NewStdTx([]sdkTypes.Msg{msgCreateMultiSigTx}, signMsg.Fee, []authTypes.StdSignature{stdSig}, memo)
 	bz, err := tCdc.MarshalBinaryLengthPrefixed(stdMultiSigtx)
 
 	if err != nil {
 		panic(err)
 	}
 	return stdMultiSigtx, bz
+
 }
 
 //module of CreateMultiSigAccount
@@ -318,7 +344,7 @@ func makeTransferMultiSigOwnerMsg(t *testing.T, groupAddress string, newOwner st
 }
 
 //makeCreateMultiSigTxMsg
-func makeCreateMultiSigTxMsg(t *testing.T, groupAddress string, tx auth.StdTx, senderAddress string) sdkTypes.Msg {
+func makeCreateMultiSigTxMsg(t *testing.T, groupAddress string, tx authTypes.StdTx, senderAddress string) sdkTypes.Msg {
 
 	senderAddr := tKeys[senderAddress].addr
 	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
