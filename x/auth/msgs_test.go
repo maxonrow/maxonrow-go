@@ -8,6 +8,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/stretchr/testify/assert"
+	"github.com/tendermint/tendermint/crypto/ed25519"
 
 	//sdkBank "github.com/cosmos/cosmos-sdk/x/bank"
 	bank "github.com/maxonrow/maxonrow-go/x/bank"
@@ -19,47 +21,91 @@ func MakeTestCodec() *codec.Codec {
 
 	return cdc
 }
-func TestEncode(t *testing.T) {
+func TestEncodeJSON(t *testing.T) {
 
 	cdc := MakeTestCodec()
 
-	// msg1 := NewMsgCreateMultiSigAccount(sdkTypes.AccAddress{1}, 1, []sdkTypes.AccAddress{sdkTypes.AccAddress{1}, sdkTypes.AccAddress{2}})
-	// stdtx := sdkAuth.StdTx{[]sdkTypes.Msg{msg1}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, ""}
-	// bz, err := cdc.MarshalJSON(stdtx)
-	// assert.NoError(t, err)
-	// fmt.Println(string(bz))
+	delPk1 := ed25519.GenPrivKey().PubKey()
+	delPk2 := ed25519.GenPrivKey().PubKey()
+	delAddr1 := sdkTypes.AccAddress(delPk1.Address())
+	delAddr2 := sdkTypes.AccAddress(delPk2.Address())
 
-	// msg2 := NewMsgUpdateMultiSigAccount(sdkTypes.AccAddress{1}, sdkTypes.AccAddress{1}, 1, []sdkTypes.AccAddress{sdkTypes.AccAddress{1}, sdkTypes.AccAddress{2}})
-	// stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg2}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, ""}
-	// bz, err2 := cdc.MarshalJSON(stdtx)
-	// assert.NoError(t, err2)
-	// fmt.Println(string(bz))
+	addr1 := sdkTypes.AccAddress(delAddr1)
+	addr2 := sdkTypes.AccAddress(delAddr2)
 
-	// msg3 := NewMsgTransferMultiSigOwner(sdkTypes.AccAddress{1}, sdkTypes.AccAddress{1}, sdkTypes.AccAddress{2})
-	// stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg3}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, ""}
-	// bz, err3 := cdc.MarshalJSON(stdtx)
-	// assert.NoError(t, err3)
-	// fmt.Println(string(bz))
+	msg1 := NewMsgCreateMultiSigAccount(addr1, 1, []sdkTypes.AccAddress{addr1, addr2})
+	stdtx := sdkAuth.StdTx{[]sdkTypes.Msg{msg1}, sdkAuth.StdFee{}, nil, ""}
+	bz, err := cdc.MarshalJSON(stdtx)
+	assert.NoError(t, err)
+	msg11 := new(sdkAuth.StdTx)
+	err = cdc.UnmarshalJSON(bz, msg11)
+	fmt.Println(string(bz))
+	assert.NoError(t, err)
+	assert.Equal(t, stdtx, *msg11)
 
-	multiSigMsg := bank.NewMsgSend(sdkTypes.AccAddress{1}, sdkTypes.AccAddress{2}, sdkTypes.Coins{sdkTypes.Coin{}})
-	multiSigStdTx := sdkAuth.NewStdTx([]sdkTypes.Msg{multiSigMsg}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, "")
+	msg2 := NewMsgUpdateMultiSigAccount(addr1, addr1, 1, []sdkTypes.AccAddress{addr1, addr2})
+	stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg2}, sdkAuth.StdFee{}, nil, ""}
+	bz, err2 := cdc.MarshalJSON(stdtx)
+	assert.NoError(t, err2)
+	msg22 := new(sdkAuth.StdTx)
+	cdc.UnmarshalJSON(bz, msg22)
+	assert.Equal(t, stdtx, *msg22)
 
-	msg4 := NewMsgCreateMultiSigTx(sdkTypes.AccAddress{1}, multiSigStdTx, sdkTypes.AccAddress{2})
-	//stdtx = sdkAuth.NewStdTx([]sdkTypes.Msg{msg4}, sdkAuth.StdFee{}, []sdkAuth.StdSignature{}, "")
+	msg3 := NewMsgTransferMultiSigOwner(addr1, addr1, addr2)
+	stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg3}, sdkAuth.StdFee{}, nil, ""}
+	bz, err3 := cdc.MarshalJSON(stdtx)
+	assert.NoError(t, err3)
+	msg33 := new(sdkAuth.StdTx)
+	cdc.UnmarshalJSON(bz, msg33)
+	assert.Equal(t, stdtx, *msg33)
 
-	bz1 := sdkTypes.MustSortJSON(cdc.MustMarshalJSON(msg4))
-	bz2 := msg4.GetSignBytes()
-	//assert.NoError(t, err4)
-	fmt.Println(string(bz1))
-	fmt.Println(string(bz2))
+	multiSigMsg := bank.NewMsgSend(addr1, addr2, sdkTypes.Coins{sdkTypes.NewInt64Coin("cin", 1)})
+	multiSigStdTx := sdkAuth.NewStdTx([]sdkTypes.Msg{multiSigMsg}, sdkAuth.StdFee{}, nil, "")
+	bz1, err4 := cdc.MarshalJSON(multiSigStdTx)
+	assert.NoError(t, err4)
+	msg44 := new(sdkAuth.StdTx)
+	cdc.UnmarshalJSON(bz1, msg44)
+	assert.Equal(t, multiSigStdTx, *msg44)
 
-	a := 1
-	b := a
+}
 
-	if a == 2 {
-		fmt.Println("avc")
-	} else if b == 1 {
-		fmt.Println("aaa")
-	}
+func TestEncodeAmino(t *testing.T) {
+
+	cdc := MakeTestCodec()
+	addr1, _ := sdkTypes.AccAddressFromHex("0x1234")
+	addr2, _ := sdkTypes.AccAddressFromHex("0x5678")
+
+	msg1 := NewMsgCreateMultiSigAccount(addr1, 1, []sdkTypes.AccAddress{addr1, addr2})
+	stdtx := sdkAuth.StdTx{[]sdkTypes.Msg{msg1}, sdkAuth.StdFee{}, nil, ""}
+	bz, err := cdc.MarshalBinaryBare(stdtx)
+	assert.NoError(t, err)
+	msg11 := new(sdkAuth.StdTx)
+	cdc.UnmarshalBinaryBare(bz, msg11)
+	assert.Equal(t, stdtx, *msg11)
+
+	msg2 := NewMsgUpdateMultiSigAccount(addr1, addr1, 1, []sdkTypes.AccAddress{addr1, addr2})
+	stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg2}, sdkAuth.StdFee{}, nil, ""}
+	bz, err2 := cdc.MarshalBinaryBare(stdtx)
+	assert.NoError(t, err2)
+	msg22 := new(sdkAuth.StdTx)
+	cdc.UnmarshalBinaryBare(bz, msg22)
+	assert.Equal(t, stdtx, *msg22)
+
+	msg3 := NewMsgTransferMultiSigOwner(addr1, addr1, addr2)
+	stdtx = sdkAuth.StdTx{[]sdkTypes.Msg{msg3}, sdkAuth.StdFee{}, nil, ""}
+	bz, err3 := cdc.MarshalBinaryBare(stdtx)
+	assert.NoError(t, err3)
+	msg33 := new(sdkAuth.StdTx)
+	cdc.UnmarshalBinaryBare(bz, msg33)
+	assert.Equal(t, stdtx, *msg33)
+
+	multiSigMsg := bank.NewMsgSend(addr1, addr2, sdkTypes.Coins{sdkTypes.NewInt64Coin("cin", 1)})
+	multiSigStdTx := sdkAuth.NewStdTx([]sdkTypes.Msg{multiSigMsg}, sdkAuth.StdFee{}, nil, "")
+	bz1, err4 := cdc.MarshalBinaryBare(multiSigStdTx)
+	assert.NoError(t, err4)
+
+	msg44 := new(sdkAuth.StdTx)
+	cdc.UnmarshalBinaryBare(bz1, msg44)
+	assert.Equal(t, multiSigStdTx, *msg44)
 
 }
