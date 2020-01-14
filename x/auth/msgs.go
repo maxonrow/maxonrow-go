@@ -8,9 +8,9 @@ import (
 const RouterKey = "auth"
 
 type MsgCreateMultiSigAccount struct {
-	Owner     sdkTypes.AccAddress
-	Threshold int
-	Signers   []sdkTypes.AccAddress
+	Owner     sdkTypes.AccAddress   `json:"owner"`
+	Threshold int                   `json:"threshold"`
+	Signers   []sdkTypes.AccAddress `json:"signers"`
 }
 
 var _ sdkTypes.Msg = MsgCreateMultiSigAccount{}
