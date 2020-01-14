@@ -8,6 +8,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
+	multisig "github.com/maxonrow/maxonrow-go/x/auth"
 	"github.com/maxonrow/maxonrow-go/x/bank"
 	"github.com/stretchr/testify/assert"
 	"github.com/tendermint/tendermint/crypto"
@@ -70,9 +71,8 @@ func TestDecodeMultiSig(t *testing.T) {
 	var tx sdkAuth.StdTx
 	err := cdc.UnmarshalJSON(bz, &tx)
 	assert.NoError(t, err)
-
-	fmt.Println(string(bz))
-
+	msg := tx.Msgs[0].(multisig.MsgCreateMultiSigAccount)
+	assert.Equal(t, msg.Threshold, 2)
 	assert.NotEmpty(t, tx.GetMsgs())
 
 }
