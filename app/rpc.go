@@ -7,6 +7,10 @@ import (
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/maxonrow/maxonrow-go/types"
+	ver "github.com/maxonrow/maxonrow-go/version"
+	"github.com/maxonrow/maxonrow-go/x/fee"
+	"github.com/maxonrow/maxonrow-go/x/token/fungible"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
@@ -14,10 +18,6 @@ import (
 	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 	tmver "github.com/tendermint/tendermint/version"
-	"github.com/maxonrow/maxonrow-go/types"
-	ver "github.com/maxonrow/maxonrow-go/version"
-	"github.com/maxonrow/maxonrow-go/x/fee"
-	"github.com/maxonrow/maxonrow-go/x/token/fungible"
 )
 
 // Result of querying for a tx
