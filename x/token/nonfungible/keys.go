@@ -2,6 +2,8 @@ package nonfungible
 
 import (
 	"fmt"
+
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
 
 var prefixAuthorised = []byte("token/authorised")
@@ -45,5 +47,13 @@ func getNonFungibleItemKey(symbol string, itemID []byte) []byte {
 	key = append(key, []byte(symbol)...)
 	key = append(key, ':')
 	key = append(key, itemID...)
+	return key
+}
+
+func getMintItemLimitKey(symbol string, owner sdkTypes.AccAddress) []byte {
+	key := make([]byte, 0, len(symbol)+1+len(owner.Bytes()))
+	key = append(key, []byte(symbol)...)
+	key = append(key, ':')
+	key = append(key, owner.Bytes()...)
 	return key
 }

@@ -62,7 +62,7 @@ func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, ms
 	//* token.metadata temporaily not in use.
 	switch msg.Payload.Token.Status {
 	case ApproveToken:
-		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Owner, "")
+		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, "")
 	case RejectToken:
 		return keeper.RejectToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case FreezeToken:
@@ -121,5 +121,10 @@ func handleMsgSetNonFungibleTokenAccountStatus(ctx sdkTypes.Context, keeper *Kee
 }
 
 func handleMsgEndorsement(ctx sdkTypes.Context, keeper *Keeper, msg MsgEndorsement) sdkTypes.Result {
+	// check token endorser list
+	if !keeper.IsTokenEndorser(ctx, msg.Symbol, msg.From) {
+		return sdkTypes.ErrInternal("Invalid endorser.").Result()
+	}
+
 	return keeper.MakeEndorsement(ctx, msg.Symbol, msg.From, msg.ItemID)
 }
