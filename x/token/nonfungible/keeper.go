@@ -1,6 +1,8 @@
 package nonfungible
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -32,20 +34,24 @@ const (
 )
 
 type Token struct {
-	Flags       types.Bitmask
-	Name        string
-	Symbol      string
-	Owner       sdkTypes.AccAddress
-	NewOwner    sdkTypes.AccAddress
-	Metadata    string
-	TotalSupply sdkTypes.Uint
+	Flags         types.Bitmask
+	Name          string
+	Symbol        string
+	Owner         sdkTypes.AccAddress
+	NewOwner      sdkTypes.AccAddress
+	Metadata      string
+	TotalSupply   sdkTypes.Uint
+	TransferLimit sdkTypes.Uint
+	MintLimit     sdkTypes.Uint
+	EndorserList  []sdkTypes.AccAddress
 }
 
 type Item struct {
-	ID         []byte
-	Properties []string
-	Metadata   []string
-	Frozen     bool
+	ID            []byte
+	Properties    []string
+	Metadata      []string
+	TransferLimit sdkTypes.Uint
+	Frozen        bool
 }
 
 func (t *Token) IsApproved() bool {
@@ -236,7 +242,7 @@ func (k Keeper) IsProvider(ctx sdkTypes.Context, address sdkTypes.AccAddress) bo
 func (k *Keeper) TokenExists(ctx sdkTypes.Context, symbol string) bool {
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
-	return store.Has([]byte(key))
+	return store.Has(key)
 }
 
 func (k *Keeper) CreateNonFungibleToken(
@@ -297,15 +303,15 @@ func (k *Keeper) CreateNonFungibleToken(
 }
 
 // ApproveToken
-func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to approve.").Result()
 	}
 
-	return k.approveNonFungibleToken(ctx, symbol, tokenFees, metadata, signer)
+	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, metadata, signer, endorserList)
 }
 
-func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, metadata string, signer sdkTypes.AccAddress) sdkTypes.Result {
+func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, metadata string, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress) sdkTypes.Result {
 	var token = new(Token)
 	err := k.mustGetTokenData(ctx, symbol, token)
 	if err != nil {
@@ -334,6 +340,9 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 
 	token.Flags.AddFlag(ApprovedFlag)
 	token.Metadata = metadata
+	token.TransferLimit = transferLimit
+	token.MintLimit = mintLimit
+	token.EndorserList = endorserList
 
 	k.storeToken(ctx, symbol, token)
 
@@ -383,7 +392,7 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 	store := ctx.KVStore(k.key)
 
 	tokenTypeKey := getTokenKey(symbol)
-	store.Delete([]byte(tokenTypeKey))
+	store.Delete(tokenTypeKey)
 
 	eventParam := []string{symbol, token.Owner.String()}
 	eventSignature := "RejectedNonFungibleToken(string,string)"
@@ -688,7 +697,7 @@ func (k *Keeper) getTokenData(ctx sdkTypes.Context, symbol string, target interf
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
 
-	tokenData := store.Get([]byte(key))
+	tokenData := store.Get(key)
 	if tokenData == nil {
 		return false
 	}
@@ -703,7 +712,24 @@ func (k *Keeper) storeToken(ctx sdkTypes.Context, symbol string, token interface
 	key := getTokenKey(symbol)
 	tokenData := k.cdc.MustMarshalBinaryLengthPrefixed(token)
 
-	store.Set([]byte(key), tokenData)
+	store.Set(key, tokenData)
+}
+
+func (k *Keeper) increaseMintItemLimit(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress) {
+	store := ctx.KVStore(k.key)
+	key := getMintItemLimitKey(symbol, owner)
+
+	v := store.Get(key)
+	if v != nil {
+		counter := sdkTypes.NewUintFromString(string(v))
+		counter = counter.Add(sdkTypes.NewUintFromString("1"))
+		store.Set(key, []byte(counter.String()))
+	} else {
+		counter := sdkTypes.NewUintFromString(string(v))
+		counter = sdkTypes.NewUintFromString("1")
+		store.Set(key, []byte(counter.String()))
+	}
+
 }
 
 // Item
@@ -909,4 +935,23 @@ func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID []by
 	}
 
 	return true
+}
+
+func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser sdkTypes.AccAddress) bool {
+	token := new(Token)
+	k.getTokenData(ctx, symbol, token)
+
+	var endorsers types.AddressHolder
+
+	if token != nil {
+
+		endorsers = token.EndorserList
+		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + string(endorsers[0]))
+		if endorsers != nil {
+			_, contain := endorsers.Contains(endorser)
+			return contain
+		}
+		return true
+	}
+	return false
 }

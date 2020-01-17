@@ -41,12 +41,21 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	amt := sdkTypes.NewUint(1)
 	nonFungibleToken.TotalSupply = nonFungibleToken.TotalSupply.Add(amt)
 
-	// max supply 0 means is dynamic supply
-	// if !nonFungibleToken.MaxSupply.IsZero() {
-	// 	if nonFungibleToken.TotalSupply.GT(nonFungibleToken.MaxSupply) {
-	// 		return types.ErrInvalidTokenSupply().Result()
-	// 	}
-	// }
+	// check mint limit, if token mint limit !=0
+	if !nonFungibleToken.MintLimit.IsZero() {
+
+		mintLimitKey := getMintItemLimitKey(nonFungibleToken.Symbol, to)
+
+		store := ctx.KVStore(k.key)
+		limit := store.Get(mintLimitKey)
+		if limit != nil {
+			if sdkTypes.NewUintFromString(string(limit)).GTE(nonFungibleToken.MintLimit) {
+				return sdkTypes.ErrInternal("Holding limit existed.").Result()
+			}
+
+			k.increaseMintItemLimit(ctx, symbol, to)
+		}
+	}
 
 	k.storeToken(ctx, symbol, nonFungibleToken)
 
@@ -69,7 +78,7 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	}
 }
 
-//* TransferFungibleToken
+//* TransferNonFungibleToken
 func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID []byte) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
@@ -85,20 +94,40 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 		return types.ErrTokenFrozen().Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
-	if item == nil {
-		return types.ErrInvalidTokenOwner().Result()
-	}
-
-	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
 	itemKey := getNonFungibleItemKey(symbol, itemID)
+	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
 
 	store := ctx.KVStore(k.key)
 
-	store.Delete(itemKey)
+	ownerValue := store.Get(ownerKey)
+	if ownerValue == nil {
+		return types.ErrInvalidTokenOwner().Result()
+	}
+
+	itemValue := store.Get(itemKey)
+	if itemValue == nil {
+		return types.ErrInvalidTokenOwner().Result()
+	}
+
+	var item = new(Item)
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(itemValue, item)
+
+	if item.TransferLimit.GTE(token.TransferLimit) {
+
+		// TO-DO: own error message.
+		return sdkTypes.ErrInternal("Item has existed transfer limit.").Result()
+	}
+
+	// delete old owner
 	store.Delete(ownerKey)
 
-	k.createNonFungibleItem(ctx, symbol, to, itemID, item.Properties, item.Metadata)
+	// set to new owner
+	store.Set(ownerKey, to.Bytes())
+
+	// increase the transfer limit and set
+	item.TransferLimit = item.TransferLimit.Add(sdkTypes.NewUint(1))
+	itemData := k.cdc.MustMarshalBinaryLengthPrefixed(item)
+	store.Set(itemKey, itemData)
 
 	eventParam := []string{symbol, from.String(), to.String(), string(itemID)}
 	eventSignature := "TransferredNonFungibleToken(string,string,string,string)"

@@ -54,11 +54,11 @@ Prerequisites
 
   - Query the account
 
-    `mxwcli query account $(mxwcli keys show account1 --address) --chain-id mxw`, which verify the balance of account1
+    `mxwcli query account $(mxwcli keys show acc-1 --address) --chain-id maxonrow-chain`, which verify the balance of acc-1
 
   - Send Transaction
 
-    `mxwcli tx send --amount 100MXW --from $(mxwcli keys show account1 --address) --to $(mxwcli keys show account2 --address) --fees 1MXW --gas 0 --memo "TRANSFER 10-MXW" --chain-id mxw`
+    `mxwcli tx send $(mxwcli keys show acc-1 --address) $(mxwcli keys show acc-2 --address) 1000cin --fees 10000000000000000cin --gas 0 --memo "TRANSFER" --chain-id maxonrow-chain`
 
 
 ## `MXWONROW` come with the many test cases,you can find all our test case under test folder in project soruce.

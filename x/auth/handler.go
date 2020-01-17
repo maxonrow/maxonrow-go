@@ -263,9 +263,9 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 			}
 
 			// Event: broadcast tx
-			broadcastedEventParam := []string{"mxw000000000000000000000000000000000000000", string(msg.TxID)}
-			broadcastedEventSignature := "BroadcastedTx(string,string,string)"
-			broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, "mxw000000000000000000000000000000000000000", broadcastedEventParam)
+			broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
+			broadcastedEventSignature := "BroadcastedTx(string,string)"
+			broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
 		}
 
 		isDeleted := multiSig.RemoveTx(msg.TxID)
@@ -275,12 +275,6 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 
 		groupAcc.SetMultiSig(multiSig)
 		accountKeeper.SetAccount(ctx, groupAcc)
-
-		removeEventParam := []string{"mxw000000000000000000000000000000000000000", msg.GroupAddress.String(), string(msg.TxID)}
-		removeEventSignature := "DeletedMultiSigTx(string,string,string)"
-		removeEvents := types.MakeMxwEvents(removeEventSignature, "mxw000000000000000000000000000000000000000", removeEventParam)
-
-		broadcastedEvents = broadcastedEvents.AppendEvents(removeEvents)
 	}
 
 	// TO-DO: event
