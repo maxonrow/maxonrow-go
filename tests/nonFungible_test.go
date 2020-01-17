@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/stretchr/testify/require"
 	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
+	"github.com/stretchr/testify/require"
 )
 
 func makeCreateNonFungibleTokenMsg(t *testing.T, name, symbol, metadata, owner, applicationFee, tokenFeeCollector string) sdkTypes.Msg {
@@ -21,7 +21,7 @@ func makeCreateNonFungibleTokenMsg(t *testing.T, name, symbol, metadata, owner, 
 	return msgCreateNonFungibleToken
 }
 
-func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string, providerNonce string, issuer string, symbol string, status string, feeSettingName string) sdkTypes.Msg {
+func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string, providerNonce string, issuer string, symbol string, status string, feeSettingName string, mintLimit, transferLimit string, endorserList []string) sdkTypes.Msg {
 
 	providerAddr := tKeys[provider].addr
 
@@ -47,7 +47,18 @@ func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string
 			FeeName: feeSettingName,
 		},
 	}
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, tokenFee)
+
+	mintL := sdkTypes.NewUintFromString(mintLimit)
+	transferL := sdkTypes.NewUintFromString(transferLimit)
+
+	var endorsers []sdkTypes.AccAddress
+
+	for _, v := range endorserList {
+		addr := tKeys[v].addr
+		endorsers = append(endorsers, addr)
+	}
+
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, transferL, mintL, tokenFee, endorsers)
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -130,7 +141,7 @@ func makeFreezeNonFungibleTokenMsg(t *testing.T, signer string, provider string,
 	status := "FREEZE"
 	providerAddr := tKeys[provider].addr
 
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, nil) // status : FREEZE / UNFREEZE
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil) // status : FREEZE / UNFREEZE
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -160,7 +171,7 @@ func makeUnfreezeNonFungibleTokenMsg(t *testing.T, signer string, provider strin
 	status := "UNFREEZE"
 	providerAddr := tKeys[provider].addr
 
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, nil) // status : FREEZE / UNFREEZE
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil) // status : FREEZE / UNFREEZE
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -190,7 +201,7 @@ func makeVerifyTransferNonFungibleTokenOwnership(t *testing.T, signer, provider,
 	providerAddr := tKeys[provider].addr
 
 	// burnable and tokenfees is not in used for verifying transfer token status, we just set it to false and leave it empty.
-	verifyTransferTokenOwnershipDoc := nonFungible.NewToken(providerAddr, providerNonce, action, symbol, []nonFungible.TokenFee{})
+	verifyTransferTokenOwnershipDoc := nonFungible.NewToken(providerAddr, providerNonce, action, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), []nonFungible.TokenFee{}, nil)
 
 	// provider sign
 	verifyTransferTokenOwnershipDocBz, err := tCdc.MarshalJSON(verifyTransferTokenOwnershipDoc)
