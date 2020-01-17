@@ -7,10 +7,10 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
-	rpc "github.com/tendermint/tendermint/rpc/core"
 	"github.com/maxonrow/maxonrow-go/types"
 	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
 	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
+	rpc "github.com/tendermint/tendermint/rpc/core"
 )
 
 func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
@@ -55,8 +55,13 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 
 		params := app.accountKeeper.GetParams(ctx)
 
-		if err := tx.ValidateBasic(); err != nil {
-			return ctx, err
+		signer := stdTx.GetMsgs()[0].GetSigners()[0]
+		signerAcc := app.accountKeeper.GetAccount(ctx, signer)
+		if signerAcc.GetMultiSig() == nil {
+			if err := tx.ValidateBasic(); err != nil {
+				return ctx, err
+			}
+
 		}
 
 		if err := app.ValidateMemo(stdTx, params); err != nil {
@@ -77,8 +82,10 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 		}
 
 		stdSigs := stdTx.Signatures
-		if len(stdSigs) != 1 {
-			return ctx, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature. it has %v signatures", len(stdSigs)))
+		if signerAcc.GetMultiSig() == nil {
+			if len(stdSigs) != 1 {
+				return ctx, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature. it has %v signatures", len(stdSigs)))
+			}
 		}
 
 		stdSig := stdSigs[0]
