@@ -12,6 +12,9 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgUpdateMultiSigAccount{}, "mxw/msgUpdateMultiSigAccount", nil)
 	cdc.RegisterConcrete(MsgTransferMultiSigOwner{}, "mxw/msgTransferMultiSigOwner", nil)
 	cdc.RegisterConcrete(MsgCreateMultiSigTx{}, "mxw/msgCreateMultiSigTx", nil)
+
+	cdc.RegisterConcrete(MsgSignMultiSigTx{}, "mxw/msgSignMultiSigTx", nil)
+
 }
 
 var msgCdc = codec.New()

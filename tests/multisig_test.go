@@ -27,10 +27,10 @@ type MultisigInfo struct {
 	Threshold      int
 	Signers        []string
 	GroupAddress   string
+	TransactionId  string
 }
 
 func TestMultisigAccs(t *testing.T) {
-
 	val1 := Validator(tValidator)
 	fmt.Println(val1)
 
@@ -41,23 +41,29 @@ func TestMultisigAccs(t *testing.T) {
 
 	tcs := []*testCase{
 
-		// start : goh123
 		// assign zero fee to an account
-		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "mostafa", "mostafa", "testKyc123456789", "0"}, "", nil},
+		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "mostafa", "mostafa", "testKyc123456789", "0"}, "MEMO : Doing kyc - mostafa - commit", nil},
 
 		//goh123 - prepare for MultiSig module
-		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-21", "acc-21", "testKyc122222222", "0"}, "", nil},
-		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-23", "acc-23", "testKyc111111111", "0"}, "", nil},
-		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-24", "acc-24", "testKyc133333333", "0"}, "", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-21", "10000000000cin"}, "", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-23", "10000000000cin"}, "", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-24", "10000000000cin"}, "", nil},
+		{"kyc", false, false, "Doing kyc - acc-21 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-21", "acc-21", "testKyc122222222", "0"}, "MEMO : Doing kyc - acc-21 - commit", nil},
+		{"kyc", false, false, "Doing kyc - acc-23 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-23", "acc-23", "testKyc111111111", "0"}, "MEMO : Doing kyc - acc-23 - commit", nil},
+		{"kyc", false, false, "Doing kyc - acc-24 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-24", "acc-24", "testKyc133333333", "0"}, "MEMO : Doing kyc - acc-24 - commit", nil},
+		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-21", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-21", nil},
+		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-23", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-23", nil},
+		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-24", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-24", nil},
 
 		//create MultiSig Account
-		{"multiSig", false, false, "Create MultiSig Account - Happy Path", "acc-21", "200000000cin", 0, MultisigInfo{"create", "10000000", "mostafa", "acc-21", "", 2, []string{"acc-21", "acc-24"}, ""}, "memoXX", nil},
+		{"multiSig", false, false, "Create MultiSig Account - Happy Path", "acc-21", "200000000cin", 0, MultisigInfo{"create", "10000000", "mostafa", "acc-21", "", 2, []string{"acc-21", "acc-24"}, "", ""}, "MEMO : Create MultiSig Account - Happy Path", nil},
+
+		//NOTE : THIS for GroupAddress send BankTx
+		{"bank-multisig", false, false, "BankTx sending 70000000000cin from acc-alice to Multisig Group-address", "alice", "200000000cin", 0, bankInfo{"alice", "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "10000000000cin"}, "MEMO : alice sending 70000000000cin to multisig-GroupAddress", nil},
 
 		// multiSig-create-tx-bank
-		{"multiSig-create-tx-bank", false, false, "multiSig-create-tx-bank : Happy Path", "acc-21", "200000000cin", 0, bankInfo{"acc-21", "acc-24", "2cin"}, "MEMO : Create MultiSig Tx for Bank - Happy Path", nil},
+		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path", "acc-21", "200000000cin", 0, bankInfo{"mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
+
+		// multiSig-sign-tx-bank
+		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "1"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
+
 	}
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
@@ -70,6 +76,22 @@ func TestMultisigAccs(t *testing.T) {
 
 		var msg sdkTypes.Msg
 		switch tc.msgType {
+		case "bank-multisig":
+			{
+				i := tc.msgInfo.(bankInfo)
+				amt, err := types.ParseCoins(i.amount)
+				assert.NoError(t, err, i.amount)
+
+				groupAddr, _ := sdkTypes.AccAddressFromBech32(i.to)
+				msg = bank.NewMsgSend(tKeys[i.from].addr, groupAddr, amt)
+
+				if !tc.deliverFailed {
+					if i.from == "alice" {
+						totalFee = totalFee.Add(fees[0])
+						totalAmt = totalAmt.Add(amt[0])
+					}
+				}
+			}
 		case "bank":
 			{
 				i := tc.msgInfo.(bankInfo)
@@ -109,33 +131,17 @@ func TestMultisigAccs(t *testing.T) {
 					msg = makeUpdateMultiSigAccountMsg(t, i.Owner, i.GroupAddress, i.Threshold, i.Signers)
 				case "transfer-ownership":
 					msg = makeTransferMultiSigOwnerMsg(t, i.GroupAddress, i.NewOwner, i.Owner)
+				case "multiSig-sign-tx-bank":
+					msg = makeSignMultiSigTxMsg(t, i.GroupAddress, i.TransactionId, i.Owner)
+				case "multiSig-delete-tx-bank":
+					msg = makeDeleteMultiSigTxMsg(t, i.GroupAddress, i.TransactionId, i.Owner)
+
 				}
 			}
 		case "multiSig-create-tx-bank":
 			{
 				i := tc.msgInfo.(bankInfo)
 				msg = makeBanksendMsg(t, i.from, i.to, i.amount)
-			}
-		case "multiSig-create-tx-kyc":
-			{
-				i := tc.msgInfo.(kycInfo)
-
-				switch i.action {
-				case "whitelist":
-					msg = makeKycWhitelistMsg(t, i.authorised, i.issuer, i.provider, i.from, i.signer, i.data, i.nonce)
-
-				case "revokeWhitelist":
-					msg = makeKycRevokeWhitelistMsg(t, i.authorised, i.issuer, i.provider, i.from)
-				}
-			}
-		case "multiSig-create-tx-token":
-			{
-				i := tc.msgInfo.(TokenInfo)
-
-				switch i.Action {
-				case "create":
-					msg = makeCreateFungibleTokenMsg(t, i.Name, i.Symbol, i.Metadata, i.Owner, i.MaxSupply, i.ApplicationFee, i.FeeCollector, i.Decimals, i.FixedSupply)
-				}
 			}
 		}
 
@@ -147,21 +153,20 @@ func TestMultisigAccs(t *testing.T) {
 		fmt.Printf("============\nBroadcasting %d tx (%s): %s\n", n+1, tc.desc, string(txb))
 
 		res := BroadcastTxCommit(bz)
-
 		tc.hash = res.Hash.Bytes()
 
 		if !tc.checkFailed {
 			tKeys[tc.signer].seq++
-			require.Zero(t, res.CheckTx.Code, "test case %v(%v) check failed: %v", n+1, tc.desc, res.CheckTx.GetLog())
+			require.Zero(t, res.CheckTx.Code, "test case %v(%v) check failed--111: %v", n+1, tc.desc, res.CheckTx.GetLog())
 
 			if !tc.deliverFailed {
-				require.Zero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed: %v", n+1, tc.desc, res.DeliverTx.Log)
+				require.Zero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed - 001: %v", n+1, tc.desc, res.DeliverTx.Log)
 			} else {
-				require.NotZero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed: %v", n+1, tc.desc, res.DeliverTx.Log)
+				require.NotZero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed - 002: %v", n+1, tc.desc, res.DeliverTx.Log)
 			}
 
 		} else {
-			require.NotZero(t, res.CheckTx.Code, "test case %v(%v) check failed: %v", n+1, tc.desc, res.CheckTx.Log)
+			require.NotZero(t, res.CheckTx.Code, "test case %v(%v) check failed--222: %v", n+1, tc.desc, res.CheckTx.Log)
 		}
 
 		if strings.Contains(tc.desc, "commit") {
@@ -182,6 +187,7 @@ func TestMultisigAccs(t *testing.T) {
 				assert.NotZero(t, res.TxResult.Code, "test case %v(%v) failed", i, tc.desc)
 
 			} else {
+				//fmt.Printf("get Group-Address : %v \n", res.TxResult.Log)
 				assert.Zero(t, res.TxResult.Code, "test case %v(%v) failed: %v", i, tc.desc, res.TxResult.Log)
 			}
 		}
@@ -189,12 +195,11 @@ func TestMultisigAccs(t *testing.T) {
 
 	val2 := Validator(tValidator)
 	fmt.Println(val2)
-
 }
 
 func checkMultiSig(msgType string) bool {
 
-	multiSigArray := [3]string{"multiSig-create-tx-bank", "multiSig-create-tx-kyc", "multiSig-create-tx-token"}
+	multiSigArray := [1]string{"multiSig-create-tx-bank"}
 
 	for _, item := range multiSigArray {
 		if item == msgType {
@@ -208,11 +213,12 @@ func checkMultiSig(msgType string) bool {
 //
 func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdkTypes.Coins, memo string, msg sdkTypes.Msg,
 	isMultiSig bool) (authTypes.StdTx, []byte) {
-	acc := Account(tKeys[signer].addrStr)
-	require.NotNil(t, acc)
 
 	//1. SingleSig
 	if isMultiSig == false {
+		acc := Account(tKeys[signer].addrStr)
+		require.NotNil(t, acc)
+
 		signMsg := authTypes.StdSignMsg{
 			AccountNumber: acc.GetAccountNumber(),
 			ChainID:       "maxonrow-chain",
@@ -227,8 +233,6 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 			panic(signBzErr)
 		}
 
-		fmt.Println("aaaaaaa " + string(signBz))
-
 		sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
 		if err != nil {
 			panic(err)
@@ -241,15 +245,16 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 		}
 
 		sdtTx := authTypes.NewStdTx(signMsg.Msgs, signMsg.Fee, []authTypes.StdSignature{stdSig}, signMsg.Memo)
-		//fmt.Printf("\n============sdtTx: %v ", sdtTx.GetMsgs())
 		bz, err := tCdc.MarshalBinaryLengthPrefixed(sdtTx)
-		//bz, err := tCdc.MarshalJSON(sdtTx)   // Error : error decoding transaction
 
 		if err != nil {
 			panic(err)
 		}
 		return sdtTx, bz
 	}
+
+	acc := Account(tKeys[signer].addrStr)
+	require.NotNil(t, acc)
 
 	// 2. MultiSig
 	groupAddress := "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce"
@@ -263,13 +268,10 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 		Fee:           authTypes.NewStdFee(gas, fees),
 		Memo:          memo,
 		Msgs:          []sdkTypes.Msg{msgCreateMultiSigTx},
-		Sequence:      tKeys[signer].seq,
+		Sequence:      1,
 	}
 
 	signBz := sdkTypes.MustSortJSON(tCdc.MustMarshalJSON(signMsg))
-	// if signBzErr != nil {
-	// 	panic(signBzErr)
-	// }
 
 	sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
 	if err != nil {
@@ -288,6 +290,7 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 	if err != nil {
 		panic(err)
 	}
+
 	return stdMultiSigtx, bz
 
 }
@@ -383,6 +386,8 @@ func makeBanksendMsg(t *testing.T, from string, to string, amount string) sdkTyp
 	amt, err := types.ParseCoins(amount)
 	assert.NoError(t, err, amount)
 
-	msgBanksendPayload = bank.NewMsgSend(tKeys[from].addr, tKeys[to].addr, amt)
+	fromAddr, _ := sdkTypes.AccAddressFromBech32(from)
+
+	msgBanksendPayload = bank.NewMsgSend(fromAddr, tKeys[to].addr, amt)
 	return msgBanksendPayload
 }
