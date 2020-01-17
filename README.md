@@ -54,8 +54,7 @@ Prerequisites
 
   - Query the account
 
-    `
-    `, which verify the balance of acc-1
+    `mxwcli query account $(mxwcli keys show acc-1 --address) --chain-id maxonrow-chain`, which verify the balance of acc-1
 
   - Send Transaction
 
