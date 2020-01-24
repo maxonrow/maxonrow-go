@@ -583,7 +583,6 @@ func NewSignature(pubKey crypto.PubKey, signature []byte) Signature {
 	}
 }
 
-//ORIG - goh-changed123
 func NewItemPayload(itemDetails ItemDetails, pubKey crypto.PubKey, signature []byte) *ItemPayload {
 	return &ItemPayload{
 		Item:      itemDetails,
@@ -593,7 +592,6 @@ func NewItemPayload(itemDetails ItemDetails, pubKey crypto.PubKey, signature []b
 
 }
 
-//ORIG - goh-changed123
 func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID []byte) *ItemDetails {
 	return &ItemDetails{
 		From:   from,
