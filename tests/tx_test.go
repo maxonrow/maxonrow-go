@@ -97,31 +97,6 @@ type TokenInfo struct {
 	VerifyTransferTokenOwnership string
 }
 
-type NonFungibleTokenInfo struct {
-	Action                       string
-	ApplicationFee               string
-	FeeCollector                 string
-	Name                         string
-	Symbol                       string
-	Owner                        string
-	NewOwner                     string
-	TokenMetadata                string
-	ItemID                       []byte
-	Properties                   []string
-	Metadata                     []string
-	Approved                     bool
-	Frozen                       bool
-	Burnable                     bool
-	Provider                     string
-	ProviderNonce                string
-	Issuer                       string
-	FeeSettingName               string
-	VerifyTransferTokenOwnership string
-	TransferLimit                string
-	MintLimit                    string
-	EndorserList                 []string
-}
-
 func TestTxs(t *testing.T) {
 
 	//acc1 := Account(tKeys["alice"].addrStr)
@@ -154,7 +129,7 @@ func TestTxs(t *testing.T) {
 		{"bank", true, true, "sending 1 abc", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1abc"}, "", nil},
 		{"bank", true, true, "sending 1 cin & 1 abc", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1cin, 1abc"}, "", nil},
 		{"bank", false, false, "sending 1 mxw", "alice", "1000000000cin", 0, bankInfo{"alice", "bob", "1000000000000000000cin"}, "", nil},
- 		{"bank", false, false, "more fee", "alice", "100000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
+		{"bank", false, false, "more fee", "alice", "100000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
 		{"bank", false, false, "more fee", "alice", "1000000000000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
 		{"bank", false, false, "with memo", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "alice to bob", nil},
 		{"bank", true, true, "no fee", "alice", "", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
@@ -702,43 +677,149 @@ func TestTxs(t *testing.T) {
 		//set MsgTransferNonFungibleTokenOwnership fee to 0cin
 		{"fee", false, false, "assign msgVerifyTokenTransferOwnership to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "nonFungible-transferNonFungibleTokenOwnership", "", "", "", "", "fee-auth"}, "", nil},
 
-		// create non fungible
-		{"nonFungibleToken", false, false, "Create non fungible token - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TFT", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - same symbol(TFT) commit", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - No Fee. commit", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - Very long metadata!", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAA", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		//====================================== start : nft modules
+		// 1. create non fungible - without ItemID
+		{"nonFungibleToken", false, false, "Create non fungible token - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Happy Path.", nil},
+		{"nonFungibleToken", true, true, "Create non fungible token - Token already exists (TNFT). commit", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Token already exists (TFT).", nil},
+		{"nonFungibleToken", true, true, "Create non fungible token - Insufficient fee amount. commit", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TNFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Insufficient fee amount.", nil},
+		{"nonFungibleToken", true, true, "Create non fungible token - Very long metadata!", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TNFT", "acc-29", "", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAA", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Very long metadata!", nil},
+		{"nonFungibleToken", true, true, "goh-Create non fungible token - Fee collector invalid", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "yk", "TestNonFungibleToken-191", "TNFT-191", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "goh-Create non fungible token - Fee collector invalid", nil},                                                                         // ok
+		{"nonFungibleToken", true, true, "goh-Create non fungible token - Invalid fee amount", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "abcXXX", "mostafa", "TestNonFungibleToken-191", "TNFT-191", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "goh-Create non fungible token - Invalid fee amount", nil},                                                                            // ok
+		{"nonFungibleToken", true, true, "goh-Create non fungible token - Insufficient balance to pay for application fee", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "77999999999999900000000", "mostafa", "TestNonFungibleToken-191", "TNFT-191", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "goh-Create non fungible token - Insufficient balance to pay for application fee", nil}, //ok
 
-		// approve non fungible
-		{"nonFungibleToken", false, false, "Approve non fungible token(TFT) : TransferLimit(2) Mintlimit(2) Endorser(jeanson,carlo) - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"approve", "", "", "TestNonFungibleToken", "TFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
+		// 2. approve non fungible - without ItemID
+		{"nonFungibleToken", false, false, "Approve non fungible token(TNFT) : TransferLimit(2) Mintlimit(2) Endorser(jeanson,carlo) - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"approve", "", "", "TestNonFungibleToken", "TNFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", true, true, "Approve non fungible token(TNFT) : The Signer Not authorised to approve", "yk", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},                    //ok
+		{"nonFungibleToken", true, true, "Approve non fungible token(TNFT-191) : The Token symbol does not exist", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken-191", "TNFT-191", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},        //ok
+		{"nonFungibleToken", true, true, "Approve non fungible token(TNFT) : Unauthorized signature - yk", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "yk", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},                           //ok
+		{"nonFungibleToken", true, true, "Approve non fungible token(TNFT) : Fee setting is not valid - fee-setting-191", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "fee-setting-191", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Approve non fungible token(TNFT) : Token already approved - TNFT", "mostafa", "0cin", 0, NonFungibleTokenInfo{"approve", "", "", "TestNonFungibleToken", "TNFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},                                              // ok
 
-		// mint non fungible
-		{"nonFungibleToken", false, false, "Mint non fungible token - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for burn)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "yk", "", []byte("223344"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for endorsement)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "nago", "", []byte("334455"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// 3. mint non fungible - with ItemID
+		{"nonFungibleToken", false, false, "Mint non fungible token - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                    //ok
+		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for burn)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT", "acc-40", "yk", "", []byte("223344"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},          //ok
+		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for endorsement)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT", "acc-40", "nago", "", []byte("334455"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Mint non fungible token - Invalid Token Symbol", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT-191", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},        //ok
+		{"nonFungibleToken", false, true, "Mint non fungible token - Token item id is in used.", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},      //ok
+		{"nonFungibleToken", false, true, "Mint non fungible token - Invalid token minter.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT", "yk", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                  //ok
 
-		// transfer non fungible item
-		{"nonFungibleToken", false, false, "Transfer non fungible token item - Happy path", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TFT", "mostafa", "yk", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		//====================== with ItemID :
+		// --------------------OK [tc.signer, i.Owner, i.Symbol, i.ItemID]
+		// 4. make endorsement - with ItemID
+		{"nonFungibleToken", false, false, "endorse a nonfungible item - Happy path", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TNFT", "carlo", "", "", []byte("334455"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+		// start : goh-nft
+		{"nonFungibleToken", false, true, "endorse a nonfungible item - Invalid endorser", "yk", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TNFT", "yk", "", "", []byte("778899"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},               // ok
+		{"nonFungibleToken", false, true, "endorse a nonfungible item - Invalid Token Symbol", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TNFT-111", "carlo", "", "", []byte("334455"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil}, //ok
+		{"nonFungibleToken", false, true, "endorse a nonfungible item - Invalid Item-ID", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TNFT", "carlo", "", "", []byte("999111"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},          // ok
 
-		// transfer ownership
-		{"nonFungibleToken", false, false, "Transfer non fungible token ownership - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "", "", "", "TFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// --------------------OK [i.Owner, i.NewOwner, i.Symbol, i.ItemID]
+		// 5. transfer non fungible item - with ItemID
+		{"nonFungibleToken", false, false, "Transfer non fungible token item - Happy path", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TNFT", "mostafa", "yk", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nftmostafa
+		{"nonFungibleToken", true, true, "Transfer non fungible token item - Invalid Token Symbol", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TNFT-111", "mostafa", "yk", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},         // ok
+		{"nonFungibleToken", true, true, "Transfer non fungible token item - Invalid Account to transfer from", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TNFT-111", "carlo", "yk", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, // ok
+		{"nonFungibleToken", false, true, "Transfer non fungible token item - Invalid Item-ID", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TNFT", "mostafa", "yk", "", []byte("999111"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                 // ok
 
-		// verify transfer token ownership
-		{"nonFungibleToken", false, false, "Approve non fungible token transfer ownership - Happy path for TFT", "mostafa", "0cin", 0, NonFungibleTokenInfo{"verify-transfer-tokenOwnership", "", "", "", "TFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "APPROVE_TRANFER_TOKEN_OWNERSHIP", "", "", []string{""}}, "", nil},
+		// --------------------OK [i.Owner, i.Symbol, i.ItemID]
+		// 6. burn non fungible item - with ItemID
+		{"nonFungibleToken", false, true, "Burn non fungible token item - Invalid token owner", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TNFT", "carlo", "", "", []byte("223344"), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", false, false, "Burn non fungible token item -  Happy path", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TNFT", "yk", "", "", []byte("223344"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nft
+		{"nonFungibleToken", true, true, "Burn non fungible token item - Invalid Token Symbol", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TNFT-111", "yk", "", "", []byte("223344"), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                             //ok
+		{"nonFungibleToken", false, true, "Burn non fungible token item - Invalid Item-ID", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TNFT", "yk", "", "", []byte("999111"), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                                     //ok
+		{"nonFungibleToken", true, true, "Burn non fungible token item - Invalid account to burn from due to yet pass KYC", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TNFT", "acc-19", "", "", []byte("223344"), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
 
-		// accept token ownership
-		{"nonFungibleToken", false, false, "Accept non fungible token ownership - Happy path. commit", "yk", "100000000cin", 0, NonFungibleTokenInfo{"accept-ownership", "", "", "", "TFT", "", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// --------------------OK
+		//=============================== start goh : base on 'TNFT-191'
+		// create non fungible :
+		{"nonFungibleToken", false, false, "Create non fungible token - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken-191", "TNFT-191", "acc-40", "", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Happy Path.", nil}, // ok
+		// mint non fungible :
+		{"nonFungibleToken", true, true, "Mint non fungible token item - Invalid token as yet to approved", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TNFT-191", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		// burn non fungible :
+		{"nonFungibleToken", true, true, "Burn non fungible token item - Invalid token", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "'TNFT-191'", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		//=============================== end goh : base on 'TNFT-191'
 
-		// burn non fungible item
-		{"nonFungibleToken", false, false, "Burn non fungible token item -  Happy path", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TFT", "yk", "", "", []byte("223344"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		//====================== without ItemID :
+		// --------------------OK
+		// 7. transfer ownership - without ItemID
+		// 1. validation.go : [case nonFungible.MsgTransferNonFungibleTokenOwnership:]
+		{"nonFungibleToken", false, false, "Transfer non fungible token ownership - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "", "", "", "TNFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nft
+		// 7.1. must 'CheckApprovedToken'
+		{"nonFungibleToken", false, false, "Create non fungible token - TNFT-T1 Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-T1", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Transfer non fungible token ownership - Invalid token as yet to approved", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-T1", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},            //ok
+		// 7.2. must 'IsTokenOwner'
+		{"nonFungibleToken", false, false, "Create non fungible token - TNFT-T2 Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-T2", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Transfer non fungible token ownership - Invalid token owner", "yk", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-T2", "yk", "acc-40", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                     //ok
 
-		// freeze non fungible token
-		{"nonFungibleToken", false, false, "Freeze non fungible token - Happy path. commit", "mostafa", "0cin", 0, NonFungibleTokenInfo{"freeze", "", "", "", "TFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
+		// --------------------OK
+		// 8. verify transfer token ownership - without ItemID
+		{"nonFungibleToken", false, false, "Approve non fungible token transfer ownership - Happy path for TNFT", "mostafa", "0cin", 0, NonFungibleTokenInfo{"verify-transfer-tokenOwnership", "", "", "", "TNFT", "mostafa", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "APPROVE_TRANFER_TOKEN_OWNERSHIP", "", "", []string{""}}, "", nil},
 
-		// unfreeze non fungible token
-		{"nonFungibleToken", false, false, "Unfreeze non fungible token - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"unfreeze", "", "", "", "TFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
+		// --------------------OK
+		// 9. accept token ownership - without ItemID
+		// 1. validation.go : [case nonFungible.MsgAcceptNonFungibleTokenOwnership:]
+		{"nonFungibleToken", false, false, "Accept non fungible token ownership - Happy path. commit", "yk", "100000000cin", 0, NonFungibleTokenInfo{"accept-ownership", "", "", "", "TNFT", "", "yk", "", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nft
+		// 9.1.1 must 'CheckApprovedToken'
+		{"nonFungibleToken", false, false, "Create non fungible token - TNFT-Q1 Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q1", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Accept non fungible token ownership - Invalid token as yet to approved", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q1", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},              //ok
+		// 9.2. must 'IsTokenNewOwner'
+		{"nonFungibleToken", false, false, "Create non fungible token - TNFT-Q2 Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q2", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
+		{"nonFungibleToken", true, true, "Accept non fungible token ownership - Invalid token new-owner", "yk", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q2", "yk", "acc-40", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                   //ok
+		// 9.3. must 'IsTokenOwnershipTransferrable'
+		{"nonFungibleToken", false, false, "Create non fungible token - TNFT-Q3 Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q3", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},                       //ok
+		{"nonFungibleToken", true, true, "Accept non fungible token ownership - Invalid token due to IsTokenOwnershipTransferrable == FALSE", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-Q3", "acc-40", "yk", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil}, //ok
 
-		// make endorsement
-		{"nonFungibleToken", false, false, "endorse a nonfungible item - Happy path", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TFT", "carlo", "", "", []byte("334455"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// --------------------OK
+		// 10. freeze non fungible token - without ItemID
+		{"nonFungibleToken", false, false, "Freeze non fungible token - Happy path. commit", "mostafa", "0cin", 0, NonFungibleTokenInfo{"freeze", "", "", "", "TNFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
+		{"nonFungibleToken", true, true, "Transfer non fungible token ownership - Invalid token action (due to Token not approved) ", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "", "", "", "TNFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nft
+		{"nonFungibleToken", false, false, "Create non fungible token - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken-192", "TNFT-192", "acc-40", "", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "Create non fungible token - Happy Path.", nil}, // ok
+		{"nonFungibleToken", true, true, "Freeze non fungible token - Not authorised to approve due to Invalid Fee collector", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"freeze", "10000000", "yk", "TestNonFungibleToken-192", "TNFT-192", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},             //ok
+		{"nonFungibleToken", true, true, "Freeze non fungible token - Invalid Token symbol - TNFT-111", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"freeze", "10000000", "mostafa", "TestNonFungibleToken-111", "TNFT-111", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},                              //ok
+
+		// --------------------OK
+		// 11. unfreeze non fungible token - without ItemID
+		{"nonFungibleToken", false, false, "Unfreeze non fungible token - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"unfreeze", "", "", "", "TNFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
+		// start : goh-nft
+		{"nonFungibleToken", true, true, "Unfreeze non fungible token - Not authorised to approve due to Invalid Fee collector", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze", "10000000", "yk", "TestNonFungibleToken-192", "TNFT-192", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil}, // ok
+		{"nonFungibleToken", true, true, "Unfreeze non fungible token - Invalid Token symbol - TNFT-111", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze", "10000000", "mostafa", "TestNonFungibleToken-111", "TNFT-111", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},                  // ok
+
+		//====================== without ItemID :
+		// freeze and THEN unfreeze
+		{"nonFungibleToken", false, false, "CREATE non fungible token [TNFT-B2] - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-B2", "acc-40", "", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "APPROVE non fungible token [TNFT-B2] - Happy path.  commit", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-B2", "acc-40", "", "metadata", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "MINT non fungible item [TNFT-B2] - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-B2", "acc-40", "mostafa", "metadata", []byte("001177"), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil}, //ok
+		{"nonFungibleToken", false, false, "FREEZE non fungible item [TNFT-B2] - Happy path.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-B2", "mostafa", "", "metadata", []byte("001177"), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "UNFREEZE non fungible item [TNFT-B2] - Happy path.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "mostafa", "", "TNFT-B2", "mostafa", "", "metadata", []byte("001177"), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+
+		// --------------------OK [tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID]
+		// 6.1. freeze non fungible item - with ItemID
+		{"nonFungibleToken", false, false, "CREATE non fungible token [TNFT-D2] - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-D2", "acc-40", "", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "APPROVE non fungible token [TNFT-D2] - Happy path.  commit", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-D2", "acc-40", "", "metadata", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "MINT non fungible item [TNFT-D2] - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-D2", "acc-40", "mostafa", "metadata", []byte("880099"), []string{"properties"}, []string{"metadata"}, true, true, false, "jeansoon", "0", "carlo", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil}, //ok
+		{"nonFungibleToken", false, false, "Freeze non fungible item [TNFT-D2] - Happy path.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-D2", "mostafa", "", "", []byte("880099"), []string{""}, []string{""}, true, true, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
+		{"nonFungibleToken", false, true, "Freeze non fungible item [TNFT-D2] - Invalid signer.", "jeansoon", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-D2", "jeansoon", "", "", []byte("880099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                //ok
+		{"nonFungibleToken", false, true, "Freeze non fungible item [TNFT-D2] - No such non fungible token.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-9988", "yk", "", "", []byte("880099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},              //ok
+		{"nonFungibleToken", false, true, "Freeze non fungible item [TNFT-D2] - No such item to freeze.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-D2", "yk", "", "", []byte("991111"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                    //ok
+		{"nonFungibleToken", false, true, "Freeze non fungible item [TNFT-D2] - Not authorised to freeze non token item.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-D2", "yk", "", "", []byte("880099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},   //ok
+		{"nonFungibleToken", false, true, "Freeze non fungible item [TNFT-D2] - Non Fungible item already frozen.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"freeze-item", "10000000", "", "", "TNFT-D2", "mostafa", "", "", []byte("880099"), []string{""}, []string{""}, true, true, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil}, //??? --- why need nonce==1
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-D2] - Invalid nonce.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-D2", "mostafa", "", "", []byte("880099"), []string{""}, []string{""}, true, true, false, "jeansoon", "2", "carlo", "", "", "", "", []string{""}}, "", nil},                //???--- why need nonce==1
+		{"nonFungibleToken", false, false, "Unfreeze non fungible item [TNFT-D2] - Happy path.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-D2", "mostafa", "", "", []byte("880099"), []string{""}, []string{""}, true, true, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                  //???--- why need nonce==1
+
+		// --------------------OK [tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID]
+		// 6.2. unfreeze non fungible item - with ItemID
+		{"nonFungibleToken", false, false, "CREATE non fungible token [TNFT-E2] - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-E2", "acc-40", "", "metadata", []byte(""), []string{""}, []string{""}, false, false, false, "", "", "", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "APPROVE non fungible token [TNFT-E2] - Happy path.  commit", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"approve", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-E2", "acc-40", "", "metadata", []byte(""), []string{"properties"}, []string{"metadata"}, false, false, false, "jeansoon", "1", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "MINT non fungible item [TNFT-E2] - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "10000000", "mostafa", "TestNonFungibleToken", "TNFT-E2", "acc-40", "mostafa", "metadata", []byte("770099"), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{"jeansoon", "carlo"}}, "", nil}, //ok
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-E2] - Invalid signer.", "jeansoon", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-E2", "jeansoon", "", "", []byte("770099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                                                         //ok
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-E2] - No such non fungible token.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-9988", "yk", "", "", []byte("770099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                                                       //ok
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-E2] - No such  non fungible item to unfreeze.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-E2", "yk", "", "", []byte("991111"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                                             //ok
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-E2] - Not authorised to unfreeze token account.", "yk", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-E2", "yk", "", "", []byte("770099"), []string{""}, []string{""}, true, false, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                                           //ok
+		{"nonFungibleToken", false, true, "Unfreeze non fungible item [TNFT-E2] - Non fungible item not frozen.", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"unfreeze-item", "10000000", "", "", "TNFT-E2", "mostafa", "", "", []byte("770099"), []string{""}, []string{""}, true, true, false, "jeansoon", "1", "carlo", "", "", "", "", []string{""}}, "", nil},                                              //???--- why need nonce==1
+
 	}
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
@@ -847,6 +928,10 @@ func TestTxs(t *testing.T) {
 					msg = makeTransferNonFungibleTokenOwnershipMsg(t, i.Owner, i.NewOwner, i.Symbol)
 				case "accept-ownership":
 					msg = makeAcceptNonFungibleTokenOwnershipMsg(t, i.NewOwner, i.Symbol)
+				case "freeze-item":
+					msg = makeFreezeNonFungibleItemMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID)
+				case "unfreeze-item":
+					msg = makeUnfreezeNonFungibleItemMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID)
 				case "freeze":
 					msg = makeFreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
 				case "unfreeze":
