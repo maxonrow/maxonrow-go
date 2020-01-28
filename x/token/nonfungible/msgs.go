@@ -582,3 +582,23 @@ func NewSignature(pubKey crypto.PubKey, signature []byte) Signature {
 		Signature: signature,
 	}
 }
+
+func NewItemPayload(itemDetails ItemDetails, pubKey crypto.PubKey, signature []byte) *ItemPayload {
+	return &ItemPayload{
+		Item:      itemDetails,
+		PubKey:    pubKey,
+		Signature: signature,
+	}
+
+}
+
+func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID []byte) *ItemDetails {
+	return &ItemDetails{
+		From:   from,
+		Nonce:  nonce,
+		Status: status,
+		Symbol: symbol,
+		ItemID: itemID,
+	}
+
+}

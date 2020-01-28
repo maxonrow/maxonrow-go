@@ -97,31 +97,6 @@ type TokenInfo struct {
 	VerifyTransferTokenOwnership string
 }
 
-type NonFungibleTokenInfo struct {
-	Action                       string
-	ApplicationFee               string
-	FeeCollector                 string
-	Name                         string
-	Symbol                       string
-	Owner                        string
-	NewOwner                     string
-	TokenMetadata                string
-	ItemID                       []byte
-	Properties                   []string
-	Metadata                     []string
-	Approved                     bool
-	Frozen                       bool
-	Burnable                     bool
-	Provider                     string
-	ProviderNonce                string
-	Issuer                       string
-	FeeSettingName               string
-	VerifyTransferTokenOwnership string
-	TransferLimit                string
-	MintLimit                    string
-	EndorserList                 []string
-}
-
 func TestTxs(t *testing.T) {
 
 	//acc1 := Account(tKeys["alice"].addrStr)
@@ -154,7 +129,7 @@ func TestTxs(t *testing.T) {
 		{"bank", true, true, "sending 1 abc", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1abc"}, "", nil},
 		{"bank", true, true, "sending 1 cin & 1 abc", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1cin, 1abc"}, "", nil},
 		{"bank", false, false, "sending 1 mxw", "alice", "1000000000cin", 0, bankInfo{"alice", "bob", "1000000000000000000cin"}, "", nil},
- 		{"bank", false, false, "more fee", "alice", "100000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
+		{"bank", false, false, "more fee", "alice", "100000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
 		{"bank", false, false, "more fee", "alice", "1000000000000000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
 		{"bank", false, false, "with memo", "alice", "200000000cin", 0, bankInfo{"alice", "bob", "1cin"}, "alice to bob", nil},
 		{"bank", true, true, "no fee", "alice", "", 0, bankInfo{"alice", "bob", "1cin"}, "", nil},
@@ -701,44 +676,6 @@ func TestTxs(t *testing.T) {
 
 		//set MsgTransferNonFungibleTokenOwnership fee to 0cin
 		{"fee", false, false, "assign msgVerifyTokenTransferOwnership to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "nonFungible-transferNonFungibleTokenOwnership", "", "", "", "", "fee-auth"}, "", nil},
-
-		// create non fungible
-		{"nonFungibleToken", false, false, "Create non fungible token - Happy Path.  commit", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TFT", "acc-40", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - same symbol(TFT) commit", "acc-29", "100000000cin", 0, NonFungibleTokenInfo{"create", "10000000", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - No Fee. commit", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "metadata", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", true, true, "Create non fungible token - Very long metadata!", "acc-29", "0cin", 0, NonFungibleTokenInfo{"create", "0", "mostafa", "TestNonFungibleToken", "TFT", "acc-29", "", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaAAAAAA", []byte("test test test"), []string{"hi", "bye"}, []string{"hi", "bye"}, false, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// approve non fungible
-		{"nonFungibleToken", false, false, "Approve non fungible token(TFT) : TransferLimit(2) Mintlimit(2) Endorser(jeanson,carlo) - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"approve", "", "", "TestNonFungibleToken", "TFT", "", "", "", []byte(""), []string{"properties"}, []string{"metadata"}, true, false, false, "jeansoon", "0", "carlo", "default", "", "2", "2", []string{"jeansoon", "carlo"}}, "", nil},
-
-		// mint non fungible
-		{"nonFungibleToken", false, false, "Mint non fungible token - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "mostafa", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for burn)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "yk", "", []byte("223344"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-		{"nonFungibleToken", false, false, "Mint non fungible token - (mint for endorsement)Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"mint", "", "", "", "TFT", "acc-40", "nago", "", []byte("334455"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// transfer non fungible item
-		{"nonFungibleToken", false, false, "Transfer non fungible token item - Happy path", "mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer", "", "", "", "TFT", "mostafa", "yk", "", []byte("112233"), []string{"properties"}, []string{"metadata"}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// transfer ownership
-		{"nonFungibleToken", false, false, "Transfer non fungible token ownership - Happy path", "acc-40", "100000000cin", 0, NonFungibleTokenInfo{"transfer-ownership", "", "", "", "TFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// verify transfer token ownership
-		{"nonFungibleToken", false, false, "Approve non fungible token transfer ownership - Happy path for TFT", "mostafa", "0cin", 0, NonFungibleTokenInfo{"verify-transfer-tokenOwnership", "", "", "", "TFT", "acc-40", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "APPROVE_TRANFER_TOKEN_OWNERSHIP", "", "", []string{""}}, "", nil},
-
-		// accept token ownership
-		{"nonFungibleToken", false, false, "Accept non fungible token ownership - Happy path. commit", "yk", "100000000cin", 0, NonFungibleTokenInfo{"accept-ownership", "", "", "", "TFT", "", "yk", "", []byte(""), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// burn non fungible item
-		{"nonFungibleToken", false, false, "Burn non fungible token item -  Happy path", "yk", "100000000cin", 0, NonFungibleTokenInfo{"burn", "", "", "", "TFT", "yk", "", "", []byte("223344"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
-
-		// freeze non fungible token
-		{"nonFungibleToken", false, false, "Freeze non fungible token - Happy path. commit", "mostafa", "0cin", 0, NonFungibleTokenInfo{"freeze", "", "", "", "TFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
-
-		// unfreeze non fungible token
-		{"nonFungibleToken", false, false, "Unfreeze non fungible token - Happy path", "mostafa", "0cin", 0, NonFungibleTokenInfo{"unfreeze", "", "", "", "TFT", "", "", "", []byte(""), []string{""}, []string{""}, true, false, false, "jeansoon", "0", "carlo", "", "", "", "", []string{""}}, "", nil},
-
-		// make endorsement
-		{"nonFungibleToken", false, false, "endorse a nonfungible item - Happy path", "carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement", "", "", "", "TFT", "carlo", "", "", []byte("334455"), []string{""}, []string{""}, true, false, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
 	}
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
@@ -826,35 +763,6 @@ func TestTxs(t *testing.T) {
 					msg = makeUnfreezeFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
 				case "verify-transfer-tokenOwnership":
 					msg = makeVerifyTransferTokenOwnership(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership)
-				}
-			}
-		case "nonFungibleToken":
-			{
-				i := tc.msgInfo.(NonFungibleTokenInfo)
-
-				switch i.Action {
-				case "create":
-					msg = makeCreateNonFungibleTokenMsg(t, i.Name, i.Symbol, i.TokenMetadata, i.Owner, i.ApplicationFee, i.FeeCollector)
-				case "approve":
-					msg = makeApproveNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "APPROVE", i.FeeSettingName, i.MintLimit, i.TransferLimit, i.EndorserList)
-				case "transfer":
-					msg = makeTransferNonFungibleTokenMsg(t, i.Owner, i.NewOwner, i.Symbol, i.ItemID)
-				case "mint":
-					msg = makeMintNonFungibleTokenMsg(t, i.Owner, i.NewOwner, i.Symbol, i.ItemID, i.Properties, i.Metadata)
-				case "burn":
-					msg = makeBurnNonFungibleTokenMsg(t, i.Owner, i.Symbol, i.ItemID)
-				case "transfer-ownership":
-					msg = makeTransferNonFungibleTokenOwnershipMsg(t, i.Owner, i.NewOwner, i.Symbol)
-				case "accept-ownership":
-					msg = makeAcceptNonFungibleTokenOwnershipMsg(t, i.NewOwner, i.Symbol)
-				case "freeze":
-					msg = makeFreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
-				case "unfreeze":
-					msg = makeUnfreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
-				case "verify-transfer-tokenOwnership":
-					msg = makeVerifyTransferNonFungibleTokenOwnership(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership)
-				case "endorsement":
-					msg = makeEndorsement(t, tc.signer, i.Owner, i.Symbol, i.ItemID)
 				}
 			}
 		case "maintenance":
