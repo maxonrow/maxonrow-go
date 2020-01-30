@@ -1,8 +1,6 @@
 package nonfungible
 
 import (
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -946,7 +944,7 @@ func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser s
 	if token != nil {
 
 		endorsers = token.EndorserList
-		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + string(endorsers[0]))
+		///fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" + string(endorsers[0]))
 		if endorsers != nil {
 			_, contain := endorsers.Contains(endorser)
 			return contain
