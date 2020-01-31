@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"testing"
-	"time"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -47,7 +46,6 @@ func startServer(done chan struct{}) *Process {
 	if err != nil {
 		panic(err)
 	}
-	time.Sleep(1000)
 
 	go func() {
 		err := proc.Cmd.Start()
@@ -62,6 +60,8 @@ func startServer(done chan struct{}) *Process {
 
 	tClient = WaitForRPC(tPort)
 	WaitForNextHeightTM(tPort)
+
+	//time.Sleep(1000)
 
 	return proc
 }
