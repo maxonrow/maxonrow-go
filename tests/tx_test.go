@@ -32,10 +32,10 @@ type testCase struct {
 
 func TestTxs(t *testing.T) {
 
-	//acc1 := Account(tKeys["alice"].addrStr)
 	val1 := Validator(tValidator)
-	fmt.Println(val1)
-	//bal1 := acc1.GetCoins()[0]
+	assert.Equal(t, val1.OperatorAddress.String(), tValidator)
+	acc1 := Account(tKeys["alice"].addrStr)
+	bal1 := acc1.GetCoins()[0]
 
 	_, err := time.ParseDuration("60s")
 	if err != nil {
@@ -229,17 +229,18 @@ func TestTxs(t *testing.T) {
 		}
 	}
 
-	//acc2 := Account(tKeys["alice"].addrStr)
-	//bal2 := acc2.GetCoins()[0]
-	//diff := bal1.Sub(bal2)
+	acc2 := Account(tKeys["alice"].addrStr)
+	bal2 := acc2.GetCoins()[0]
+	diff := bal1.Sub(bal2)
 
-	//total := totalAmt.Add(totalFee)
-	//require.Equal(t, diff, total)
-	val2 := Validator(tValidator)
-	fmt.Println(val2)
+	total := totalAmt.Add(totalFee)
+	require.Equal(t, diff, total)
 
-	// accGohck := Account(tKeys["gohck"].addrStr)
-	// require.Empty(t, accGohck.GetCoins())
+	accGohck := Account(tKeys["gohck"].addrStr)
+	require.Empty(t, accGohck.GetCoins())
+
+	fmt.Println(totalFee)
+	//mxwcli query distribution validator-outstanding-rewards mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965
 }
 
 func MakeSignedTx(t *testing.T, name string, gas uint64, fees sdkTypes.Coins, memo string, msg sdkTypes.Msg) (sdkAuth.StdTx, []byte) {

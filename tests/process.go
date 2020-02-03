@@ -40,7 +40,7 @@ func StartProcess(dir string, name string, args []string) (*Process, error) {
 }
 
 // Same as StartProcess but doesn't start the process
-func 	CreateProcess(dir string, name string, args []string) (*Process, error) {
+func CreateProcess(dir string, name string, args []string) (*Process, error) {
 	var cmd = exec.Command(name, args...) // is not yet started.
 	// cmd dir
 	if dir == "" {

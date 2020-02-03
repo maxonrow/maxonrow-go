@@ -50,6 +50,7 @@ func makeFeeTxs() []*testCase {
 		{"fee", true, true, "assign zero-fee to nil address", "fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "nope", "", "", "", "", "fee-auth"}, "", nil},
 		{"fee", false, false, "assign zero-fee to mostafa-commit", "fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "mostafa", "", "", "", "", "fee-auth"}, "", nil},
 		// zero fee
+		{"bank", true, true, "receiving after updating acc-fee", "mostafa", "0cin", 0, bankInfo{"bob", "mostafa", "1cin"}, "", nil},
 		{"bank", false, false, "sending after updating acc-fee", "mostafa", "0cin", 0, bankInfo{"mostafa", "bob", "1cin"}, "", nil},
 
 		// updating multiplier
