@@ -100,7 +100,7 @@ func TestMain(m *testing.M) {
 			0,
 		}
 
-		proc, err := CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir})
+		proc, err := CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
 		if err != nil {
 			panic(err)
 		}
