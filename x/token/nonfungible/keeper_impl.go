@@ -5,7 +5,7 @@ import (
 	"github.com/maxonrow/maxonrow-go/types"
 )
 
-func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID []byte, properties []string, metadata []string) sdkTypes.Result {
+func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID string, properties []string, metadata []string) sdkTypes.Result {
 
 	nonFungibleToken := new(Token)
 
@@ -13,13 +13,21 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
+	// get minter account.
+	// if token is public that means minter can be anyone.
 	minterAccount := k.accountKeeper.GetAccount(ctx, from)
 	if minterAccount == nil {
 		return types.ErrInvalidTokenAccount().Result()
 	}
 
-	if !nonFungibleToken.Owner.Equals(from) {
-		return types.ErrInvalidTokenMinter().Result()
+	if !nonFungibleToken.Flags.HasFlag(PubFlag) {
+		if !nonFungibleToken.Owner.Equals(from) {
+			return types.ErrInvalidTokenMinter().Result()
+		}
+	} else {
+		if !from.Equals(to) {
+			return sdkTypes.ErrInternal("Public token can only be minted to oneself.").Result()
+		}
 	}
 
 	if !nonFungibleToken.Flags.HasFlag(MintFlag) {
@@ -79,10 +87,14 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 }
 
 //* TransferNonFungibleToken
-func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID []byte) sdkTypes.Result {
+func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
+	}
+
+	if !token.Flags.HasFlag(TransferableFlag) {
+		return types.ErrInvalidTokenAction().Result()
 	}
 
 	fromAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -94,8 +106,8 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 		return types.ErrTokenFrozen().Result()
 	}
 
-	itemKey := getNonFungibleItemKey(symbol, itemID)
-	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
+	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 
 	store := ctx.KVStore(k.key)
 
@@ -148,7 +160,7 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 }
 
 // BurnFungibleToken
-func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID []byte) sdkTypes.Result {
+func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
@@ -158,8 +170,8 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 		return types.ErrInvalidTokenAction().Result()
 	}
 
-	ownerAccount := k.accountKeeper.GetAccount(ctx, owner)
-	if ownerAccount == nil {
+	fromAccount := k.accountKeeper.GetAccount(ctx, from)
+	if fromAccount == nil {
 		return sdkTypes.ErrInvalidSequence("Invalid account to burn from.").Result()
 	}
 
@@ -177,22 +189,22 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 	}
 
 	itemOwner := k.getNonFungibleItemOwner(ctx, symbol, itemID)
-	if !itemOwner.Equals(owner) {
+	if !itemOwner.Equals(from) {
 		return types.ErrInvalidTokenOwner().Result()
 	}
 
-	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
-	itemKey := getNonFungibleItemKey(symbol, itemID)
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
+	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
 
 	store := ctx.KVStore(k.key)
 
 	store.Delete(itemKey)
 	store.Delete(ownerKey)
 
-	eventParam := []string{symbol, owner.String(), "mxw000000000000000000000000000000000000000", string(item.ID)}
+	eventParam := []string{symbol, from.String(), "mxw000000000000000000000000000000000000000", string(item.ID)}
 	eventSignature := "BurnedNonFungibleToken(string,string,string,string)"
 
-	accountSequence := ownerAccount.GetSequence()
+	accountSequence := fromAccount.GetSequence()
 	var log string
 	if accountSequence == 0 {
 		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
@@ -201,7 +213,7 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 	}
 
 	return sdkTypes.Result{
-		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
+		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
 		Log:    log,
 	}
 
@@ -338,7 +350,7 @@ func (k *Keeper) acceptNonFungibleTokenOwnership(ctx sdkTypes.Context, from sdkT
 
 }
 
-func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID []byte) sdkTypes.Result {
+func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 
 	// validation of exisisting owner account
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -367,6 +379,45 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 		Log:    log,
 	}
 
+}
+
+func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string, metadata []string) sdkTypes.Result {
+
+	// validation of exisisting owner account
+	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
+	if ownerWalletAccount == nil {
+		return sdkTypes.ErrInvalidSequence("Invalid item owner.").Result()
+	}
+
+	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	if item == nil {
+		return types.ErrTokenInvalid().Result()
+	}
+
+	itemOwnerAddr := k.getNonFungibleItemOwner(ctx, symbol, itemID)
+
+	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
+		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
+	}
+
+	item.Metadata = metadata
+	k.storeNonFungibleItem(ctx, symbol, from, item)
+
+	accountSequence := ownerWalletAccount.GetSequence()
+	var log string
+	if accountSequence == 0 {
+		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
+	} else {
+		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
+	}
+
+	eventParam := []string{from.String(), symbol, string(itemID)}
+	eventSignature := "UpdatedNonFungibleItemMetadata(string,string,string)"
+
+	return sdkTypes.Result{
+		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
+		Log:    log,
+	}
 }
 
 func (k *Keeper) IsTokenOwnershipAcceptable(ctx sdkTypes.Context, symbol string) bool {

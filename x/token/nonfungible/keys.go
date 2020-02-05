@@ -30,7 +30,7 @@ func getTokenKey(symbol string) []byte {
 	return []byte(fmt.Sprintf("symbol:%s", symbol))
 }
 
-func getNonFungibleOwnerKey(symbol string, itemID []byte) []byte {
+func getNonFungibleItemOwnerKey(symbol string, itemID []byte) []byte {
 	key := make([]byte, 0, len(prefixNonFungibleOwner)+1+len(symbol)+1+len(itemID))
 	key = append(key, prefixNonFungibleOwner...)
 	key = append(key, ':')

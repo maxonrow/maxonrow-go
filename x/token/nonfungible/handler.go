@@ -32,13 +32,15 @@ func NewHandler(keeper *Keeper) sdkTypes.Handler {
 		case MsgBurnNonFungibleToken:
 			return handleMsgBurnNonFungibleToken(ctx, keeper, msg)
 		case MsgSetNonFungibleItemStatus:
-			return handleMsgSetNonFungibleTokenAccountStatus(ctx, keeper, msg)
+			return handleMsgSetNonFungibleItemStatus(ctx, keeper, msg)
 		case MsgTransferNonFungibleTokenOwnership:
 			return handleMsgTransferNonFungibleTokenOwnership(ctx, keeper, msg)
 		case MsgAcceptNonFungibleTokenOwnership:
 			return handleMsgAcceptTokenOwnership(ctx, keeper, msg)
 		case MsgEndorsement:
 			return handleMsgEndorsement(ctx, keeper, msg)
+		case MsgUpdateItemMetadata:
+			return handleMsgUpdateMetadata(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized fungible token Msg type: %v", msg.Type())
 			return sdkTypes.ErrUnknownRequest(errMsg).Result()
@@ -62,7 +64,7 @@ func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, ms
 	//* token.metadata temporaily not in use.
 	switch msg.Payload.Token.Status {
 	case ApproveToken:
-		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, "")
+		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, "", msg.Payload.Token.Burnable, msg.Payload.Token.Transferable, msg.Payload.Token.Modifiable, msg.Payload.Token.Public)
 	case RejectToken:
 		return keeper.RejectToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case FreezeToken:
@@ -100,7 +102,7 @@ func handleMsgAcceptTokenOwnership(ctx sdkTypes.Context, keeper *Keeper, msg Msg
 	return keeper.AcceptTokenOwnership(ctx, msg.Symbol, msg.From, "")
 }
 
-func handleMsgSetNonFungibleTokenAccountStatus(ctx sdkTypes.Context, keeper *Keeper, msg MsgSetNonFungibleItemStatus) sdkTypes.Result {
+func handleMsgSetNonFungibleItemStatus(ctx sdkTypes.Context, keeper *Keeper, msg MsgSetNonFungibleItemStatus) sdkTypes.Result {
 
 	signaturesErr := keeper.ValidateSignatures(ctx, msg)
 	if signaturesErr != nil {
@@ -127,4 +129,8 @@ func handleMsgEndorsement(ctx sdkTypes.Context, keeper *Keeper, msg MsgEndorseme
 	}
 
 	return keeper.MakeEndorsement(ctx, msg.Symbol, msg.From, msg.ItemID)
+}
+
+func handleMsgUpdateMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateItemMetadata) sdkTypes.Result {
+	return keeper.UpdateItemMetadata(ctx, msg.Symbol, msg.From, msg.ItemID, msg.Metadata)
 }
