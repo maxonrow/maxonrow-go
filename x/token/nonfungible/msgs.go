@@ -643,7 +643,7 @@ func NewItemPayload(itemDetails ItemDetails, pubKey crypto.PubKey, signature []b
 
 }
 
-func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID []byte) *ItemDetails {
+func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID string) *ItemDetails {
 	return &ItemDetails{
 		From:   from,
 		Nonce:  nonce,
