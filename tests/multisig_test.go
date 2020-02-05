@@ -30,7 +30,7 @@ type MultisigInfo struct {
 	TransactionId  string
 }
 
-func TestMultisigAccs(t *testing.T) {
+func MakeMultisigAccsTxs(t *testing.T) {
 	val1 := Validator(tValidator)
 	fmt.Println(val1)
 
@@ -61,8 +61,8 @@ func TestMultisigAccs(t *testing.T) {
 		// multiSig-create-tx-bank
 		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path", "acc-21", "200000000cin", 0, bankInfo{"mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
 
-		// multiSig-sign-tx-bank
-		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "1"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
+		// // multiSig-sign-tx-bank
+		// {"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "1"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
 
 	}
 

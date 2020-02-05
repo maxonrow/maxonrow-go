@@ -53,6 +53,18 @@
         "sequence": 0
       },
       {
+        "address": "mxw1fd6659xn28vrtt6a60hlfcqkfmf2asu4vy4sd6",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+      {
         "address": "mxw1ktyq5damgnfqkj6qy2l8fqc54drnznlujckdnf",
         "coins": [
           {
@@ -64,6 +76,19 @@
         "account_number": 0,
         "sequence": 0
       },
+      {
+        "address": "mxw1czapnz7d8kadvn2gjqsvcjcah0gencj04ksg34",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
       {
         "address": "mxw1pcjgmatnwqqzu30q54g82ng5cg93a00palr4vk",
         "coins": [
@@ -77,6 +102,19 @@
         "sequence": 0
       },
       {
+        "address": "mxw16s6z7ydpen30u9lpvxx0362wgeww2y9a9rz9mp",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
+      {
         "address": "mxw126l5vx5s478khryv5l597lhdsfvnq9tmvmzfsl",
         "coins": [
           {
@@ -89,7 +127,32 @@
         "sequence": 0
       },
       {
+        "address": "mxw1cjfaadhr0fypvs0ujuw87q0cxsq87496q92fxj",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
+      {
         "address": "mxw1jhcjfsqyrpmsqartw4xtsnmvpn4nxkjlnsmvf6",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+      {
+        "address": "mxw1qht067z8s5e6fq5kx3k544kl554l6zkyz56l6l",
         "coins": [
           {
             "denom": "cin",
@@ -125,6 +188,19 @@
         "sequence": 0
       },
       {
+        "address": "mxw1f7j8n4dp6y3qxr4zcgth89elnerldj0jvlfn0w",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
+      {
         "address": "mxw1w0m8xqy0fpgkf6luwu666f5hhl3tm0sq53snw5",
         "coins": [
           {
@@ -149,6 +225,19 @@
         "sequence": 0
       },
       {
+        "address": "mxw1k9sxz0h3yeh0uzmxet2rmsj7xe5zg54eq7vhla",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
+      {
         "address": "mxw1g6cjz0pgtchedjyacjcsldhmxcvu2z4nrud9qt",
         "coins": [
           {
@@ -160,6 +249,19 @@
         "account_number": 0,
         "sequence": 0
       },
+      {
+        "address": "mxw1md4u2zxz2ne5vsf9t4uun7q2k0nc3ly5g22dne",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
       {
         "address": "mxw1mnfa7rjecg4ha0nxgz4j0shtpmxuazspqds8e0",
         "coins": [
@@ -173,7 +275,32 @@
         "sequence": 0
       },
       {
+        "address": "mxw1zrguzs0gyqqscjhk6y8zht9xknfz8e4pnvugy6",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
+      {
         "address": "mxw1lt2c9nrg4rxjw4804lw9sx5ewesxp66wxp7yc8",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+      {
+        "address": "mxw1yzvfp8ku2p378qh7hhejt73c99txvd5jfx4e5l",
         "coins": [
           {
             "denom": "cin",
@@ -197,6 +324,18 @@
         "sequence": 0
       },
       {
+        "address": "mxw1tgfcerz7cvx6s8nslu35mglmzyqpsdmqnff280",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+      {
         "address": "mxw1k9tr2cukhfvlhj356e5eur28kuw3p6a4l93h59",
         "coins": [
           {
@@ -208,6 +347,19 @@
         "account_number": 0,
         "sequence": 0
       },
+      {
+        "address": "mxw1y8nqj79cym5q68yuzflydhtqf90ag5k9tth6vz",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
       {
         "address": "mxw123xwuat5h9x92w6vdtn4fl2l03t7d793qugxvc",
         "coins": [
@@ -244,6 +396,19 @@
         "account_number": 0,
         "sequence": 0
       },
+      {
+        "address": "mxw1f8r0k5p7s85kv7jatwvmpartyy2j0s20y0p0yk",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": 0,
+        "sequence": 0
+      },
+
       {
         "address": "mxw1l6a7s6y5zymddyslmgqulkqzs9m9uvr68jtg9t",
         "coins": [
@@ -439,20 +604,33 @@
     "kyc": {
       "authorised_addresses": [
         "mxw1y0j6xqc8dsafx2tfv4m8765mw7wrvlespzfyfq",
+        "mxw1fd6659xn28vrtt6a60hlfcqkfmf2asu4vy4sd6",
         "mxw1lt2c9nrg4rxjw4804lw9sx5ewesxp66wxp7yc8",
+        "mxw1yzvfp8ku2p378qh7hhejt73c99txvd5jfx4e5l",
         "mxw1ff32lgz0pffjgxvlgg38jz9p7pgunhkvnhx54q"
       ],
       "issuer_addresses": [
         "mxw1ktyq5damgnfqkj6qy2l8fqc54drnznlujckdnf",
+        "mxw1czapnz7d8kadvn2gjqsvcjcah0gencj04ksg34",
         "mxw1pcjgmatnwqqzu30q54g82ng5cg93a00palr4vk",
+        "mxw16s6z7ydpen30u9lpvxx0362wgeww2y9a9rz9mp",
         "mxw163gpxlqtgcexpal0wuth9zx789mq0qfsctjnyx"
       ],
       "provider_addresses": [
         "mxw126l5vx5s478khryv5l597lhdsfvnq9tmvmzfsl",
+        "mxw1cjfaadhr0fypvs0ujuw87q0cxsq87496q92fxj",
         "mxw1jhcjfsqyrpmsqartw4xtsnmvpn4nxkjlnsmvf6",
+        "mxw1qht067z8s5e6fq5kx3k544kl554l6zkyz56l6l",
         "mxw1we5y4ckamtdrhuf43phmg0x7z93qhh0qkfmk9p"
       ],
       "whitelisted_addresses": [
+        "mxw1ytw2ydf7nnwt3mlyt6f00vk4tj8gwn3s4txnye",
+        "mxw1tgfcerz7cvx6s8nslu35mglmzyqpsdmqnff280",
+        "mxw1md4u2zxz2ne5vsf9t4uun7q2k0nc3ly5g22dne",
+        "mxw1zrguzs0gyqqscjhk6y8zht9xknfz8e4pnvugy6",
+        "mxw1mnfa7rjecg4ha0nxgz4j0shtpmxuazspqds8e0",
+        "mxw123xwuat5h9x92w6vdtn4fl2l03t7d793qugxvc",
+        "mxw1g6cjz0pgtchedjyacjcsldhmxcvu2z4nrud9qt",
         "mxw1qgwzdxf66tp5mjpkpfe593nvsst7qzfxzqq73d",
         "mxw1nj5xdz6ychva2mjr7dnzp36tsfzefphadq230m",
         "mxw1dww3nwtpvfcq2h94rmlftwywy7skc48yaku27p",
@@ -462,9 +640,12 @@
         "mxw1rjgjjkkjqtd676ydahysmnfsg0v4yvwfe9vmh0",
         "mxw127sn3dxpr6880tjlwfk7u007cway5my4lpjl4z",
         "mxw193cra94tl3uj9zcmx2x2j7vrc3y38z39469dqy",
+        "mxw1f7j8n4dp6y3qxr4zcgth89elnerldj0jvlfn0w",
         "mxw1w0m8xqy0fpgkf6luwu666f5hhl3tm0sq53snw5",
         "mxw14vl7sua9jkhu0vd66eur35kzgesj5tj8pmhdjw",
+        "mxw1k9sxz0h3yeh0uzmxet2rmsj7xe5zg54eq7vhla",
         "mxw1k9tr2cukhfvlhj356e5eur28kuw3p6a4l93h59",
+        "mxw1y8nqj79cym5q68yuzflydhtqf90ag5k9tth6vz",
         "mxw1x5cf8y99ntjc8cjm00z603yfqwzxw2mawemf73",
         "mxw1j4duwuaqdj2na054rmlg3pdzncpmwzdjwtfqht",
         "mxw1vl8snxtuscacxh52s3e7r7f2pjhr8kzppz7sy8",
@@ -477,9 +658,13 @@
         "mxw13xffy4f0jt0e6qrfu8fznez9x6700vmm9kcmff",
         "mxw16aqacvvcgqph6czaxkrlqt9g38ky5y4sh5ukp8",
         "mxw1lrs5lmzhdzlpgx98r8auwsm7z4gj8fn646m4qf",
+        "mxw1f8r0k5p7s85kv7jatwvmpartyy2j0s20y0p0yk",
         "mxw173qf9y2ae0cx8y07ez6qsl9k2gs2l5955hfc7x",
+        "mxw10wnqj8daw0xn3gvdl4863weszu9fln7hd9sjv4",
         "mxw1643vtl03p3xgyxjgf7wmfuqeg04rkx9txjw6w6",
-        "mxw16jjtd4y0pg0qrksqdctn3r2sap54p0y2nsmjtr"
+        "mxw1r2y3nvkl9lzwav4aku4q6nwltcj6ms4xnlpkr2",
+        "mxw16jjtd4y0pg0qrksqdctn3r2sap54p0y2nsmjtr",
+        "mxw1tahf2gyz4kw0922eumzdywywp5yg9w3qepqzqj"
       ]
     },
     "token": {
@@ -502,7 +687,8 @@
     "nameservice": {
       "authorised_addresses": [
         "mxw136v3635vfextt20lxzux2yuzkx2h74te834a3j",
-        "mxw1lrs5lmzhdzlpgx98r8auwsm7z4gj8fn646m4qf"
+        "mxw1lrs5lmzhdzlpgx98r8auwsm7z4gj8fn646m4qf",
+        "mxw1f8r0k5p7s85kv7jatwvmpartyy2j0s20y0p0yk"
       ],
       "issuer_addresses": [
         "mxw1m6kpmyfdmzha33lfmmerk4puus5ptdzn4qttxx"
@@ -595,14 +781,18 @@
       ],
       "multiplier": "1",
       "authorised_addresses": [
-        "mxw1k9tr2cukhfvlhj356e5eur28kuw3p6a4l93h59"
+        "mxw1k9tr2cukhfvlhj356e5eur28kuw3p6a4l93h59",
+        "mxw1y8nqj79cym5q68yuzflydhtqf90ag5k9tth6vz"
       ]
     },
     "maintenance": {
       "maintainers": [
         "mxw173qf9y2ae0cx8y07ez6qsl9k2gs2l5955hfc7x",
+        "mxw10wnqj8daw0xn3gvdl4863weszu9fln7hd9sjv4",
         "mxw1643vtl03p3xgyxjgf7wmfuqeg04rkx9txjw6w6",
-        "mxw16jjtd4y0pg0qrksqdctn3r2sap54p0y2nsmjtr"
+        "mxw1r2y3nvkl9lzwav4aku4q6nwltcj6ms4xnlpkr2",
+        "mxw16jjtd4y0pg0qrksqdctn3r2sap54p0y2nsmjtr",
+        "mxw1tahf2gyz4kw0922eumzdywywp5yg9w3qepqzqj"
       ],
       "starting_proposal_id": "1",
       "validator_set": [

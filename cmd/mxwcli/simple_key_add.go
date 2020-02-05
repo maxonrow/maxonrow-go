@@ -29,7 +29,7 @@ func runAddCmd(cmd *cobra.Command, args []string) error {
 
 	var kb keys.Keybase
 
-	kb, err := clientKeys.NewKeyBaseFromHomeFlag()
+	kb, err := clientKeys.NewKeyringFromHomeFlag(cmd.InOrStdin())
 	if err != nil {
 		return err
 	}

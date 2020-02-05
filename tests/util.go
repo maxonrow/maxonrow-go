@@ -57,12 +57,12 @@ func WaitForHeightTM(height int64, port string) {
 
 func waitForHeightTM(height int64, url string) {
 	cl := tmclient.NewHTTP(url, "/websocket")
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		// get url, try a few times
 		var resBlock *ctypes.ResultBlock
 		var err error
 	INNER:
-		for i := 0; i < 5; i++ {
+		for j := 0; j < 5; j++ {
 			resBlock, err = cl.Block(nil)
 			if err == nil {
 				break INNER
