@@ -12,6 +12,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgAcceptNonFungibleTokenOwnership{}, "nonFungible/"+MsgTypeAcceptNonFungibleTokenOwnership, nil)
 	cdc.RegisterConcrete(MsgSetNonFungibleItemStatus{}, "nonFungible/"+MsgTypeSetNonFungibleItemStatus, nil)
 	cdc.RegisterConcrete(MsgEndorsement{}, "nonFungible/"+MsgTypeEndorsement, nil)
+	cdc.RegisterConcrete(MsgUpdateItemMetadata{}, "nonFungible/"+MsgTypeUpdateItemMetadata, nil)
 }
 
 var msgCdc = codec.New()

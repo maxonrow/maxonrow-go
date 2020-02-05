@@ -16,6 +16,7 @@ const (
 	MsgTypeAcceptNonFungibleTokenOwnership   = "acceptNonFungibleTokenOwnership"
 	MsgTypeSetNonFungibleItemStatus          = "setNonFungibleItemStatus"
 	MsgTypeEndorsement                       = "endorsement"
+	MsgTypeUpdateItemMetadata                = "updateItemMetadata"
 )
 
 // MsgCreateNonFungibleToken
@@ -106,6 +107,10 @@ type TokenData struct {
 	Symbol        string                `json:"symbol"`
 	TransferLimit sdkTypes.Uint         `json:"transferLimit"`
 	MintLimit     sdkTypes.Uint         `json:"mintLimit"`
+	Burnable      bool                  `json:"burnable"`
+	Transferable  bool                  `json:"transferable"`
+	Modifiable    bool                  `json:"modifiable"`
+	Public        bool                  `json:"pub"`
 	TokenFees     []TokenFee            `json:"tokenFees,omitempty"`
 	EndorserList  []sdkTypes.AccAddress `json:"endorserList"`
 }
@@ -131,7 +136,7 @@ func NewPayload(token TokenData, pubKey crypto.PubKey, signature []byte) *Payloa
 	}
 }
 
-func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress) *TokenData {
+func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) *TokenData {
 	return &TokenData{
 		From:          from,
 		Nonce:         nonce,
@@ -139,6 +144,10 @@ func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLi
 		Symbol:        symbol,
 		TransferLimit: transferLimit,
 		MintLimit:     mintLimit,
+		Burnable:      burnable,
+		Transferable:  transferable,
+		Modifiable:    modifiable,
+		Public:        public,
 		TokenFees:     tokenFees,
 		EndorserList:  endorserList,
 	}
@@ -204,7 +213,7 @@ func (msg MsgSetNonFungibleTokenStatus) GetSigners() []sdkTypes.AccAddress {
 
 // MintFungibleToken - only for token without fixed supply
 type MsgMintNonFungibleToken struct {
-	ItemID     []byte              `json:"itemID"`
+	ItemID     string              `json:"itemID"`
 	Symbol     string              `json:"symbol"`
 	Owner      sdkTypes.AccAddress `json:"owner"`
 	To         sdkTypes.AccAddress `json:"to"`
@@ -212,7 +221,7 @@ type MsgMintNonFungibleToken struct {
 	Metadata   []string            `json:"metadata"`
 }
 
-func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID []byte, properties, metadata []string) *MsgMintNonFungibleToken {
+func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID string, properties, metadata []string) *MsgMintNonFungibleToken {
 	return &MsgMintNonFungibleToken{
 		ItemID:     itemID,
 		Symbol:     symbol,
@@ -264,10 +273,10 @@ type MsgTransferNonFungibleToken struct {
 	Symbol string              `json:"symbol"`
 	From   sdkTypes.AccAddress `json:"from"`
 	To     sdkTypes.AccAddress `json:"to"`
-	ItemID []byte              `json:"itemID"`
+	ItemID string              `json:"itemID"`
 }
 
-func NewMsgTransferNonFungibleToken(symbol string, from, to sdkTypes.AccAddress, itemID []byte) *MsgTransferNonFungibleToken {
+func NewMsgTransferNonFungibleToken(symbol string, from, to sdkTypes.AccAddress, itemID string) *MsgTransferNonFungibleToken {
 	return &MsgTransferNonFungibleToken{
 		Symbol: symbol,
 		From:   from,
@@ -312,10 +321,10 @@ func (msg MsgTransferNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
 type MsgBurnNonFungibleToken struct {
 	Symbol string              `json:"symbol"`
 	From   sdkTypes.AccAddress `json:"from"`
-	ItemID []byte              `json:"itemID"`
+	ItemID string              `json:"itemID"`
 }
 
-func NewMsgBurnNonFungibleToken(symbol string, from sdkTypes.AccAddress, itemID []byte) *MsgBurnNonFungibleToken {
+func NewMsgBurnNonFungibleToken(symbol string, from sdkTypes.AccAddress, itemID string) *MsgBurnNonFungibleToken {
 	return &MsgBurnNonFungibleToken{
 		Symbol: symbol,
 		From:   from,
@@ -369,7 +378,7 @@ type ItemDetails struct {
 	Nonce  string              `json:"nonce"`
 	Status string              `json:"status"`
 	Symbol string              `json:"symbol"`
-	ItemID []byte              `json:"itemID"`
+	ItemID string              `json:"itemID"`
 }
 
 func NewMsgSetNonFungibleItemStatus(owner sdkTypes.AccAddress, itemPayload ItemPayload, signatures []Signature) *MsgSetNonFungibleItemStatus {
@@ -521,15 +530,13 @@ func (msg MsgAcceptNonFungibleTokenOwnership) GetSigners() []sdkTypes.AccAddress
 type MsgEndorsement struct {
 	Symbol string              `json:"symbol"`
 	From   sdkTypes.AccAddress `json:"from"`
-	To     sdkTypes.AccAddress `json:"to"`
-	ItemID []byte              `json:"itemID"`
+	ItemID string              `json:"itemID"`
 }
 
-func NewMsgEndorsement(symbol string, from, to sdkTypes.AccAddress, itemID []byte) *MsgEndorsement {
+func NewMsgEndorsement(symbol string, from sdkTypes.AccAddress, itemID string) *MsgEndorsement {
 	return &MsgEndorsement{
 		Symbol: symbol,
 		From:   from,
-		To:     to,
 		ItemID: itemID,
 	}
 }
@@ -545,10 +552,6 @@ func (msg MsgEndorsement) Type() string {
 func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 	if msg.From.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
-	}
-
-	if msg.To.Empty() {
-		return sdkTypes.ErrInvalidAddress(msg.To.String())
 	}
 
 	if len(msg.ItemID) < 1 {
@@ -567,6 +570,54 @@ func (msg MsgEndorsement) GetSignBytes() []byte {
 }
 
 func (msg MsgEndorsement) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.From}
+}
+
+type MsgUpdateItemMetadata struct {
+	Symbol   string              `json:"symbol"`
+	From     sdkTypes.AccAddress `json:"from"`
+	ItemID   string              `json:"itemID"`
+	Metadata []string            `json:"metadata"`
+}
+
+func NewMsgUpdateItemMetadata(symbol string, from sdkTypes.AccAddress, itemID string, metadata []string) *MsgUpdateItemMetadata {
+	return &MsgUpdateItemMetadata{
+		Symbol:   symbol,
+		From:     from,
+		ItemID:   itemID,
+		Metadata: metadata,
+	}
+}
+
+func (msg MsgUpdateItemMetadata) Route() string {
+	return MsgRoute
+}
+
+func (msg MsgUpdateItemMetadata) Type() string {
+	return MsgTypeUpdateItemMetadata
+}
+
+func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
+	if msg.From.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.From.String())
+	}
+
+	if len(msg.ItemID) < 1 {
+		return sdkTypes.ErrInternal("Item id cant be empty.")
+	}
+
+	if err := validateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (msg MsgUpdateItemMetadata) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgUpdateItemMetadata) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.From}
 }
 
@@ -592,7 +643,7 @@ func NewItemPayload(itemDetails ItemDetails, pubKey crypto.PubKey, signature []b
 
 }
 
-func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID []byte) *ItemDetails {
+func NewItemDetails(from sdkTypes.AccAddress, nonce string, status string, symbol string, itemID string) *ItemDetails {
 	return &ItemDetails{
 		From:   from,
 		Nonce:  nonce,
