@@ -389,11 +389,9 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenInvalid().Result()
 	}
 
-	store := ctx.KVStore(k.key)
-	nftOwnerKey := getNonFungibleOwnerKey(symbol, []byte(itemID))
-	v := store.Get(nftOwnerKey)
+	itemOwnerAddr := k.getNonFungibleItemOwner(ctx, symbol, itemID)
 
-	if ownerWalletAccount.GetAddress().String() != string(v) {
+	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
 		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
 	}
 
