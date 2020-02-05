@@ -58,7 +58,7 @@ func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string
 		endorsers = append(endorsers, addr)
 	}
 
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, transferL, mintL, tokenFee, endorsers)
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, transferL, mintL, tokenFee, endorsers, true, false, true, false)
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -84,7 +84,7 @@ func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string
 }
 
 //module of transfer
-func makeTransferNonFungibleTokenMsg(t *testing.T, owner string, newOwner string, symbol string, itemID []byte) sdkTypes.Msg {
+func makeTransferNonFungibleTokenMsg(t *testing.T, owner string, newOwner string, symbol string, itemID string) sdkTypes.Msg {
 
 	ownerAddr := tKeys[owner].addr
 	newOwnerAddr := tKeys[newOwner].addr
@@ -95,7 +95,7 @@ func makeTransferNonFungibleTokenMsg(t *testing.T, owner string, newOwner string
 }
 
 //module of mint
-func makeMintNonFungibleTokenMsg(t *testing.T, owner string, newOwner string, symbol string, itemID []byte, properties, metadata []string) sdkTypes.Msg {
+func makeMintNonFungibleTokenMsg(t *testing.T, owner string, newOwner string, symbol string, itemID string, properties, metadata []string) sdkTypes.Msg {
 
 	ownerAddr := tKeys[owner].addr
 	newOwnerAddr := tKeys[newOwner].addr
@@ -106,7 +106,7 @@ func makeMintNonFungibleTokenMsg(t *testing.T, owner string, newOwner string, sy
 }
 
 //module of burn
-func makeBurnNonFungibleTokenMsg(t *testing.T, owner string, symbol string, itemID []byte) sdkTypes.Msg {
+func makeBurnNonFungibleTokenMsg(t *testing.T, owner string, symbol string, itemID string) sdkTypes.Msg {
 
 	ownerAddr := tKeys[owner].addr
 
@@ -141,7 +141,7 @@ func makeFreezeNonFungibleTokenMsg(t *testing.T, signer string, provider string,
 	status := "FREEZE"
 	providerAddr := tKeys[provider].addr
 
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil) // status : FREEZE / UNFREEZE
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil, true, false, true, false) // status : FREEZE / UNFREEZE
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -171,7 +171,7 @@ func makeUnfreezeNonFungibleTokenMsg(t *testing.T, signer string, provider strin
 	status := "UNFREEZE"
 	providerAddr := tKeys[provider].addr
 
-	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil) // status : FREEZE / UNFREEZE
+	tokenDoc := nonFungible.NewToken(providerAddr, providerNonce, status, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), nil, nil, true, false, true, false) // status : FREEZE / UNFREEZE
 
 	// provider sign the token
 	tokenBz, err := tCdc.MarshalJSON(tokenDoc)
@@ -201,7 +201,7 @@ func makeVerifyTransferNonFungibleTokenOwnership(t *testing.T, signer, provider,
 	providerAddr := tKeys[provider].addr
 
 	// burnable and tokenfees is not in used for verifying transfer token status, we just set it to false and leave it empty.
-	verifyTransferTokenOwnershipDoc := nonFungible.NewToken(providerAddr, providerNonce, action, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), []nonFungible.TokenFee{}, nil)
+	verifyTransferTokenOwnershipDoc := nonFungible.NewToken(providerAddr, providerNonce, action, symbol, sdkTypes.NewUint(0), sdkTypes.NewUint(0), []nonFungible.TokenFee{}, nil, true, false, true, false)
 
 	// provider sign
 	verifyTransferTokenOwnershipDocBz, err := tCdc.MarshalJSON(verifyTransferTokenOwnershipDoc)
@@ -226,10 +226,9 @@ func makeVerifyTransferNonFungibleTokenOwnership(t *testing.T, signer, provider,
 	return msgVerifyTransferNonFungibleTokenOwnership
 }
 
-func makeEndorsement(t *testing.T, signer, to, symbol string, itemID []byte) sdkTypes.Msg {
+func makeEndorsement(t *testing.T, signer, to, symbol string, itemID string) sdkTypes.Msg {
 
 	signerAddr := tKeys[signer].addr
-	toAddr := tKeys[to].addr
 
-	return nonFungible.NewMsgEndorsement(symbol, signerAddr, toAddr, itemID)
+	return nonFungible.NewMsgEndorsement(symbol, signerAddr, itemID)
 }
