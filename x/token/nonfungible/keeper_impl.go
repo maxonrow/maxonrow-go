@@ -26,7 +26,7 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 		}
 	} else {
 		if !from.Equals(to) {
-			return sdkTypes.ErrInternal("Public token can only minted to oneself.").Result()
+			return sdkTypes.ErrInternal("Public token can only be minted to oneself.").Result()
 		}
 	}
 
