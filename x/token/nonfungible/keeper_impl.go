@@ -19,9 +19,14 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	if minterAccount == nil {
 		return types.ErrInvalidTokenAccount().Result()
 	}
+
 	if !nonFungibleToken.Flags.HasFlag(PubFlag) {
 		if !nonFungibleToken.Owner.Equals(from) {
 			return types.ErrInvalidTokenMinter().Result()
+		}
+	} else {
+		if !from.Equals(to) {
+			return sdkTypes.ErrInternal("Public token can only minted to oneself.").Result()
 		}
 	}
 
