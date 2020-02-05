@@ -71,7 +71,7 @@ func queryItemData(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci
 	symbol := path[0]
 	itemID := path[1]
 
-	item := keeper.getNonFungibleItem(ctx, symbol, []byte(itemID))
+	item := keeper.getNonFungibleItem(ctx, symbol, itemID)
 
 	tokenInfo := cdc.MustMarshalJSON(item)
 
