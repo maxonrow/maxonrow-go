@@ -749,14 +749,7 @@ func (k *Keeper) increaseMintItemLimit(ctx sdkTypes.Context, symbol string, owne
 // Item
 func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID string) *Item {
 	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
-	ownerKey := getNonFungibleOwnerKey(symbol, []byte(itemID))
-
 	store := ctx.KVStore(k.key)
-
-	ownerValue := store.Get(ownerKey)
-	if len(ownerValue) == 0 {
-		return nil
-	}
 
 	itemValue := store.Get(itemKey)
 	if len(itemValue) == 0 {
@@ -770,7 +763,7 @@ func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID 
 }
 
 func (k *Keeper) getNonFungibleItemOwner(ctx sdkTypes.Context, symbol string, itemID string) sdkTypes.AccAddress {
-	ownerKey := getNonFungibleOwnerKey(symbol, []byte(itemID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 	store := ctx.KVStore(k.key)
 
 	return store.Get(ownerKey)
@@ -792,7 +785,7 @@ func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 func (k *Keeper) storeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, item *Item) {
 	store := ctx.KVStore(k.key)
 	itemKey := getNonFungibleItemKey(symbol, []byte(item.ID))
-	ownerKey := getNonFungibleOwnerKey(symbol, []byte(item.ID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(item.ID))
 
 	itemData := k.cdc.MustMarshalBinaryLengthPrefixed(item)
 

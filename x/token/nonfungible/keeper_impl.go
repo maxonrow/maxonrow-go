@@ -107,7 +107,7 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 	}
 
 	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
-	ownerKey := getNonFungibleOwnerKey(symbol, []byte(itemID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 
 	store := ctx.KVStore(k.key)
 
@@ -160,7 +160,7 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 }
 
 // BurnFungibleToken
-func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
@@ -170,8 +170,8 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 		return types.ErrInvalidTokenAction().Result()
 	}
 
-	ownerAccount := k.accountKeeper.GetAccount(ctx, owner)
-	if ownerAccount == nil {
+	fromAccount := k.accountKeeper.GetAccount(ctx, from)
+	if fromAccount == nil {
 		return sdkTypes.ErrInvalidSequence("Invalid account to burn from.").Result()
 	}
 
@@ -189,11 +189,11 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 	}
 
 	itemOwner := k.getNonFungibleItemOwner(ctx, symbol, itemID)
-	if !itemOwner.Equals(owner) {
+	if !itemOwner.Equals(from) {
 		return types.ErrInvalidTokenOwner().Result()
 	}
 
-	ownerKey := getNonFungibleOwnerKey(symbol, []byte(itemID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
 
 	store := ctx.KVStore(k.key)
@@ -201,10 +201,10 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 	store.Delete(itemKey)
 	store.Delete(ownerKey)
 
-	eventParam := []string{symbol, owner.String(), "mxw000000000000000000000000000000000000000", string(item.ID)}
+	eventParam := []string{symbol, from.String(), "mxw000000000000000000000000000000000000000", string(item.ID)}
 	eventSignature := "BurnedNonFungibleToken(string,string,string,string)"
 
-	accountSequence := ownerAccount.GetSequence()
+	accountSequence := fromAccount.GetSequence()
 	var log string
 	if accountSequence == 0 {
 		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
@@ -213,7 +213,7 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, owner
 	}
 
 	return sdkTypes.Result{
-		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
+		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
 		Log:    log,
 	}
 
