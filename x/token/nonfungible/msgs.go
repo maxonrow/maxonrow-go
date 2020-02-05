@@ -136,7 +136,7 @@ func NewPayload(token TokenData, pubKey crypto.PubKey, signature []byte) *Payloa
 	}
 }
 
-func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress, burnable, modifiable, transferable, public bool) *TokenData {
+func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) *TokenData {
 	return &TokenData{
 		From:          from,
 		Nonce:         nonce,
