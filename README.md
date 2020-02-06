@@ -15,12 +15,12 @@ Prerequisites
 
 1. Clone the project repository
 
-    `git clone https://github.com/mxw-blockchain/maxonrow-go/`
+    `git clone https://github.com/maxonrow/maxonrow-go/`
 
 
 2. Change to the project directory.
 
-    `cd  github.com/mxw-blockchain/maxonrow-go/`
+    `cd  github.com/maxonrow/maxonrow-go/`
 
 
 3.  Get all the dependecies and build project the binary
@@ -28,7 +28,7 @@ Prerequisites
     `make all`
 
 
-## Running `MXWONROW` Full node on the local network
+## Running `Maxonrow` Full node on the local network
 
 1. Initial the blockchain network with a valid chain-id. Below command which genrate the config,genesis and account in respective folder
 
@@ -41,7 +41,7 @@ Prerequisites
     `./build/mxwd gentx --name acc-1 --home ~/.mxw`
 
 
-3. Run the blockchain using the below command
+3. Run the blockchain using the following command
 
     `./build/mxwd start --home ~/.mxw`
 
@@ -54,14 +54,14 @@ Prerequisites
 
   - Query the account
 
-    `mxwcli query account $(mxwcli keys show account1 --address) --chain-id mxw`, which verify the balance of account1
+    `./mxwcli query account $(mxwcli keys show account1 --address) --chain-id mxw`, which verify the balance of account1
 
   - Send Transaction
 
-    `mxwcli tx send --amount 100MXW --from $(mxwcli keys show account1 --address) --to $(mxwcli keys show account2 --address) --fees 1MXW --gas 0 --memo "TRANSFER 10-MXW" --chain-id mxw`
+    `./mxwcli tx send --amount 100MXW --from $(mxwcli keys show account1 --address) --to $(mxwcli keys show account2 --address) --fees 1MXW --gas 0 --memo "TRANSFER 10-MXW" --chain-id mxw`
 
 
-## `MXWONROW` come with the many test cases,you can find all our test case under test folder in project soruce.
+## `Maxonrow` come with the many test cases, you can find all our test case under test folder in project source.
 
 * To run our test case:
 
