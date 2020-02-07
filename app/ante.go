@@ -94,14 +94,12 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			return ctx, err
 		}
 
-		if !stdTx.Fee.Amount.IsZero() {
-			err = sdkAuth.DeductFees(app.supplyKeeper, ctx, signerAcc, stdTx.Fee.Amount)
-			if err != nil {
-				return ctx, err
-			}
-
-			signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
+		err = sdkAuth.DeductFees(app.supplyKeeper, ctx, signerAcc, stdTx.Fee.Amount)
+		if err != nil {
+			return ctx, err
 		}
+
+		signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
 
 		signBytes := stdTx.GetSignBytes(ctx, signerAcc)
 		signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)

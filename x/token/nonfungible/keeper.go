@@ -18,17 +18,20 @@ type Keeper struct {
 }
 
 const (
-	NonFungibleFlag types.Bitmask = 0x0001
-	MintFlag        types.Bitmask = 0x0002
-	BurnFlag        types.Bitmask = 0x0004
-	FrozenFlag      types.Bitmask = 0x0008
-	ApprovedFlag    types.Bitmask = 0x0010
+	NonFungibleFlag  types.Bitmask = 0x0001
+	MintFlag         types.Bitmask = 0x0002
+	BurnFlag         types.Bitmask = 0x0004
+	FrozenFlag       types.Bitmask = 0x0008
+	ApprovedFlag     types.Bitmask = 0x0010
+	TransferableFlag types.Bitmask = 0x0020
+	ModifiableFlag   types.Bitmask = 0x0040
+	PubFlag          types.Bitmask = 0x0080
 
 	TransferTokenOwnershipFlag        types.Bitmask = 0x0100
 	ApproveTransferTokenOwnershipFlag types.Bitmask = 0x0200
 	AcceptTokenOwnershipFlag          types.Bitmask = 0x0400
 
-	NonFungibleTokenMask = NonFungibleFlag + BurnFlag + MintFlag
+	NonFungibleTokenMask = NonFungibleFlag + MintFlag
 )
 
 type Token struct {
@@ -37,7 +40,8 @@ type Token struct {
 	Symbol        string
 	Owner         sdkTypes.AccAddress
 	NewOwner      sdkTypes.AccAddress
-	Metadata      string
+	Properties    []string
+	Metadata      []string
 	TotalSupply   sdkTypes.Uint
 	TransferLimit sdkTypes.Uint
 	MintLimit     sdkTypes.Uint
@@ -45,7 +49,7 @@ type Token struct {
 }
 
 type Item struct {
-	ID            []byte
+	ID            string
 	Properties    []string
 	Metadata      []string
 	TransferLimit sdkTypes.Uint
@@ -248,7 +252,8 @@ func (k *Keeper) CreateNonFungibleToken(
 	name string,
 	symbol string,
 	owner sdkTypes.AccAddress,
-	metadata string,
+	properties []string,
+	metadata []string,
 	fee Fee,
 ) sdkTypes.Result {
 
@@ -276,6 +281,7 @@ func (k *Keeper) CreateNonFungibleToken(
 		Flags:       NonFungibleTokenMask,
 		Symbol:      symbol,
 		Owner:       owner,
+		Properties:  properties,
 		Metadata:    metadata,
 		TotalSupply: zero,
 	}
@@ -301,15 +307,15 @@ func (k *Keeper) CreateNonFungibleToken(
 }
 
 // ApproveToken
-func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to approve.").Result()
 	}
 
-	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, metadata, signer, endorserList)
+	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, signer, endorserList, burnable, transferable, modifiable, public)
 }
 
-func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, metadata string, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress) sdkTypes.Result {
+func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
 	var token = new(Token)
 	err := k.mustGetTokenData(ctx, symbol, token)
 	if err != nil {
@@ -337,7 +343,19 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	}
 
 	token.Flags.AddFlag(ApprovedFlag)
-	token.Metadata = metadata
+	if burnable {
+		token.Flags.AddFlag(BurnFlag)
+	}
+	if transferable {
+		token.Flags.AddFlag(TransferableFlag)
+	}
+	if modifiable {
+		token.Flags.AddFlag(ModifiableFlag)
+	}
+	if public {
+		token.Flags.AddFlag(PubFlag)
+	}
+
 	token.TransferLimit = transferLimit
 	token.MintLimit = mintLimit
 	token.EndorserList = endorserList
@@ -410,7 +428,7 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 
 }
 
-func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to freeze.").Result()
 	}
@@ -421,11 +439,11 @@ func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkType
 		return err.Result()
 	}
 
-	return k.freezeNonFungibleToken(ctx, symbol, signer, metadata)
+	return k.freezeNonFungibleToken(ctx, symbol, signer)
 
 }
 
-func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	var token = new(Token)
 	k.mustGetTokenData(ctx, symbol, token)
 
@@ -439,7 +457,6 @@ func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, sig
 	}
 
 	token.Flags.AddFlag(FrozenFlag)
-	token.Metadata = metadata
 	k.storeToken(ctx, symbol, token)
 
 	eventParam := []string{symbol, token.Owner.String()}
@@ -460,7 +477,7 @@ func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, sig
 
 }
 
-func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze.").Result()
 	}
@@ -470,10 +487,10 @@ func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTy
 	if err != nil {
 		return err.Result()
 	}
-	return k.unfreezeNonFungibleToken(ctx, symbol, signer, metadata)
+	return k.unfreezeNonFungibleToken(ctx, symbol, signer)
 }
 
-func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 
 	var token = new(Token)
 	k.mustGetTokenData(ctx, symbol, token)
@@ -488,7 +505,6 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 	}
 
 	token.Flags.RemoveFlag(FrozenFlag)
-	token.Metadata = metadata
 
 	k.storeToken(ctx, symbol, token)
 
@@ -511,7 +527,7 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 }
 
 // FreezeNonFungibleItem
-func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner, itemOwner sdkTypes.AccAddress, itemID []byte, metadata string) sdkTypes.Result {
+func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner, itemOwner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
@@ -557,7 +573,7 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 	}
 }
 
-func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID []byte, metadata string) sdkTypes.Result {
+func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, owner) {
 		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.").Result()
 	}
@@ -731,16 +747,9 @@ func (k *Keeper) increaseMintItemLimit(ctx sdkTypes.Context, symbol string, owne
 }
 
 // Item
-func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID []byte) *Item {
-	itemKey := getNonFungibleItemKey(symbol, itemID)
-	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
-
+func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID string) *Item {
+	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
 	store := ctx.KVStore(k.key)
-
-	ownerValue := store.Get(ownerKey)
-	if len(ownerValue) == 0 {
-		return nil
-	}
 
 	itemValue := store.Get(itemKey)
 	if len(itemValue) == 0 {
@@ -753,14 +762,14 @@ func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID 
 	return item
 }
 
-func (k *Keeper) getNonFungibleItemOwner(ctx sdkTypes.Context, symbol string, itemID []byte) sdkTypes.AccAddress {
-	ownerKey := getNonFungibleOwnerKey(symbol, itemID)
+func (k *Keeper) getNonFungibleItemOwner(ctx sdkTypes.Context, symbol string, itemID string) sdkTypes.AccAddress {
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 	store := ctx.KVStore(k.key)
 
 	return store.Get(ownerKey)
 }
 
-func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID []byte, properties, metadata []string) *Item {
+func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID string, properties, metadata []string) *Item {
 	item := &Item{
 		ID:         itemID,
 		Properties: properties,
@@ -775,8 +784,8 @@ func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 
 func (k *Keeper) storeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, item *Item) {
 	store := ctx.KVStore(k.key)
-	itemKey := getNonFungibleItemKey(symbol, item.ID)
-	ownerKey := getNonFungibleOwnerKey(symbol, item.ID)
+	itemKey := getNonFungibleItemKey(symbol, []byte(item.ID))
+	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(item.ID))
 
 	itemData := k.cdc.MustMarshalBinaryLengthPrefixed(item)
 
@@ -784,7 +793,7 @@ func (k *Keeper) storeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner
 	store.Set(ownerKey, owner.Bytes())
 }
 
-func (k *Keeper) getAnyItem(ctx sdkTypes.Context, symbol string, itemID []byte) interface{} {
+func (k *Keeper) getAnyItem(ctx sdkTypes.Context, symbol string, itemID string) interface{} {
 	return k.getNonFungibleItem(ctx, symbol, itemID)
 }
 
@@ -863,7 +872,7 @@ func (k *Keeper) GetTokenData(ctx sdkTypes.Context, symbol string) (interface{},
 	return res, nil
 }
 
-func (k *Keeper) GetItem(ctx sdkTypes.Context, symbol string, itemID []byte) (interface{}, sdkTypes.Error) {
+func (k *Keeper) GetItem(ctx sdkTypes.Context, symbol string, itemID string) (interface{}, sdkTypes.Error) {
 	_, err := k.mustGetAnyTokenData(ctx, symbol)
 	if err != nil {
 		return nil, err
@@ -897,7 +906,7 @@ func (k *Keeper) IsTokenFrozen(ctx sdkTypes.Context, symbol string) bool {
 	return false
 }
 
-func (k *Keeper) IsNonFungibleItemFrozen(ctx sdkTypes.Context, symbol string, itemID []byte) bool {
+func (k *Keeper) IsNonFungibleItemFrozen(ctx sdkTypes.Context, symbol string, itemID string) bool {
 
 	item := k.getNonFungibleItem(ctx, symbol, itemID)
 
@@ -924,7 +933,7 @@ func (k *Keeper) IsVerifyableTransferTokenOwnership(ctx sdkTypes.Context, symbol
 	return false
 }
 
-func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID []byte) bool {
+func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID string) bool {
 
 	item := k.getNonFungibleItem(ctx, symbol, itemID)
 
