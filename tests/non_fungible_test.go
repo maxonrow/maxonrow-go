@@ -170,7 +170,7 @@ func makeCreateNonFungibleTokenMsg(t *testing.T, name, symbol, metadata, owner, 
 		To:    tKeys[tokenFeeCollector].addr,
 		Value: applicationFee,
 	}
-	msgCreateNonFungibleToken := nonFungible.NewMsgCreateNonFungibleToken(symbol, ownerAddr, name, metadata, fee)
+	msgCreateNonFungibleToken := nonFungible.NewMsgCreateNonFungibleToken(symbol, ownerAddr, name, []string{"properties"}, []string{metadata}, fee)
 
 	return msgCreateNonFungibleToken
 }

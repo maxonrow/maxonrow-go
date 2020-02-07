@@ -13,6 +13,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgSetNonFungibleItemStatus{}, "nonFungible/"+MsgTypeSetNonFungibleItemStatus, nil)
 	cdc.RegisterConcrete(MsgEndorsement{}, "nonFungible/"+MsgTypeEndorsement, nil)
 	cdc.RegisterConcrete(MsgUpdateItemMetadata{}, "nonFungible/"+MsgTypeUpdateItemMetadata, nil)
+	cdc.RegisterConcrete(MsgUpdateNFTMetadata{}, "nonFungible/"+MsgTypeUpdateNFTMetadata, nil)
 }
 
 var msgCdc = codec.New()

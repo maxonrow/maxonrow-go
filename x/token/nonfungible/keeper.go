@@ -40,7 +40,8 @@ type Token struct {
 	Symbol        string
 	Owner         sdkTypes.AccAddress
 	NewOwner      sdkTypes.AccAddress
-	Metadata      string
+	Properties    []string
+	Metadata      []string
 	TotalSupply   sdkTypes.Uint
 	TransferLimit sdkTypes.Uint
 	MintLimit     sdkTypes.Uint
@@ -251,7 +252,8 @@ func (k *Keeper) CreateNonFungibleToken(
 	name string,
 	symbol string,
 	owner sdkTypes.AccAddress,
-	metadata string,
+	properties []string,
+	metadata []string,
 	fee Fee,
 ) sdkTypes.Result {
 
@@ -279,6 +281,7 @@ func (k *Keeper) CreateNonFungibleToken(
 		Flags:       NonFungibleTokenMask,
 		Symbol:      symbol,
 		Owner:       owner,
+		Properties:  properties,
 		Metadata:    metadata,
 		TotalSupply: zero,
 	}
@@ -304,15 +307,15 @@ func (k *Keeper) CreateNonFungibleToken(
 }
 
 // ApproveToken
-func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, metadata string, burnable, transferable, modifiable, public bool) sdkTypes.Result {
+func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to approve.").Result()
 	}
 
-	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, metadata, signer, endorserList, burnable, transferable, modifiable, public)
+	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, signer, endorserList, burnable, transferable, modifiable, public)
 }
 
-func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, metadata string, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
+func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
 	var token = new(Token)
 	err := k.mustGetTokenData(ctx, symbol, token)
 	if err != nil {
@@ -353,7 +356,6 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 		token.Flags.AddFlag(PubFlag)
 	}
 
-	token.Metadata = metadata
 	token.TransferLimit = transferLimit
 	token.MintLimit = mintLimit
 	token.EndorserList = endorserList
@@ -426,7 +428,7 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 
 }
 
-func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to freeze.").Result()
 	}
@@ -437,11 +439,11 @@ func (k *Keeper) FreezeToken(ctx sdkTypes.Context, symbol string, signer sdkType
 		return err.Result()
 	}
 
-	return k.freezeNonFungibleToken(ctx, symbol, signer, metadata)
+	return k.freezeNonFungibleToken(ctx, symbol, signer)
 
 }
 
-func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	var token = new(Token)
 	k.mustGetTokenData(ctx, symbol, token)
 
@@ -455,7 +457,6 @@ func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, sig
 	}
 
 	token.Flags.AddFlag(FrozenFlag)
-	token.Metadata = metadata
 	k.storeToken(ctx, symbol, token)
 
 	eventParam := []string{symbol, token.Owner.String()}
@@ -476,7 +477,7 @@ func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, sig
 
 }
 
-func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze.").Result()
 	}
@@ -486,10 +487,10 @@ func (k *Keeper) UnfreezeToken(ctx sdkTypes.Context, symbol string, signer sdkTy
 	if err != nil {
 		return err.Result()
 	}
-	return k.unfreezeNonFungibleToken(ctx, symbol, signer, metadata)
+	return k.unfreezeNonFungibleToken(ctx, symbol, signer)
 }
 
-func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress, metadata string) sdkTypes.Result {
+func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, signer sdkTypes.AccAddress) sdkTypes.Result {
 
 	var token = new(Token)
 	k.mustGetTokenData(ctx, symbol, token)
@@ -504,7 +505,6 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 	}
 
 	token.Flags.RemoveFlag(FrozenFlag)
-	token.Metadata = metadata
 
 	k.storeToken(ctx, symbol, token)
 

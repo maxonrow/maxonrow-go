@@ -17,15 +17,17 @@ const (
 	MsgTypeSetNonFungibleItemStatus          = "setNonFungibleItemStatus"
 	MsgTypeEndorsement                       = "endorsement"
 	MsgTypeUpdateItemMetadata                = "updateItemMetadata"
+	MsgTypeUpdateNFTMetadata                 = "updateNFTMetadata"
 )
 
 // MsgCreateNonFungibleToken
 type MsgCreateNonFungibleToken struct {
-	Name     string              `json:"name"`
-	Symbol   string              `json:"symbol"`
-	Metadata string              `json:"metadata"`
-	Owner    sdkTypes.AccAddress `json:"owner"`
-	Fee      Fee                 `json:"fee"`
+	Name       string              `json:"name"`
+	Symbol     string              `json:"symbol"`
+	Properties []string            `json:"properties"`
+	Metadata   []string            `json:"metadata"`
+	Owner      sdkTypes.AccAddress `json:"owner"`
+	Fee        Fee                 `json:"fee"`
 }
 
 type Fee struct {
@@ -33,13 +35,14 @@ type Fee struct {
 	Value string              `json:"value"`
 }
 
-func NewMsgCreateNonFungibleToken(symbol string, owner sdkTypes.AccAddress, name string, metadata string, fee Fee) *MsgCreateNonFungibleToken {
+func NewMsgCreateNonFungibleToken(symbol string, owner sdkTypes.AccAddress, name string, properties []string, metadata []string, fee Fee) *MsgCreateNonFungibleToken {
 	return &MsgCreateNonFungibleToken{
-		Name:     name,
-		Symbol:   symbol,
-		Metadata: metadata,
-		Owner:    owner,
-		Fee:      fee,
+		Name:       name,
+		Symbol:     symbol,
+		Properties: properties,
+		Metadata:   metadata,
+		Owner:      owner,
+		Fee:        fee,
 	}
 }
 
@@ -64,10 +67,6 @@ func (msg MsgCreateNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := validateTokenName(msg.Name); err != nil {
-		return err
-	}
-
-	if err := validateMetadata(msg.Metadata); err != nil {
 		return err
 	}
 
@@ -618,6 +617,48 @@ func (msg MsgUpdateItemMetadata) GetSignBytes() []byte {
 }
 
 func (msg MsgUpdateItemMetadata) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.From}
+}
+
+type MsgUpdateNFTMetadata struct {
+	Symbol   string              `json:"symbol"`
+	From     sdkTypes.AccAddress `json:"from"`
+	Metadata []string            `json:"metadata"`
+}
+
+func NewMsgUpdateNFTMetadata(symbol string, from sdkTypes.AccAddress, metadata []string) *MsgUpdateNFTMetadata {
+	return &MsgUpdateNFTMetadata{
+		Symbol:   symbol,
+		From:     from,
+		Metadata: metadata,
+	}
+}
+
+func (msg MsgUpdateNFTMetadata) Route() string {
+	return MsgRoute
+}
+
+func (msg MsgUpdateNFTMetadata) Type() string {
+	return MsgTypeUpdateNFTMetadata
+}
+
+func (msg MsgUpdateNFTMetadata) ValidateBasic() sdkTypes.Error {
+	if msg.From.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.From.String())
+	}
+
+	if err := validateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (msg MsgUpdateNFTMetadata) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgUpdateNFTMetadata) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.From}
 }
 
