@@ -40,7 +40,9 @@ func NewHandler(keeper *Keeper) sdkTypes.Handler {
 		case MsgEndorsement:
 			return handleMsgEndorsement(ctx, keeper, msg)
 		case MsgUpdateItemMetadata:
-			return handleMsgUpdateMetadata(ctx, keeper, msg)
+			return handleMsgUpdateItemMetadata(ctx, keeper, msg)
+		case MsgUpdateNFTMetadata:
+			return handleMsgUpdateNFTMetadata(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized fungible token Msg type: %v", msg.Type())
 			return sdkTypes.ErrUnknownRequest(errMsg).Result()
@@ -51,7 +53,7 @@ func NewHandler(keeper *Keeper) sdkTypes.Handler {
 
 func handleMsgCreateNonFungibleToken(ctx sdkTypes.Context, keeper *Keeper, msg MsgCreateNonFungibleToken) sdkTypes.Result {
 
-	return keeper.CreateNonFungibleToken(ctx, msg.Name, msg.Symbol, msg.Owner, msg.Metadata, msg.Fee)
+	return keeper.CreateNonFungibleToken(ctx, msg.Name, msg.Symbol, msg.Owner, msg.Properties, msg.Metadata, msg.Fee)
 }
 
 func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, msg MsgSetNonFungibleTokenStatus) sdkTypes.Result {
@@ -64,13 +66,13 @@ func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, ms
 	//* token.metadata temporaily not in use.
 	switch msg.Payload.Token.Status {
 	case ApproveToken:
-		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, "", msg.Payload.Token.Burnable, msg.Payload.Token.Transferable, msg.Payload.Token.Modifiable, msg.Payload.Token.Public)
+		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, msg.Payload.Token.Burnable, msg.Payload.Token.Transferable, msg.Payload.Token.Modifiable, msg.Payload.Token.Public)
 	case RejectToken:
 		return keeper.RejectToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case FreezeToken:
-		return keeper.FreezeToken(ctx, msg.Payload.Token.Symbol, msg.Owner, "")
+		return keeper.FreezeToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case UnfreezeToken:
-		return keeper.UnfreezeToken(ctx, msg.Payload.Token.Symbol, msg.Owner, "")
+		return keeper.UnfreezeToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case ApproveTransferTokenOwnership:
 		return keeper.ApproveTransferTokenOwnership(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case RejectTransferTokenOwnership:
@@ -95,11 +97,11 @@ func handleMsgBurnNonFungibleToken(ctx sdkTypes.Context, keeper *Keeper, msg Msg
 }
 
 func handleMsgTransferNonFungibleTokenOwnership(ctx sdkTypes.Context, keeper *Keeper, msg MsgTransferNonFungibleTokenOwnership) sdkTypes.Result {
-	return keeper.TransferTokenOwnership(ctx, msg.Symbol, msg.From, msg.To, "")
+	return keeper.TransferTokenOwnership(ctx, msg.Symbol, msg.From, msg.To)
 }
 
 func handleMsgAcceptTokenOwnership(ctx sdkTypes.Context, keeper *Keeper, msg MsgAcceptNonFungibleTokenOwnership) sdkTypes.Result {
-	return keeper.AcceptTokenOwnership(ctx, msg.Symbol, msg.From, "")
+	return keeper.AcceptTokenOwnership(ctx, msg.Symbol, msg.From)
 }
 
 func handleMsgSetNonFungibleItemStatus(ctx sdkTypes.Context, keeper *Keeper, msg MsgSetNonFungibleItemStatus) sdkTypes.Result {
@@ -131,6 +133,10 @@ func handleMsgEndorsement(ctx sdkTypes.Context, keeper *Keeper, msg MsgEndorseme
 	return keeper.MakeEndorsement(ctx, msg.Symbol, msg.From, msg.ItemID)
 }
 
-func handleMsgUpdateMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateItemMetadata) sdkTypes.Result {
+func handleMsgUpdateItemMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateItemMetadata) sdkTypes.Result {
 	return keeper.UpdateItemMetadata(ctx, msg.Symbol, msg.From, msg.ItemID, msg.Metadata)
+}
+
+func handleMsgUpdateNFTMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateNFTMetadata) sdkTypes.Result {
+	return keeper.UpdateNFTMetadata(ctx, msg.Symbol, msg.From, msg.Metadata)
 }
