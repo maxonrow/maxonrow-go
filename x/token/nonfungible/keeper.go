@@ -40,8 +40,8 @@ type Token struct {
 	Symbol        string
 	Owner         sdkTypes.AccAddress
 	NewOwner      sdkTypes.AccAddress
-	Properties    []string
-	Metadata      []string
+	Properties    string
+	Metadata      string
 	TotalSupply   sdkTypes.Uint
 	TransferLimit sdkTypes.Uint
 	MintLimit     sdkTypes.Uint
@@ -50,8 +50,8 @@ type Token struct {
 
 type Item struct {
 	ID            string
-	Properties    []string
-	Metadata      []string
+	Properties    string
+	Metadata      string
 	TransferLimit sdkTypes.Uint
 	Frozen        bool
 }
@@ -252,8 +252,8 @@ func (k *Keeper) CreateNonFungibleToken(
 	name string,
 	symbol string,
 	owner sdkTypes.AccAddress,
-	properties []string,
-	metadata []string,
+	properties string,
+	metadata string,
 	fee Fee,
 ) sdkTypes.Result {
 
@@ -769,7 +769,7 @@ func (k *Keeper) getNonFungibleItemOwner(ctx sdkTypes.Context, symbol string, it
 	return store.Get(ownerKey)
 }
 
-func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID string, properties, metadata []string) *Item {
+func (k *Keeper) createNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID, properties, metadata string) *Item {
 	item := &Item{
 		ID:         itemID,
 		Properties: properties,

@@ -5,7 +5,7 @@ import (
 	"github.com/maxonrow/maxonrow-go/types"
 )
 
-func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID string, properties []string, metadata []string) sdkTypes.Result {
+func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID, properties, metadata string) sdkTypes.Result {
 
 	nonFungibleToken := new(Token)
 
@@ -379,7 +379,7 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 
 }
 
-func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string, metadata []string) sdkTypes.Result {
+func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 
 	// validation of exisisting owner account
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -418,7 +418,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 	}
 }
 
-func (k *Keeper) UpdateNFTMetadata(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, metadata []string) sdkTypes.Result {
+func (k *Keeper) UpdateNFTMetadata(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, metadata string) sdkTypes.Result {
 
 	// validation of exisisting owner account
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
