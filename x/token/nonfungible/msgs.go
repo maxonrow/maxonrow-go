@@ -24,8 +24,8 @@ const (
 type MsgCreateNonFungibleToken struct {
 	Name       string              `json:"name"`
 	Symbol     string              `json:"symbol"`
-	Properties []string            `json:"properties"`
-	Metadata   []string            `json:"metadata"`
+	Properties string              `json:"properties"`
+	Metadata   string              `json:"metadata"`
 	Owner      sdkTypes.AccAddress `json:"owner"`
 	Fee        Fee                 `json:"fee"`
 }
@@ -35,7 +35,7 @@ type Fee struct {
 	Value string              `json:"value"`
 }
 
-func NewMsgCreateNonFungibleToken(symbol string, owner sdkTypes.AccAddress, name string, properties []string, metadata []string, fee Fee) *MsgCreateNonFungibleToken {
+func NewMsgCreateNonFungibleToken(symbol string, owner sdkTypes.AccAddress, name string, properties string, metadata string, fee Fee) *MsgCreateNonFungibleToken {
 	return &MsgCreateNonFungibleToken{
 		Name:       name,
 		Symbol:     symbol,
@@ -67,6 +67,14 @@ func (msg MsgCreateNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := validateTokenName(msg.Name); err != nil {
+		return err
+	}
+
+	if err := validateMetadata(msg.Metadata); err != nil {
+		return err
+	}
+
+	if err := validateProperties(msg.Properties); err != nil {
 		return err
 	}
 
@@ -216,11 +224,11 @@ type MsgMintNonFungibleToken struct {
 	Symbol     string              `json:"symbol"`
 	Owner      sdkTypes.AccAddress `json:"owner"`
 	To         sdkTypes.AccAddress `json:"to"`
-	Properties []string            `json:"properties"`
-	Metadata   []string            `json:"metadata"`
+	Properties string              `json:"properties"`
+	Metadata   string              `json:"metadata"`
 }
 
-func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID string, properties, metadata []string) *MsgMintNonFungibleToken {
+func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID, properties, metadata string) *MsgMintNonFungibleToken {
 	return &MsgMintNonFungibleToken{
 		ItemID:     itemID,
 		Symbol:     symbol,
@@ -576,10 +584,10 @@ type MsgUpdateItemMetadata struct {
 	Symbol   string              `json:"symbol"`
 	From     sdkTypes.AccAddress `json:"from"`
 	ItemID   string              `json:"itemID"`
-	Metadata []string            `json:"metadata"`
+	Metadata string              `json:"metadata"`
 }
 
-func NewMsgUpdateItemMetadata(symbol string, from sdkTypes.AccAddress, itemID string, metadata []string) *MsgUpdateItemMetadata {
+func NewMsgUpdateItemMetadata(symbol string, from sdkTypes.AccAddress, itemID string, metadata string) *MsgUpdateItemMetadata {
 	return &MsgUpdateItemMetadata{
 		Symbol:   symbol,
 		From:     from,
@@ -605,6 +613,10 @@ func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInternal("Item id cant be empty.")
 	}
 
+	if err := validateMetadata(msg.Metadata); err != nil {
+		return err
+	}
+
 	if err := validateSymbol(msg.Symbol); err != nil {
 		return err
 	}
@@ -623,10 +635,10 @@ func (msg MsgUpdateItemMetadata) GetSigners() []sdkTypes.AccAddress {
 type MsgUpdateNFTMetadata struct {
 	Symbol   string              `json:"symbol"`
 	From     sdkTypes.AccAddress `json:"from"`
-	Metadata []string            `json:"metadata"`
+	Metadata string              `json:"metadata"`
 }
 
-func NewMsgUpdateNFTMetadata(symbol string, from sdkTypes.AccAddress, metadata []string) *MsgUpdateNFTMetadata {
+func NewMsgUpdateNFTMetadata(symbol string, from sdkTypes.AccAddress, metadata string) *MsgUpdateNFTMetadata {
 	return &MsgUpdateNFTMetadata{
 		Symbol:   symbol,
 		From:     from,
@@ -648,6 +660,10 @@ func (msg MsgUpdateNFTMetadata) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := validateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := validateMetadata(msg.Metadata); err != nil {
 		return err
 	}
 
