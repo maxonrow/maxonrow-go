@@ -10,7 +10,7 @@ import (
 
 const (
 	// TODO TODO - calculate exactly
-	MetadataMaxLength    = 60
+	MaxLength            = 256
 	TokenNameMaxLength   = 100
 	TokenSymbolMaxLength = 100
 )
@@ -43,9 +43,17 @@ func validateSymbol(symbol string) sdkTypes.Error {
 	return nil
 }
 
-func validateMetadata(link string) sdkTypes.Error {
-	if len(link) > MetadataMaxLength {
-		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid metadata field length: %d", len(link)))
+func validateMetadata(metadata string) sdkTypes.Error {
+	if len(metadata) > MaxLength {
+		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid metadata field length: %d", len(metadata)))
+	}
+
+	return nil
+}
+
+func validateProperties(properties string) sdkTypes.Error {
+	if len(properties) > MaxLength {
+		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid properties field length: %d", len(properties)))
 	}
 
 	return nil
