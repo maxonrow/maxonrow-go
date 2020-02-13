@@ -562,7 +562,7 @@ func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 	}
 
 	if len(msg.ItemID) < 1 {
-		return sdkTypes.ErrInternal("Item id cant be empty.")
+		return sdkTypes.ErrInternal("Item id can not be empty.")
 	}
 
 	if err := validateSymbol(msg.Symbol); err != nil {
@@ -605,14 +605,14 @@ func (msg MsgUpdateItemMetadata) Type() string {
 }
 
 func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
+
 	if msg.From.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
 
 	if len(msg.ItemID) < 1 {
-		return sdkTypes.ErrInternal("Item id cant be empty.")
+		return sdkTypes.ErrInternal("Item id can not be empty.")
 	}
-
 	if err := validateMetadata(msg.Metadata); err != nil {
 		return err
 	}
@@ -662,7 +662,6 @@ func (msg MsgUpdateNFTMetadata) ValidateBasic() sdkTypes.Error {
 	if err := validateSymbol(msg.Symbol); err != nil {
 		return err
 	}
-
 	if err := validateMetadata(msg.Metadata); err != nil {
 		return err
 	}
