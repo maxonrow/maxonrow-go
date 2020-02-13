@@ -148,7 +148,7 @@ func TestTxs(t *testing.T) {
 				case "create":
 					msg = makeCreateNonFungibleTokenMsg(t, i.Name, i.Symbol, i.TokenMetadata, i.Owner, i.ApplicationFee, i.FeeCollector)
 				case "approve":
-					msg = makeApproveNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "APPROVE", i.FeeSettingName, i.MintLimit, i.TransferLimit, i.EndorserList)
+					msg = makeApproveNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "APPROVE", i.FeeSettingName, i.MintLimit, i.TransferLimit, i.EndorserList, i.Burnable, i.Modifiable, i.Public)
 				case "transfer":
 					msg = makeTransferNonFungibleTokenMsg(t, i.Owner, i.NewOwner, i.Symbol, i.ItemID)
 				case "mint":
@@ -164,13 +164,17 @@ func TestTxs(t *testing.T) {
 				case "unfreeze-item":
 					msg = makeUnfreezeNonFungibleItemMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID)
 				case "freeze":
-					msg = makeFreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
+					msg = makeFreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable, i.Modifiable, i.Public)
 				case "unfreeze":
-					msg = makeUnfreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable)
+					msg = makeUnfreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable, i.Modifiable, i.Public)
 				case "verify-transfer-tokenOwnership":
-					msg = makeVerifyTransferNonFungibleTokenOwnership(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership)
+					msg = makeVerifyTransferNonFungibleTokenOwnership(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership, i.Burnable, i.Modifiable, i.Public)
 				case "endorsement":
 					msg = makeEndorsement(t, tc.signer, i.Owner, i.Symbol, i.ItemID)
+				case "update-item-metadata":
+					msg = makeUpdateItemMetadataMsg(t, i.Symbol, i.Owner, i.ItemID, i.Metadata)
+				case "update-nft-metadata":
+					msg = makeUpdateNFTMetadataMsg(t, i.Symbol, i.Owner, i.TokenMetadata)
 				}
 			}
 		case "maintenance":

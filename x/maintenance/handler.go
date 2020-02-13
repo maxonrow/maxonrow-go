@@ -72,16 +72,11 @@ func handleMsgSubmitProposal(ctx sdkTypes.Context, keeper *Keeper, msg MsgPropos
 
 	accountSequence := proposerAccount.GetSequence()
 
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: proposalEvents.AppendEvents(approveEvents),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -111,19 +106,14 @@ func handleMsgCastAction(ctx sdkTypes.Context, keeper *Keeper, msg MsgCastAction
 		approveEvents := types.MakeMxwEvents(approveEventSignature, msg.Owner.String(), approveEventParam)
 
 		accountSequence := account.GetSequence()
-		var log string
-		if accountSequence == 0 {
-			log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-		} else {
-			log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-		}
+		resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 		if executedEvents != nil {
 			approveEvents = approveEvents.AppendEvents(executedEvents)
 		}
 		return sdkTypes.Result{
 			Events: approveEvents,
-			Log:    log,
+			Log:    resultLog.String(),
 		}
 
 	case REJECT:
@@ -138,19 +128,14 @@ func handleMsgCastAction(ctx sdkTypes.Context, keeper *Keeper, msg MsgCastAction
 		rejectEvents := types.MakeMxwEvents(rejectEventSignature, msg.Owner.String(), rejectEventParam)
 
 		accountSequence := account.GetSequence()
-		var log string
-		if accountSequence == 0 {
-			log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-		} else {
-			log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-		}
+		resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 		if executedEvents != nil {
 			rejectEvents = rejectEvents.AppendEvents(executedEvents)
 		}
 		return sdkTypes.Result{
 			Events: rejectEvents,
-			Log:    log,
+			Log:    resultLog.String(),
 		}
 
 	}

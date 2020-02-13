@@ -66,7 +66,6 @@ type mxwApp struct {
 	tkeyParams      *sdkTypes.TransientStoreKey
 	keyDistr        *sdkTypes.KVStoreKey
 	keyToken        *sdkTypes.KVStoreKey
-	keyNonFungible  *sdkTypes.KVStoreKey
 	keyFee          *sdkTypes.KVStoreKey
 	KeyKyc          *sdkTypes.KVStoreKey
 	KeyKycData      *sdkTypes.KVStoreKey
@@ -86,6 +85,8 @@ type mxwApp struct {
 	nonFungibleTokenKeeper nonFungible.Keeper
 	feeKeeper              fee.Keeper
 	maintenanceKeeper      maintenance.Keeper
+
+	router sdkTypes.Router
 
 	mm *module.Manager
 
@@ -137,7 +138,6 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		tkeyParams:      sdkTypes.NewTransientStoreKey("transient_params"),
 		keyDistr:        sdkTypes.NewKVStoreKey("distr"),
 		keyToken:        sdkTypes.NewKVStoreKey("token"),
-		keyNonFungible:  sdkTypes.NewKVStoreKey("nonFungible"),
 		keyFee:          sdkTypes.NewKVStoreKey("fee"),
 		KeyKyc:          sdkTypes.NewKVStoreKey("kyc"),
 		KeyKycData:      sdkTypes.NewKVStoreKey("kycData"),
@@ -214,7 +214,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	)
 
 	app.tokenKeeper = fungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
-	app.nonFungibleTokenKeeper = nonFungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyNonFungible)
+	app.nonFungibleTokenKeeper = nonFungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
 	app.feeKeeper = fee.NewKeeper(cdc, app.keyFee)
 	app.kycKeeper = kyc.NewKeeper(cdc, &app.accountKeeper, app.KeyKyc, app.KeyKycData)
 	app.maintenanceKeeper = maintenance.NewKeeper(cdc, app.KeyMaintenance, app.KeyValidatorSet, app.executeProposal)
@@ -241,7 +241,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	)
 
 	app.Router().
-		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.anteHandler)).
+		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
@@ -265,6 +265,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper)).
 		AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
 
+	app.router = app.Router()
 	app.MountStores(
 		app.keyMain,
 		app.keyAccount,
@@ -278,7 +279,6 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		app.KeyKycData,
 		app.tkeyParams,
 		app.keyToken,
-		app.keyNonFungible,
 		app.keyFee,
 		app.KeyMaintenance,
 		app.KeyValidatorSet,

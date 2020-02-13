@@ -9,13 +9,17 @@ import (
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
+	"github.com/tendermint/tendermint/libs/common"
+	rpc "github.com/tendermint/tendermint/rpc/core"
+	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	"golang.org/x/crypto/sha3"
 )
 
 // Internal broadcast tx
-type BroadcastTx func(ctx sdkTypes.Context, tx sdkTypes.Tx, simulate bool) (sdkTypes.Context, error)
+//type RunMxwMsg func(ctx sdkTypes.Context, msg sdkTypes.Msg) (result sdkTypes.Result)
+//type RunMxwMsg func(ctx *rpctypes.Context, js string) (*ctypes.ResultBroadcastTx, error)
 
-func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, broadcastTx BroadcastTx) sdkTypes.Handler {
+func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Handler {
 	return func(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.Result {
 		switch msg := msg.(type) {
 		case MsgCreateMultiSigAccount:
@@ -27,7 +31,7 @@ func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, broad
 		case MsgCreateMultiSigTx:
 			return handleMsgCreateMultiSigTx(ctx, msg, accountKeeper, kycKeeper)
 		case MsgSignMultiSigTx:
-			return handleMsgSignMultiSigTx(ctx, msg, accountKeeper, kycKeeper, broadcastTx)
+			return handleMsgSignMultiSigTx(ctx, msg, accountKeeper, kycKeeper, txEncoder)
 		case MsgDeleteMultiSigTx:
 			return handleMsgDeleteMultiSigTx(ctx, msg, accountKeeper, kycKeeper)
 		default:
@@ -65,19 +69,14 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 
 	// TODO: Events
 	accountSequence := OwnerAcc.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.Owner.String(), acc.GetAddress().String()}
 	eventSignature := "CreatedMultiSigAccount(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -123,19 +122,14 @@ func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigA
 
 	// TO-DO: event
 	accountSequence := ownerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.Owner.String(), msg.GroupAddress.String()}
 	eventSignature := "UpdatedMultiSigAccount(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -163,19 +157,14 @@ func handleMsgTransferMultiSigOwner(ctx sdkTypes.Context, msg MsgTransferMultiSi
 
 	// TO-DO: event
 	accountSequence := ownerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.Owner.String(), msg.GroupAddress.String()}
 	eventSignature := "TransferredMultiSigOwnership(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -212,24 +201,19 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 
 	// TO-DO: event
 	accountSequence := senderAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String()}
 	eventSignature := "CreatedMultiSigTx(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
 
-func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper, broadcastTx BroadcastTx) sdkTypes.Result {
+func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Result {
 
 	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
 	if groupAcc == nil {
@@ -248,42 +232,54 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 	multiSig := groupAcc.GetMultiSig()
 	multiSig.SignTx(msg.Sender, msg.TxID)
 
-	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
 	isMetric := multiSig.IsMetric(msg.TxID)
 	broadcastedEvents := sdkTypes.EmptyEvents()
+	var internalHash common.HexBytes
 	if isMetric {
 		// TO-DO: broadcast tx
 		tx := multiSig.GetTx(msg.TxID)
-		if tx != nil {
-			_, err := broadcastTx(ctx, tx, false)
-			if err != nil {
-				return sdkTypes.ErrInternal("Multisig broadcast tx failed.").Result()
-			}
-
-			// Event: broadcast tx
-			broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
-			broadcastedEventSignature := "BroadcastedTx(string,string)"
-			broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
+		if tx == nil {
+			return sdkTypes.ErrInternal("There is no pending tx.").Result()
 		}
+
+		bz, err := txEncoder(tx)
+		if err != nil {
+			return sdkTypes.ErrInternal("Error encoding pending tx.").Result()
+		}
+
+		var rpcCtx *rpctypes.Context
+		go func() {
+			res, err := rpc.BroadcastTxSync(rpcCtx, bz)
+			if err != nil {
+				panic(err)
+			}
+			internalHash = res.Hash
+		}()
+
+		// Event: broadcast tx
+		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
+		broadcastedEventSignature := "BroadcastedTx(string,string)"
+		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
 
 		isDeleted := multiSig.RemoveTx(msg.TxID)
 		if !isDeleted {
 			return sdkTypes.ErrUnknownRequest("Delete failed.").Result()
 		}
+		groupAcc = accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
+		}
 
 		groupAcc.SetMultiSig(multiSig)
 		accountKeeper.SetAccount(ctx, groupAcc)
 	}
-
-	// TO-DO: event
 	accountSequence := senderAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
+
+	if internalHash != nil {
+		resultLog = resultLog.WithInternalHash(internalHash)
 	}
 
 	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(msg.TxID)}
@@ -292,7 +288,7 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 
 	return sdkTypes.Result{
 		Events: events.AppendEvents(broadcastedEvents),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -333,19 +329,14 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 
 	// TO-DO: event
 	accountSequence := senderAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(msg.TxID)}
 	eventSignature := "DeletedMultiSigTx(string,string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }

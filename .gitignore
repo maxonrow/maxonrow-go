@@ -14,5 +14,6 @@ debug*
 
 vendor/*
 
+deployment
 
 .DS_Store
