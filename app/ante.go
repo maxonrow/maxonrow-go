@@ -93,13 +93,16 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			return ctx, err
 		}
 
-		err = sdkAuth.DeductFees(app.supplyKeeper, ctx, signerAcc, stdTx.Fee.Amount)
-		if err != nil {
-			return ctx, err
+		// removing this condition will cause app-hash change
+		if !stdTx.Fee.Amount.IsZero() {
+			err = sdkAuth.DeductFees(app.supplyKeeper, ctx, signerAcc, stdTx.Fee.Amount)
+			if err != nil {
+				return ctx, err
+			}
+
+			signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
 		}
-
-		signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
-
+		
 		signBytes := stdTx.GetSignBytes(ctx, signerAcc)
 
 		var stdSig sdkAuth.StdSignature

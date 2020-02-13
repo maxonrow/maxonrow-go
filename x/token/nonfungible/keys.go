@@ -6,12 +6,11 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 )
 
-var prefixAuthorised = []byte("token/authorised")
-var prefixProvider = []byte("token/provider")
-var prefixIssuer = []byte("token/issuer")
-
-var prefixNonFungibleOwner = []byte("0x01")
-var prefixNonFungibleItem = []byte("0x02")
+var prefixAuthorised = []byte("nft/authorised")
+var prefixProvider = []byte("nft/provider")
+var prefixIssuer = []byte("nft/issuer")
+var prefixNonFungibleOwner = []byte("nft/owner")
+var prefixNonFungibleItem = []byte("nft/item")
 
 // keys
 func getAuthorisedKey() []byte {
@@ -27,7 +26,7 @@ func getIssuerKey() []byte {
 }
 
 func getTokenKey(symbol string) []byte {
-	return []byte(fmt.Sprintf("symbol:%s", symbol))
+	return []byte(fmt.Sprintf("nft/symbol:%s", symbol))
 }
 
 func getNonFungibleItemOwnerKey(symbol string, itemID []byte) []byte {
