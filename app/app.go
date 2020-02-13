@@ -244,7 +244,6 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 
 	app.Router().
 		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
-		//AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.mxwRunMsgs, app.supplyKeeper)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).

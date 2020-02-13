@@ -269,6 +269,8 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 			broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
 			broadcastedEventSignature := "BroadcastedTx(string,string)"
 			broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
+		} else {
+			return sdkTypes.ErrInternal("There is no pending tx.").Result()
 		}
 
 		isDeleted := multiSig.RemoveTx(msg.TxID)
