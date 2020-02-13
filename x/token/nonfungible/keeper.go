@@ -293,16 +293,10 @@ func (k *Keeper) CreateNonFungibleToken(
 	event := types.MakeMxwEvents(eventSignature, owner.String(), eventParam)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
-
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 	return sdkTypes.Result{
 		Events: applicationFeeResult.Events.AppendEvents(event),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -368,16 +362,11 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	events := types.MakeMxwEvents(eventSignature, signer.String(), eventParam)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: events,
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -414,16 +403,11 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 	eventSignature := "RejectedNonFungibleToken(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -463,16 +447,11 @@ func (k *Keeper) freezeNonFungibleToken(ctx sdkTypes.Context, symbol string, sig
 	eventSignature := "FrozenNonFungibleToken(string,string)"
 
 	accountSequence := signerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -512,16 +491,11 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 	eventSignature := "UnfreezeNonFungibleToken(string,string)"
 
 	accountSequence := signerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -552,24 +526,18 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 	}
 
 	nonFungibleItem.Frozen = true
-	//nonFungibleItem.Metadata = metadata
 
 	k.storeNonFungibleItem(ctx, symbol, itemOwner, nonFungibleItem)
 
-	eventParam := []string{symbol, itemOwner.String()}
-	eventSignature := "FrozenNonFungibleTokenAccount(string,string)"
+	eventParam := []string{symbol, itemID, owner.String()}
+	eventSignature := "FrozenNonFungibleItem(string,string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -603,20 +571,15 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 
 	k.storeNonFungibleItem(ctx, symbol, itemOwner, nonFungibleItem)
 
-	eventParam := []string{symbol, itemOwner.String()}
-	eventSignature := "UnfreezeNonFungibleTokenAccount(string,string)"
+	eventParam := []string{symbol, itemID, owner.String()}
+	eventSignature := "UnfreezeNonFungibleItem(string,string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -647,19 +610,14 @@ func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol stri
 	k.storeToken(ctx, symbol, token)
 
 	eventParam := []string{symbol, token.Owner.String(), token.NewOwner.String()}
-	eventSignature := "ApprovedTransferTokenOwnership(string,string,string)"
+	eventSignature := "ApprovedTransferNonFungibleTokenOwnership(string,string,string)"
 
 	accountSequence := fromWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -691,19 +649,14 @@ func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol strin
 	k.storeToken(ctx, symbol, token)
 
 	eventParam := []string{symbol, token.Owner.String(), token.NewOwner.String()}
-	eventSignature := "RejectedTransferTokenOwnership(string,string,string)"
+	eventSignature := "RejectedTransferNonFungibleTokenOwnership(string,string,string)"
 
 	accountSequence := fromWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 

@@ -87,6 +87,8 @@ type mxwApp struct {
 	feeKeeper              fee.Keeper
 	maintenanceKeeper      maintenance.Keeper
 
+	router sdkTypes.Router
+
 	mm *module.Manager
 
 	chainID     string
@@ -241,7 +243,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	)
 
 	app.Router().
-		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.anteHandler)).
+		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
@@ -265,6 +267,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper)).
 		AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
 
+	app.router = app.Router()
 	app.MountStores(
 		app.keyMain,
 		app.keyAccount,

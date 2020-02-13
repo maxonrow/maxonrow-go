@@ -88,7 +88,6 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			}
 		}
 
-		stdSig := stdSigs[0]
 		signerAcc, err := sdkAuth.GetSignerAcc(ctx, app.accountKeeper, signerAddrs[0])
 		if err != nil {
 			return ctx, err
@@ -102,9 +101,16 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 		signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
 
 		signBytes := stdTx.GetSignBytes(ctx, signerAcc)
-		signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
-		if err != nil {
-			return ctx, err
+
+		var stdSig sdkAuth.StdSignature
+		if stdSigs != nil {
+			stdSig = stdSigs[0]
+		}
+		if signerAcc.GetMultiSig() == nil {
+			signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
+			if err != nil {
+				return ctx, err
+			}
 		}
 
 		app.accountKeeper.SetAccount(ctx, signerAcc)

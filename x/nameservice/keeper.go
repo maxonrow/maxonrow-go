@@ -9,11 +9,11 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
-	sdkBank "github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/tendermint/tendermint/crypto"
+	sdkBank "github.com/cosmos/cosmos-sdk/x/bank"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/bank"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 type Keeper struct {
@@ -286,17 +286,12 @@ func (k *Keeper) CreateAlias(ctx sdkTypes.Context, from sdkTypes.AccAddress, ali
 	eventSignature := "CreatedAlias(string,string,string,bignumber)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 	applicationFeeResult.Events = applicationFeeResult.Events.AppendEvents(types.MakeMxwEvents(eventSignature, from.String(), eventParam))
 
 	return sdkTypes.Result{
 		Events: applicationFeeResult.Events,
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -333,16 +328,11 @@ func (k *Keeper) ApproveAlias(ctx sdkTypes.Context, alias string, signer sdkType
 	eventSignature := "ApprovedAlias(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -377,16 +367,11 @@ func (k *Keeper) RejectAlias(ctx sdkTypes.Context, alias string, signer sdkTypes
 	eventSignature := "RejectedAlias(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -467,16 +452,11 @@ func (k Keeper) RevokeAlias(ctx sdkTypes.Context, alias string, signer sdkTypes.
 	eventSignature := "RevokedAlias(string,string)"
 
 	accountSequence := signerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }

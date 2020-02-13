@@ -38,12 +38,7 @@ func MakeBankSendEvent(ctx sdkTypes.Context, fromAddress sdkTypes.AccAddress, to
 
 	ownerWalletAccount := accountKeeper.GetAccount(ctx, fromAddress)
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	event :=
 		sdkTypes.NewEvent(
@@ -58,6 +53,6 @@ func MakeBankSendEvent(ctx sdkTypes.Context, fromAddress sdkTypes.AccAddress, to
 
 	return sdkTypes.Result{
 		Events: sdkTypes.Events.AppendEvents(sdkTypes.Events{event}, types.MakeMxwEvents(eventSignature, fromAddress.String(), eventParam)),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
