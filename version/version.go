@@ -4,7 +4,7 @@ import "fmt"
 
 const (
 	Maj = "1"
-	Min = "0"
+	Min = "1"
 	Fix = "0"
 )
 
