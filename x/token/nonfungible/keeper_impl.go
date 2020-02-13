@@ -69,20 +69,15 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 
 	item := k.createNonFungibleItem(ctx, nonFungibleToken.Symbol, to, itemID, properties, metadata)
 
-	eventParam := []string{symbol, "mxw000000000000000000000000000000000000000", to.String(), string(item.ID)}
-	eventSignature := "MintedFungibleToken(string,string,string,string)"
+	eventParam := []string{symbol, string(item.ID), from.String(), to.String()}
+	eventSignature := "MintedNonFungibleItem(string,string,string,string)"
 
 	accountSequence := minterAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -141,20 +136,15 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 	itemData := k.cdc.MustMarshalBinaryLengthPrefixed(item)
 	store.Set(itemKey, itemData)
 
-	eventParam := []string{symbol, from.String(), to.String(), string(itemID)}
-	eventSignature := "TransferredNonFungibleToken(string,string,string,string)"
+	eventParam := []string{symbol, string(itemID), from.String(), to.String()}
+	eventSignature := "TransferredNonFungibleItem(string,string,string,string)"
 
 	accountSequence := fromAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -201,20 +191,15 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	store.Delete(itemKey)
 	store.Delete(ownerKey)
 
-	eventParam := []string{symbol, from.String(), "mxw000000000000000000000000000000000000000", string(item.ID)}
-	eventSignature := "BurnedNonFungibleToken(string,string,string,string)"
+	eventParam := []string{symbol, string(item.ID), from.String()}
+	eventSignature := "BurnedNonFungibleItem(string,string,string)"
 
 	accountSequence := fromAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -263,16 +248,11 @@ func (k *Keeper) transferNonFungibleTokenOwnership(ctx sdkTypes.Context, from sd
 	eventSignature := "TransferredNonFungibleTokenOwnership(string,string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -334,16 +314,11 @@ func (k *Keeper) acceptNonFungibleTokenOwnership(ctx sdkTypes.Context, from sdkT
 	eventSignature := "AcceptedNonFungibleTokenOwnership(string,string)"
 
 	accountSequence := newOwnerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -361,20 +336,15 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 		return types.ErrTokenInvalid().Result()
 	}
 
-	eventParam := []string{from.String(), symbol, string(itemID)}
+	eventParam := []string{symbol, string(itemID), from.String()}
 	eventSignature := "EndorsedNonFungibleItem(string,string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -402,19 +372,14 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 	k.storeNonFungibleItem(ctx, symbol, from, item)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
-	eventParam := []string{from.String(), symbol, string(itemID)}
+	eventParam := []string{symbol, string(itemID), from.String()}
 	eventSignature := "UpdatedNonFungibleItemMetadata(string,string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -445,19 +410,14 @@ func (k *Keeper) UpdateNFTMetadata(ctx sdkTypes.Context, symbol string, from sdk
 	k.storeToken(ctx, symbol, token)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
-	eventParam := []string{from.String(), symbol}
+	eventParam := []string{symbol, from.String()}
 	eventSignature := "UpdatedNonFungibleTokenMetadata(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 

@@ -41,19 +41,14 @@ func handleMsgWhitelist(ctx sdkTypes.Context, keeper *Keeper, msg MsgWhitelist) 
 
 	ownerWalletAccount := keeper.accountKeeper.GetAccount(ctx, msg.Owner)
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.KycData.Payload.Kyc.From.String(), msg.KycData.Payload.Kyc.KycAddress}
 	eventSignature := "KycWhitelisted(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.GetSigners()[0].String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -80,19 +75,14 @@ func handleMsgKycBind(ctx sdkTypes.Context, keeper *Keeper, msg MsgKycBind) sdkT
 
 	ownerWalletAccount := keeper.accountKeeper.GetAccount(ctx, msg.From)
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.From.String(), msg.To.String(), msg.KycAddress}
 	eventSignature := "KycBinded(string,string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.GetSigners()[0].String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -104,18 +94,13 @@ func handleMsgKycUnbind(ctx sdkTypes.Context, keeper *Keeper, msg MsgKycUnbind) 
 
 	ownerWalletAccount := keeper.accountKeeper.GetAccount(ctx, msg.From)
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{msg.From.String(), msg.To.String(), msg.KycAddress}
 	eventSignature := "KycUnbinded(string,string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.GetSigners()[0].String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }

@@ -10,8 +10,8 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
-	"github.com/tendermint/tendermint/crypto"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/tendermint/tendermint/crypto"
 )
 
 const (
@@ -261,19 +261,14 @@ func (k Keeper) RevokeWhitelist(ctx sdkTypes.Context, targetAddress sdkTypes.Acc
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	eventParam := []string{targetAddress.String(), string(kycDataByte)}
 	eventSignature := "RevokedWhitelist(string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
-		Log:    log}
+		Log:    resultLog.String()}
 }
 
 func (k Keeper) IsKycAddressExist(ctx sdkTypes.Context, kycAddress string) bool {
