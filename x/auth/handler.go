@@ -240,38 +240,28 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 	if isMetric {
 		// TO-DO: broadcast tx
 		tx := multiSig.GetTx(msg.TxID)
-
-		if tx != nil {
-
-			txBz := msgCdc.MustMarshalJSON(tx)
-			var stdTx sdkAuth.StdTx
-
-			err := msgCdc.UnmarshalJSON(txBz, &stdTx)
-			if err != nil {
-				return sdkTypes.ErrInternal("Error unmarshalling pending tx.").Result()
-			}
-
-			bz, err := txEncoder(stdTx)
-			if err != nil {
-				return sdkTypes.ErrInternal("Error encoding pending tx.").Result()
-			}
-
-			var rpcCtx *rpctypes.Context
-			go func() {
-				res, err := rpc.BroadcastTxSync(rpcCtx, bz)
-				if err != nil {
-					panic(err)
-				}
-				internalHash = res.Hash
-			}()
-
-			// Event: broadcast tx
-			broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
-			broadcastedEventSignature := "BroadcastedTx(string,string)"
-			broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
-		} else {
+		if tx == nil {
 			return sdkTypes.ErrInternal("There is no pending tx.").Result()
 		}
+
+		bz, err := txEncoder(tx)
+		if err != nil {
+			return sdkTypes.ErrInternal("Error encoding pending tx.").Result()
+		}
+
+		var rpcCtx *rpctypes.Context
+		go func() {
+			res, err := rpc.BroadcastTxSync(rpcCtx, bz)
+			if err != nil {
+				panic(err)
+			}
+			internalHash = res.Hash
+		}()
+
+		// Event: broadcast tx
+		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
+		broadcastedEventSignature := "BroadcastedTx(string,string)"
+		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
 
 		isDeleted := multiSig.RemoveTx(msg.TxID)
 		if !isDeleted {
