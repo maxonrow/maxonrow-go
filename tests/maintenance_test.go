@@ -276,7 +276,7 @@ func makeMaintenaceTxs() []*testCase {
 		{"maintenance-cast-action", false, false, "Cast action to approve jeansoon as non fungible token provider address, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 37}, "", nil},
 
 		//add nameservice fee collector with maintenance. (nft-mostafa is whitelisted.)
-		{"maintenance", false, false, "38. Proposal, add token fee collector address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add token fee collector", "Add mostafa as nameservice fee collector", "fee", "", "", "", FeeCollector{Module: "token", Address: "nft-mostafa"}, "nft-maintainer-2", ""}, "", nil},
+		{"maintenance", false, false, "38. Proposal, add token fee collector address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add token fee collector", "Add mostafa as nameservice fee collector", "fee", "", "", "", FeeCollector{Module: "nonFungible", Address: "nft-mostafa"}, "nft-maintainer-2", ""}, "", nil},
 		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as nameservice fee collector, Happy path. commit", "nft-maintainer-1", "0cin", 0, CastAction{"nft-maintainer-1", "approve", 38}, "", nil},
 		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as nameservice fee collector, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 38}, "", nil},
 	}
