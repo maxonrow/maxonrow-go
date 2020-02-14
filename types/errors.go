@@ -21,6 +21,8 @@ const (
 	CodeTokenInvalidOwner                   sdkTypes.CodeType = 2103
 	CodeTokenTransferTokenOwnershipApproved sdkTypes.CodeType = 2104
 	CodeTokenItemIDInUsed                   sdkTypes.CodeType = 2105
+	CodeTokenInvalidEndorser                sdkTypes.CodeType = 2106
+	CodeTokenItemFrozen                     sdkTypes.CodeType = 2107
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -124,4 +126,12 @@ func ErrAliasCouldNotResolveAddress() sdkTypes.Error {
 
 func ErrTokenItemIDInUsed() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemIDInUsed, "Token item id is in used.")
+}
+
+func ErrInvalidEndorser() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenInvalidEndorser, "Item endorser invalid.")
+}
+
+func ErrTokenItemFronzen() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item frozen.")
 }
