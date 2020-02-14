@@ -214,7 +214,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Insufficient balance to pay for application fee.")
 		}
 
-		if !app.feeKeeper.IsFeeCollector(ctx, "token", msg.Fee.To) {
+		if !app.feeKeeper.IsFeeCollector(ctx, "nonFungible", msg.Fee.To) {
 			return sdkTypes.ErrInvalidAddress("Fee collector invalid.")
 		}
 
