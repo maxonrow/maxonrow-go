@@ -914,3 +914,26 @@ func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser s
 	}
 	return false
 }
+
+// Querying
+func (k *Keeper) ListTokens(ctx sdkTypes.Context) []Token {
+	store := ctx.KVStore(k.key)
+	start := getTokenKey(string(0x00))
+	end := getTokenKey(string(0xFF))
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+
+	var lst = make([]Token, 0)
+
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var t = new(Token)
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &t)
+		lst = append(lst, *t)
+
+		iter.Next()
+	}
+	return lst
+}

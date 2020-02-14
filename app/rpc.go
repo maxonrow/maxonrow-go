@@ -11,6 +11,7 @@ import (
 	ver "github.com/maxonrow/maxonrow-go/version"
 	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/maxonrow/maxonrow-go/x/token/fungible"
+	"github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
@@ -33,6 +34,16 @@ type ResultDecodedTx struct {
 type Version struct {
 	MaxonrowVersion   string `json:"Maxonrow"`
 	TendermintVersion string `json:"Tendermint"`
+}
+
+type FungibleTokenListInfo struct {
+	Count  int
+	Tokens []fungible.Token
+}
+
+type NonFungibleTokenListInfo struct {
+	Count  int
+	Tokens []nonfungible.Token
 }
 
 type FeeInfo struct {
@@ -273,8 +284,26 @@ func parseJSON(in string) []byte {
 	return []byte(out)
 }
 
-func (app *mxwApp) TokenList(ctx *rpctypes.Context) ([]fungible.Token, error) {
+func (app *mxwApp) FungibleTokenList(ctx *rpctypes.Context) (FungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
 
-	return app.tokenKeeper.ListTokens(appCtx), nil
+	lst := app.tokenKeeper.ListTokens(appCtx)
+
+	var i FungibleTokenListInfo
+	i.Count = len(lst)
+	i.Tokens = lst
+
+	return i, nil
+}
+
+func (app *mxwApp) NonFungibleTokenList(ctx *rpctypes.Context) (NonFungibleTokenListInfo, error) {
+	appCtx := app.NewContext(true, abci.Header{})
+
+	lst := app.nonFungibleTokenKeeper.ListTokens(appCtx)
+
+	var i NonFungibleTokenListInfo
+	i.Count = len(lst)
+	i.Tokens = lst
+
+	return i, nil
 }
