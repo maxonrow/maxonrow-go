@@ -214,7 +214,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Insufficient balance to pay for application fee.")
 		}
 
-		if !app.feeKeeper.IsFeeCollector(ctx, "token", msg.Fee.To) {
+		if !app.feeKeeper.IsFeeCollector(ctx, "nonFungible", msg.Fee.To) {
 			return sdkTypes.ErrInvalidAddress("Fee collector invalid.")
 		}
 
@@ -269,12 +269,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case nonFungible.MsgSetNonFungibleItemStatus:
-		if msg.ItemPayload.Item.Status == fungible.FreezeTokenAccount {
+		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
 				return types.ErrTokenAccountFrozen()
 			}
 		}
-		if msg.ItemPayload.Item.Status == fungible.UnfreezeTokenAccount {
+		if msg.ItemPayload.Item.Status == nonFungible.UnfreezeItem {
 			if !app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
 				return types.ErrTokenAccountUnFrozen()
 			}
@@ -324,6 +324,24 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
+		}
+	case nonFungible.MsgEndorsement:
+		if !app.nonFungibleTokenKeeper.IsTokenEndorser(ctx, msg.Symbol, msg.From) {
+			return types.ErrInvalidEndorser()
+		}
+	case nonFungible.MsgUpdateNFTMetadata:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+			return types.ErrTokenInvalid()
+		}
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+	case nonFungible.MsgUpdateItemMetadata:
+		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
+			return types.ErrTokenAccountFrozen()
+		}
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
 		}
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {

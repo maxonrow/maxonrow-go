@@ -357,9 +357,24 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return sdkTypes.ErrInvalidSequence("Invalid item owner.").Result()
 	}
 
+	var token = new(Token)
+
+	err := k.mustGetTokenData(ctx, symbol, token)
+	if err != nil {
+		return err.Result()
+	}
+
+	if token.Flags.HasFlag(FrozenFlag) {
+		return types.ErrTokenFrozen().Result()
+	}
+
 	item := k.getNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenInvalid().Result()
+	}
+
+	if item.Frozen {
+		return types.ErrTokenItemFronzen().Result()
 	}
 
 	itemOwnerAddr := k.getNonFungibleItemOwner(ctx, symbol, itemID)
@@ -396,6 +411,10 @@ func (k *Keeper) UpdateNFTMetadata(ctx sdkTypes.Context, symbol string, from sdk
 	err := k.mustGetTokenData(ctx, symbol, token)
 	if err != nil {
 		return err.Result()
+	}
+
+	if token.Flags.HasFlag(FrozenFlag) {
+		return types.ErrTokenFrozen().Result()
 	}
 
 	if !token.Owner.Equals(from) {
