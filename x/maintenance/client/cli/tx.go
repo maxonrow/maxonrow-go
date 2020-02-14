@@ -10,10 +10,10 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/maxonrow/maxonrow-go/x/maintenance"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/maxonrow/maxonrow-go/x/maintenance"
 )
 
 // GetCmdSubmitProposal is the CLI command for sending a BuyName transaction
@@ -143,6 +143,27 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				tokenMaintainer := maintenance.NewTokenMaintainer(action, []sdkTypes.AccAddress{authorisedAddr}, []sdkTypes.AccAddress{issuerAddr}, []sdkTypes.AccAddress{providerAddr})
 
 				msg = maintenance.NewMsgSubmitProposal(title, description, proposalKind, &tokenMaintainer, proposer)
+			case maintenance.ProposalTypeModifyNonFungible:
+
+				if authorisedAddrStr == "" && issuerAddrStr == "" && providerAddrStr == "" {
+					return sdkTypes.ErrInternal(fmt.Sprintf("Proposal type error, please check: %s, --proposalType %s", proposalKind.String(), proposalType))
+				}
+
+				authorisedAddr, authorisedAddrErr := sdkTypes.AccAddressFromBech32(authorisedAddrStr)
+				if authorisedAddrErr != nil {
+					return authorisedAddrErr
+				}
+				providerAddr, providerAddrErr := sdkTypes.AccAddressFromBech32(providerAddrStr)
+				if providerAddrErr != nil {
+					return providerAddrErr
+				}
+				issuerAddr, issuerAddrErr := sdkTypes.AccAddressFromBech32(issuerAddrStr)
+				if issuerAddrErr != nil {
+					return issuerAddrErr
+				}
+				nonFungibleMaintainer := maintenance.NewNonFungibleMaintainer(action, []sdkTypes.AccAddress{authorisedAddr}, []sdkTypes.AccAddress{issuerAddr}, []sdkTypes.AccAddress{providerAddr})
+
+				msg = maintenance.NewMsgSubmitProposal(title, description, proposalKind, &nonFungibleMaintainer, proposer)
 			case maintenance.ProposalTypesModifyValidatorSet:
 
 				if validatorPubKeyStr == "" {
