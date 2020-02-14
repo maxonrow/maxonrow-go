@@ -15,5 +15,6 @@ debug*
 vendor/*
 
 deployment
+containers
 
 .DS_Store
