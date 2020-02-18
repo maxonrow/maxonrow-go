@@ -9,9 +9,9 @@ const (
 	MsgRoute                                 = "nonFungible"
 	MsgTypeCreateNonFungibleToken            = "createNonFungibleToken"
 	MsgTypeSetNonFungibleTokenStatus         = "setNonFungibleTokenStatus"
-	MsgTypeTransferNonFungibleToken          = "transferNonFungibleToken"
-	MsgTypeMintNonFungibleToken              = "mintNonFungibleToken"
-	MsgTypeBurnNonFungibleToken              = "burnNonFungibleToken"
+	MsgTypeTransferNonFungibleItem           = "transferNonFungibleItem"
+	MsgTypeMintNonFungibleItem               = "mintNonFungibleItem"
+	MsgTypeBurnNonFungibleItem               = "burnNonFungibleItem"
 	MsgTypeTransferNonFungibleTokenOwnership = "transferNonFungibleTokenOwnership"
 	MsgTypeAcceptNonFungibleTokenOwnership   = "acceptNonFungibleTokenOwnership"
 	MsgTypeSetNonFungibleItemStatus          = "setNonFungibleItemStatus"
@@ -219,7 +219,7 @@ func (msg MsgSetNonFungibleTokenStatus) GetSigners() []sdkTypes.AccAddress {
 }
 
 // MintFungibleToken - only for token without fixed supply
-type MsgMintNonFungibleToken struct {
+type MsgMintNonFungibleItem struct {
 	ItemID     string              `json:"itemID"`
 	Symbol     string              `json:"symbol"`
 	Owner      sdkTypes.AccAddress `json:"owner"`
@@ -228,8 +228,8 @@ type MsgMintNonFungibleToken struct {
 	Metadata   string              `json:"metadata"`
 }
 
-func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID, properties, metadata string) *MsgMintNonFungibleToken {
-	return &MsgMintNonFungibleToken{
+func NewMsgMintNonFungibleItem(owner sdkTypes.AccAddress, symbol string, to sdkTypes.AccAddress, itemID, properties, metadata string) *MsgMintNonFungibleItem {
+	return &MsgMintNonFungibleItem{
 		ItemID:     itemID,
 		Symbol:     symbol,
 		To:         to,
@@ -239,15 +239,15 @@ func NewMsgMintNonFungibleToken(owner sdkTypes.AccAddress, symbol string, to sdk
 	}
 }
 
-func (msg MsgMintNonFungibleToken) Route() string {
+func (msg MsgMintNonFungibleItem) Route() string {
 	return MsgRoute
 }
 
-func (msg MsgMintNonFungibleToken) Type() string {
-	return MsgTypeMintNonFungibleToken
+func (msg MsgMintNonFungibleItem) Type() string {
+	return MsgTypeMintNonFungibleItem
 }
 
-func (msg MsgMintNonFungibleToken) ValidateBasic() sdkTypes.Error {
+func (msg MsgMintNonFungibleItem) ValidateBasic() sdkTypes.Error {
 	if msg.Owner.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.Owner.String())
 	}
@@ -267,24 +267,24 @@ func (msg MsgMintNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	return nil
 }
 
-func (msg MsgMintNonFungibleToken) GetSignBytes() []byte {
+func (msg MsgMintNonFungibleItem) GetSignBytes() []byte {
 	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgMintNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
+func (msg MsgMintNonFungibleItem) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Owner}
 }
 
 // TransferFungibleToken
-type MsgTransferNonFungibleToken struct {
+type MsgTransferNonFungibleItem struct {
 	Symbol string              `json:"symbol"`
 	From   sdkTypes.AccAddress `json:"from"`
 	To     sdkTypes.AccAddress `json:"to"`
 	ItemID string              `json:"itemID"`
 }
 
-func NewMsgTransferNonFungibleToken(symbol string, from, to sdkTypes.AccAddress, itemID string) *MsgTransferNonFungibleToken {
-	return &MsgTransferNonFungibleToken{
+func NewMsgTransferNonFungibleItem(symbol string, from, to sdkTypes.AccAddress, itemID string) *MsgTransferNonFungibleItem {
+	return &MsgTransferNonFungibleItem{
 		Symbol: symbol,
 		From:   from,
 		To:     to,
@@ -292,15 +292,15 @@ func NewMsgTransferNonFungibleToken(symbol string, from, to sdkTypes.AccAddress,
 	}
 }
 
-func (msg MsgTransferNonFungibleToken) Route() string {
+func (msg MsgTransferNonFungibleItem) Route() string {
 	return MsgRoute
 }
 
-func (msg MsgTransferNonFungibleToken) Type() string {
-	return MsgTypeTransferNonFungibleToken
+func (msg MsgTransferNonFungibleItem) Type() string {
+	return MsgTypeTransferNonFungibleItem
 }
 
-func (msg MsgTransferNonFungibleToken) ValidateBasic() sdkTypes.Error {
+func (msg MsgTransferNonFungibleItem) ValidateBasic() sdkTypes.Error {
 	if msg.From.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
@@ -316,38 +316,38 @@ func (msg MsgTransferNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	return nil
 }
 
-func (msg MsgTransferNonFungibleToken) GetSignBytes() []byte {
+func (msg MsgTransferNonFungibleItem) GetSignBytes() []byte {
 	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgTransferNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
+func (msg MsgTransferNonFungibleItem) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.From}
 }
 
 // BurnFungibleToken - only for fixed supply fungible token
-type MsgBurnNonFungibleToken struct {
+type MsgBurnNonFungibleItem struct {
 	Symbol string              `json:"symbol"`
 	From   sdkTypes.AccAddress `json:"from"`
 	ItemID string              `json:"itemID"`
 }
 
-func NewMsgBurnNonFungibleToken(symbol string, from sdkTypes.AccAddress, itemID string) *MsgBurnNonFungibleToken {
-	return &MsgBurnNonFungibleToken{
+func NewMsgBurnNonFungibleItem(symbol string, from sdkTypes.AccAddress, itemID string) *MsgBurnNonFungibleItem {
+	return &MsgBurnNonFungibleItem{
 		Symbol: symbol,
 		From:   from,
 		ItemID: itemID,
 	}
 }
 
-func (msg MsgBurnNonFungibleToken) Route() string {
+func (msg MsgBurnNonFungibleItem) Route() string {
 	return MsgRoute
 }
 
-func (msg MsgBurnNonFungibleToken) Type() string {
-	return MsgTypeBurnNonFungibleToken
+func (msg MsgBurnNonFungibleItem) Type() string {
+	return MsgTypeBurnNonFungibleItem
 }
 
-func (msg MsgBurnNonFungibleToken) ValidateBasic() sdkTypes.Error {
+func (msg MsgBurnNonFungibleItem) ValidateBasic() sdkTypes.Error {
 	if msg.From.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
@@ -359,11 +359,11 @@ func (msg MsgBurnNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	return nil
 }
 
-func (msg MsgBurnNonFungibleToken) GetSignBytes() []byte {
+func (msg MsgBurnNonFungibleItem) GetSignBytes() []byte {
 	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgBurnNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
+func (msg MsgBurnNonFungibleItem) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.From}
 }
 

@@ -5,7 +5,7 @@ import (
 	"github.com/maxonrow/maxonrow-go/types"
 )
 
-func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID, properties, metadata string) sdkTypes.Result {
+func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID, properties, metadata string) sdkTypes.Result {
 
 	nonFungibleToken := new(Token)
 
@@ -81,8 +81,8 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	}
 }
 
-//* TransferNonFungibleToken
-func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+//* TransferNonFungibleItem
+func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
@@ -150,7 +150,7 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 }
 
 // BurnFungibleToken
-func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.getTokenData(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
@@ -366,6 +366,10 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 
 	if token.Flags.HasFlag(FrozenFlag) {
 		return types.ErrTokenFrozen().Result()
+	}
+
+	if !token.Flags.HasFlag(ModifiableFlag) {
+		return types.ErrTokenItemNotModifiable().Result()
 	}
 
 	item := k.getNonFungibleItem(ctx, symbol, itemID)

@@ -25,12 +25,12 @@ func NewHandler(keeper *Keeper) sdkTypes.Handler {
 			return handleMsgCreateNonFungibleToken(ctx, keeper, msg)
 		case MsgSetNonFungibleTokenStatus:
 			return handleMsgSetNonFungibleTokenStatus(ctx, keeper, msg)
-		case MsgMintNonFungibleToken:
-			return handleMsgMintNonFungibleToken(ctx, keeper, msg)
-		case MsgTransferNonFungibleToken:
-			return handleMsgTransferNonFungibleToken(ctx, keeper, msg)
-		case MsgBurnNonFungibleToken:
-			return handleMsgBurnNonFungibleToken(ctx, keeper, msg)
+		case MsgMintNonFungibleItem:
+			return handleMsgMintNonFungibleItem(ctx, keeper, msg)
+		case MsgTransferNonFungibleItem:
+			return handleMsgTransferNonFungibleItem(ctx, keeper, msg)
+		case MsgBurnNonFungibleItem:
+			return handleMsgBurnNonFungibleItem(ctx, keeper, msg)
 		case MsgSetNonFungibleItemStatus:
 			return handleMsgSetNonFungibleItemStatus(ctx, keeper, msg)
 		case MsgTransferNonFungibleTokenOwnership:
@@ -84,16 +84,16 @@ func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, ms
 
 }
 
-func handleMsgMintNonFungibleToken(ctx sdkTypes.Context, keeper *Keeper, msg MsgMintNonFungibleToken) sdkTypes.Result {
-	return keeper.MintNonFungibleToken(ctx, msg.Symbol, msg.Owner, msg.To, msg.ItemID, msg.Properties, msg.Metadata)
+func handleMsgMintNonFungibleItem(ctx sdkTypes.Context, keeper *Keeper, msg MsgMintNonFungibleItem) sdkTypes.Result {
+	return keeper.MintNonFungibleItem(ctx, msg.Symbol, msg.Owner, msg.To, msg.ItemID, msg.Properties, msg.Metadata)
 }
 
-func handleMsgTransferNonFungibleToken(ctx sdkTypes.Context, keeper *Keeper, msg MsgTransferNonFungibleToken) sdkTypes.Result {
-	return keeper.TransferNonFungibleToken(ctx, msg.Symbol, msg.From, msg.To, msg.ItemID)
+func handleMsgTransferNonFungibleItem(ctx sdkTypes.Context, keeper *Keeper, msg MsgTransferNonFungibleItem) sdkTypes.Result {
+	return keeper.TransferNonFungibleItem(ctx, msg.Symbol, msg.From, msg.To, msg.ItemID)
 }
 
-func handleMsgBurnNonFungibleToken(ctx sdkTypes.Context, keeper *Keeper, msg MsgBurnNonFungibleToken) sdkTypes.Result {
-	return keeper.BurnNonFungibleToken(ctx, msg.Symbol, msg.From, msg.ItemID)
+func handleMsgBurnNonFungibleItem(ctx sdkTypes.Context, keeper *Keeper, msg MsgBurnNonFungibleItem) sdkTypes.Result {
+	return keeper.BurnNonFungibleItem(ctx, msg.Symbol, msg.From, msg.ItemID)
 }
 
 func handleMsgTransferNonFungibleTokenOwnership(ctx sdkTypes.Context, keeper *Keeper, msg MsgTransferNonFungibleTokenOwnership) sdkTypes.Result {
