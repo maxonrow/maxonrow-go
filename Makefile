@@ -19,10 +19,10 @@ install:
 	go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwcli
 
 docker:
-	docker build containers --tag maxonrow
+	docker build docker --tag maxonrow
 
 test:
 	go test $(PACKAGES)
 
 
-.PHONY: all deps build install test
+.PHONY: all deps build install test docker
