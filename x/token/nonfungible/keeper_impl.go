@@ -5,11 +5,11 @@ import (
 	"github.com/maxonrow/maxonrow-go/types"
 )
 
-func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID, properties, metadata string) sdkTypes.Result {
+func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, itemID, properties, metadata string) sdkTypes.Result {
 
 	nonFungibleToken := new(Token)
 
-	if exists := k.getTokenData(ctx, symbol, nonFungibleToken); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, nonFungibleToken); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -81,10 +81,10 @@ func (k *Keeper) MintNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 	}
 }
 
-//* TransferNonFungibleToken
-func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+//* TransferNonFungibleItem
+func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
 	}
 
@@ -150,9 +150,9 @@ func (k *Keeper) TransferNonFungibleToken(ctx sdkTypes.Context, symbol string, f
 }
 
 // BurnFungibleToken
-func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -173,12 +173,12 @@ func (k *Keeper) BurnNonFungibleToken(ctx sdkTypes.Context, symbol string, from 
 		return types.ErrTokenFrozen().Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrInvalidTokenOwner().Result()
 	}
 
-	itemOwner := k.getNonFungibleItemOwner(ctx, symbol, itemID)
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 	if !itemOwner.Equals(from) {
 		return types.ErrInvalidTokenOwner().Result()
 	}
@@ -331,7 +331,7 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 		return sdkTypes.ErrInvalidSequence("Invalid endorser.").Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenInvalid().Result()
 	}
@@ -368,7 +368,11 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenFrozen().Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	if !token.Flags.HasFlag(ModifiableFlag) {
+		return types.ErrTokenItemNotModifiable().Result()
+	}
+
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenInvalid().Result()
 	}
@@ -377,7 +381,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenItemFronzen().Result()
 	}
 
-	itemOwnerAddr := k.getNonFungibleItemOwner(ctx, symbol, itemID)
+	itemOwnerAddr := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 
 	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
 		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
@@ -499,6 +503,31 @@ func (k *Keeper) IsTokenNewOwner(ctx sdkTypes.Context, symbol string, newOwner s
 	}
 
 	if token.NewOwner.Equals(newOwner) {
+		return true
+	}
+
+	return false
+}
+
+func (k *Keeper) IsItemMetadataModifiable(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) bool {
+
+	var token = new(Token)
+	err := k.mustGetTokenData(ctx, symbol, token)
+	if err != nil {
+		return false
+	}
+
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
+
+	if itemOwner.Empty() {
+		return false
+	}
+
+	if token.Flags.HasFlag(ModifiableFlag) && itemOwner.Equals(from) {
+		return true
+	}
+
+	if !token.Flags.HasFlag(ModifiableFlag) && from.Equals(token.Owner) {
 		return true
 	}
 

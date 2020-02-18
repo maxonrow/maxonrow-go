@@ -29,7 +29,7 @@ func validateTokenName(tokenName string) sdkTypes.Error {
 	return nil
 }
 
-func validateSymbol(symbol string) sdkTypes.Error {
+func ValidateSymbol(symbol string) sdkTypes.Error {
 	if len(symbol) == 0 || len(symbol) > TokenSymbolMaxLength {
 		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(

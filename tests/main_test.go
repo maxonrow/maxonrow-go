@@ -67,12 +67,10 @@ func startServer(done chan struct{}) *Process {
 }
 
 func TestMain(m *testing.M) {
-	dir, err := ioutil.TempDir("", "mxw")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Starting test node at " + dir)
-	tWorkingDir = dir
+
+	tWorkingDir = os.TempDir() + "/maxonrow"
+	fmt.Println("Starting test node at " + tWorkingDir)
+	os.RemoveAll(tWorkingDir)
 
 	type key struct {
 		Name        string

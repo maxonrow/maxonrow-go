@@ -182,6 +182,14 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.tokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+
+		var token = new(nonFungible.Token)
+		isTokenExisted := app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
+		if isTokenExisted == true {
+			if !token.Owner.Equals(msg.From) {
+				return sdkTypes.ErrUnknownRequest("Invalid token owner.")
+			}
+		}
 	case fungible.MsgTransferFungibleTokenOwnership:
 		if !app.tokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
@@ -223,11 +231,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case nonFungible.MsgSetNonFungibleTokenStatus:
 		// TO-DO: revisit
-		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
-			return sdkTypes.ErrUnauthorized("Not authorised to approve.")
-		}
 		if !app.nonFungibleTokenKeeper.TokenExists(ctx, msg.Payload.Token.Symbol) {
 			return types.ErrInvalidTokenSymbol(msg.Payload.Token.Symbol)
+		}
+		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
+			return sdkTypes.ErrUnauthorized("Not authorised to approve.")
 		}
 		err := app.nonFungibleTokenKeeper.ValidateSignatures(ctx, msg)
 		if err != nil {
@@ -269,6 +277,24 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case nonFungible.MsgSetNonFungibleItemStatus:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.ItemPayload.Item.Symbol) {
+			return types.ErrTokenInvalid()
+		}
+
+		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID)
+		if nonFungibleItem == nil {
+			return sdkTypes.ErrUnknownRequest("No such item to freeze.")
+		}
+
+		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.Owner) {
+			return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.")
+		}
+
+		signatureErr := app.nonFungibleTokenKeeper.ValidateSignatures(ctx, msg)
+		if signatureErr != nil {
+			return signatureErr
+		}
+
 		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
 				return types.ErrTokenAccountFrozen()
@@ -279,7 +305,8 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 				return types.ErrTokenAccountUnFrozen()
 			}
 		}
-	case nonFungible.MsgTransferNonFungibleToken:
+
+	case nonFungible.MsgTransferNonFungibleItem:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -289,20 +316,49 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
 			return types.ErrTokenAccountFrozen()
 		}
-	case nonFungible.MsgMintNonFungibleToken:
+
+		// 1. [Transfer non fungible token item - Invalid Item-ID]
+		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
+		if nonFungibleItem == nil {
+			return sdkTypes.ErrUnknownRequest("Invalid Item ID.")
+		}
+
+	case nonFungible.MsgMintNonFungibleItem:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
-	case nonFungible.MsgBurnNonFungibleToken:
+
+		//1. [Mint (by Public==TRUE) non fungible token(TNFT-public-01) - Error, Public token can only be minted to itself.]
+		var token = new(nonFungible.Token)
+		app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
+		if token.Flags.HasFlag(0x0080) {
+			ownerAcc := msg.Owner
+			newOwnerAcc := msg.To
+			if !ownerAcc.Equals(newOwnerAcc) {
+				return sdkTypes.ErrInternal("Public token can only be minted to oneself.")
+			}
+		}
+
+	case nonFungible.MsgBurnNonFungibleItem:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+		// 1. [Burn non fungible token item - Invalid Item-owner]
+		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
+		itemOwner := app.nonFungibleTokenKeeper.GetNonFungibleItemOwnerInfo(ctx, msg.Symbol, msg.ItemID)
+		if item == nil {
+			return types.ErrTokenItemIDInUsed()
+		}
+		if !itemOwner.Equals(msg.From) {
+			return types.ErrInvalidItemOwner()
+		}
+
 	case nonFungible.MsgTransferNonFungibleTokenOwnership:
 		if !app.nonFungibleTokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
@@ -329,6 +385,17 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if !app.nonFungibleTokenKeeper.IsTokenEndorser(ctx, msg.Symbol, msg.From) {
 			return types.ErrInvalidEndorser()
 		}
+
+		// 1. [endorse a nonfungible item - Invalid Item-ID]
+		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
+		if item == nil {
+			return types.ErrTokenInvalid()
+		}
+		// 2. [endorse a nonfungible item - Invalid Token Symbol]
+		if err := nonFungible.ValidateSymbol(msg.Symbol); err != nil {
+			return err
+		}
+
 	case nonFungible.MsgUpdateNFTMetadata:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
@@ -336,12 +403,21 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+		if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
+			return types.ErrInvalidTokenOwner()
+		}
 	case nonFungible.MsgUpdateItemMetadata:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+			return types.ErrTokenInvalid()
+		}
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
 			return types.ErrTokenAccountFrozen()
 		}
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
+		}
+		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
+			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
 		}
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {

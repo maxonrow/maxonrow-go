@@ -14,13 +14,15 @@ build:
 	go build $(LDFLAGS) $(TAGS) -mod vendor -o ./build/mxwd ./cmd/mxwd
 	go build $(LDFLAGS) $(TAGS) -mod vendor -o ./build/mxwcli ./cmd/mxwcli
 
-
 install:
 	go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwd
 	go install $(LDFLAGS) $(TAGS) -mod vendor ./cmd/mxwcli
+
+docker:
+	docker build docker --tag maxonrow
 
 test:
 	go test $(PACKAGES)
 
 
-.PHONY: all deps build install test
+.PHONY: all deps build install test docker
