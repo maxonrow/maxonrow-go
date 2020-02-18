@@ -2,9 +2,9 @@
 
 This dockerfile is useful for running maxonrow locally and testing purpose. It has some kyc accounts. Some fee settings are set and also maintenance group are defined.
 
-This docker file has pre define [genesis](../test/config/genesis.json) file and [config]](../test/config/config.toml) file.
+This docker file has pre define [genesis](../tests/config/genesis.json) file and [config](../tests/config/config.toml) file.
 
-Accounts including private keys are define [here](](../test/config/keys.json))
+Accounts including private keys are define [here](../tests/config/keys.json)
 
 To build the docker run `docker build . --tag maxonrow`
 
