@@ -23,7 +23,8 @@ const (
 	CodeTokenItemIDInUsed                   sdkTypes.CodeType = 2105
 	CodeTokenInvalidEndorser                sdkTypes.CodeType = 2106
 	CodeTokenItemFrozen                     sdkTypes.CodeType = 2107
-	CodeTokenItemNotModifiable              sdkTypes.CodeType = 2107
+	CodeTokenInvalidItemOwner               sdkTypes.CodeType = 2108
+	CodeTokenItemNotModifiable              sdkTypes.CodeType = 2109
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -100,6 +101,10 @@ func ErrInvalidTokenOwner() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenInvalidOwner, "Invalid token owner.")
 }
 
+func ErrInvalidItemOwner() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenInvalidItemOwner, "Invalid item owner.")
+}
+
 func ErrTokenTransferTokenOwnershipApproved() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenTransferTokenOwnershipApproved, "Transfer token ownership has been approved.")
 }
@@ -136,7 +141,6 @@ func ErrInvalidEndorser() sdkTypes.Error {
 func ErrTokenItemFronzen() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item frozen.")
 }
-
 func ErrTokenItemNotModifiable() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemNotModifiable, "Token item not modifiable.")
 }

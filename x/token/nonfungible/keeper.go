@@ -503,7 +503,7 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 // FreezeNonFungibleItem
 func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner, itemOwner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
 	}
 
@@ -516,9 +516,14 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 		return sdkTypes.ErrInvalidSequence("Invalid signer.").Result()
 	}
 
-	nonFungibleItem := k.getNonFungibleItem(ctx, symbol, itemID)
+	nonFungibleItem := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if nonFungibleItem == nil {
 		return sdkTypes.ErrUnknownRequest("No such item to freeze.").Result()
+	}
+
+	itemOwner = k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
+	if itemOwner == nil {
+		return sdkTypes.ErrUnknownRequest("Invalid item owner.").Result()
 	}
 
 	if nonFungibleItem.Frozen {
@@ -552,20 +557,23 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 	}
 
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
 	}
 
-	nonFungibleItem := k.getNonFungibleItem(ctx, symbol, itemID)
+	nonFungibleItem := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if nonFungibleItem == nil {
 		return sdkTypes.ErrUnknownRequest("No such  non fungible item to unfreeze.").Result()
+	}
+
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
+	if itemOwner == nil {
+		return sdkTypes.ErrUnknownRequest("Invalid item owner.").Result()
 	}
 
 	if !nonFungibleItem.Frozen {
 		return sdkTypes.ErrUnknownRequest("Non fungible item not frozen.").Result()
 	}
-
-	itemOwner := k.getNonFungibleItemOwner(ctx, symbol, itemID)
 
 	nonFungibleItem.Frozen = false
 
@@ -660,7 +668,7 @@ func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol strin
 	}
 }
 
-func (k *Keeper) getTokenData(ctx sdkTypes.Context, symbol string, target interface{}) bool {
+func (k *Keeper) GetTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
 
@@ -700,7 +708,7 @@ func (k *Keeper) increaseMintItemLimit(ctx sdkTypes.Context, symbol string, owne
 }
 
 // Item
-func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID string) *Item {
+func (k *Keeper) GetNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID string) *Item {
 	itemKey := getNonFungibleItemKey(symbol, []byte(itemID))
 	store := ctx.KVStore(k.key)
 
@@ -715,7 +723,7 @@ func (k *Keeper) getNonFungibleItem(ctx sdkTypes.Context, symbol string, itemID 
 	return item
 }
 
-func (k *Keeper) getNonFungibleItemOwner(ctx sdkTypes.Context, symbol string, itemID string) sdkTypes.AccAddress {
+func (k *Keeper) GetNonFungibleItemOwnerInfo(ctx sdkTypes.Context, symbol string, itemID string) sdkTypes.AccAddress {
 	ownerKey := getNonFungibleItemOwnerKey(symbol, []byte(itemID))
 	store := ctx.KVStore(k.key)
 
@@ -747,11 +755,11 @@ func (k *Keeper) storeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner
 }
 
 func (k *Keeper) getAnyItem(ctx sdkTypes.Context, symbol string, itemID string) interface{} {
-	return k.getNonFungibleItem(ctx, symbol, itemID)
+	return k.GetNonFungibleItem(ctx, symbol, itemID)
 }
 
 func (k *Keeper) mustGetTokenData(ctx sdkTypes.Context, symbol string, target interface{}) sdkTypes.Error {
-	if exists := k.getTokenData(ctx, symbol, target); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, target); !exists {
 		return types.ErrInvalidTokenSymbol(symbol)
 	}
 	return nil
@@ -861,7 +869,7 @@ func (k *Keeper) IsTokenFrozen(ctx sdkTypes.Context, symbol string) bool {
 
 func (k *Keeper) IsNonFungibleItemFrozen(ctx sdkTypes.Context, symbol string, itemID string) bool {
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 
 	if item != nil {
 		if item.Frozen {
@@ -888,7 +896,7 @@ func (k *Keeper) IsVerifyableTransferTokenOwnership(ctx sdkTypes.Context, symbol
 
 func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID string) bool {
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 
 	if item != nil {
 		return false
@@ -899,7 +907,7 @@ func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID stri
 
 func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser sdkTypes.AccAddress) bool {
 	token := new(Token)
-	k.getTokenData(ctx, symbol, token)
+	k.GetTokenDataInfo(ctx, symbol, token)
 
 	var endorsers types.AddressHolder
 

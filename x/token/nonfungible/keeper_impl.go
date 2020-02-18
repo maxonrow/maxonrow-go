@@ -9,7 +9,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 
 	nonFungibleToken := new(Token)
 
-	if exists := k.getTokenData(ctx, symbol, nonFungibleToken); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, nonFungibleToken); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -84,7 +84,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 //* TransferNonFungibleItem
 func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
 	}
 
@@ -152,7 +152,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 // BurnFungibleToken
 func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -173,12 +173,12 @@ func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 		return types.ErrTokenFrozen().Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrInvalidTokenOwner().Result()
 	}
 
-	itemOwner := k.getNonFungibleItemOwner(ctx, symbol, itemID)
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 	if !itemOwner.Equals(from) {
 		return types.ErrInvalidTokenOwner().Result()
 	}
@@ -331,7 +331,7 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 		return sdkTypes.ErrInvalidSequence("Invalid endorser.").Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenInvalid().Result()
 	}
@@ -372,7 +372,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenItemNotModifiable().Result()
 	}
 
-	item := k.getNonFungibleItem(ctx, symbol, itemID)
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenInvalid().Result()
 	}
@@ -381,7 +381,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenItemFronzen().Result()
 	}
 
-	itemOwnerAddr := k.getNonFungibleItemOwner(ctx, symbol, itemID)
+	itemOwnerAddr := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 
 	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
 		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
