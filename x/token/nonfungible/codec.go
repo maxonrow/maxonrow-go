@@ -5,9 +5,9 @@ import "github.com/cosmos/cosmos-sdk/codec"
 func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateNonFungibleToken{}, "nonFungible/"+MsgTypeCreateNonFungibleToken, nil)
 	cdc.RegisterConcrete(MsgSetNonFungibleTokenStatus{}, "nonFungible/"+MsgTypeSetNonFungibleTokenStatus, nil)
-	cdc.RegisterConcrete(MsgTransferNonFungibleToken{}, "nonFungible/"+MsgTypeTransferNonFungibleToken, nil)
-	cdc.RegisterConcrete(MsgMintNonFungibleToken{}, "nonFungible/"+MsgTypeMintNonFungibleToken, nil)
-	cdc.RegisterConcrete(MsgBurnNonFungibleToken{}, "nonFungible/"+MsgTypeBurnNonFungibleToken, nil)
+	cdc.RegisterConcrete(MsgTransferNonFungibleItem{}, "nonFungible/"+MsgTypeTransferNonFungibleItem, nil)
+	cdc.RegisterConcrete(MsgMintNonFungibleItem{}, "nonFungible/"+MsgTypeMintNonFungibleItem, nil)
+	cdc.RegisterConcrete(MsgBurnNonFungibleItem{}, "nonFungible/"+MsgTypeBurnNonFungibleItem, nil)
 	cdc.RegisterConcrete(MsgTransferNonFungibleTokenOwnership{}, "nonFungible/"+MsgTypeTransferNonFungibleTokenOwnership, nil)
 	cdc.RegisterConcrete(MsgAcceptNonFungibleTokenOwnership{}, "nonFungible/"+MsgTypeAcceptNonFungibleTokenOwnership, nil)
 	cdc.RegisterConcrete(MsgSetNonFungibleItemStatus{}, "nonFungible/"+MsgTypeSetNonFungibleItemStatus, nil)

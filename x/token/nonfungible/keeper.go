@@ -508,7 +508,7 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 	}
 
 	if !k.IsAuthorised(ctx, owner) {
-		return sdkTypes.ErrUnauthorized("Not authorised to freeze non token item.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to freeze non fungible item.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
