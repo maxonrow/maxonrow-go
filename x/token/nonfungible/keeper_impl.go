@@ -508,3 +508,28 @@ func (k *Keeper) IsTokenNewOwner(ctx sdkTypes.Context, symbol string, newOwner s
 
 	return false
 }
+
+func (k *Keeper) IsItemMetadataModifiable(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) bool {
+
+	var token = new(Token)
+	err := k.mustGetTokenData(ctx, symbol, token)
+	if err != nil {
+		return false
+	}
+
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
+
+	if itemOwner.Empty() {
+		return false
+	}
+
+	if token.Flags.HasFlag(ModifiableFlag) && itemOwner.Equals(from) {
+		return true
+	}
+
+	if !token.Flags.HasFlag(ModifiableFlag) && from.Equals(token.Owner) {
+		return true
+	}
+
+	return false
+}
