@@ -294,7 +294,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if signatureErr != nil {
 			return signatureErr
 		}
-		
+
 		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
 				return types.ErrTokenAccountFrozen()
@@ -403,31 +403,21 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+		if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
+			return types.ErrInvalidTokenOwner()
+		}
 	case nonFungible.MsgUpdateItemMetadata:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+			return types.ErrTokenInvalid()
+		}
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
 			return types.ErrTokenAccountFrozen()
 		}
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
-		// 1. [Update Item Metadata non fungible token - Invalid Item Id.]
-		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
-		if item == nil {
-			return types.ErrTokenInvalid()
-		}
-
-		// 2. [Update Item Metadata non fungible token - Item owner not match.]
-		itemOwner := app.nonFungibleTokenKeeper.GetNonFungibleItemOwnerInfo(ctx, msg.Symbol, msg.ItemID)
-		if itemOwner == nil {
-			return sdkTypes.ErrUnknownRequest("Item owner not match.")
-		} else {
-			if !itemOwner.Equals(msg.From) {
-				return sdkTypes.ErrUnknownRequest("Item owner not match.")
-			}
-		}
-		// 3. [Update Item Metadata non fungible token - Invalid token symbol.]
-		if err := nonFungible.ValidateSymbol(msg.Symbol); err != nil {
-			return err
+		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
+			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
 		}
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {
