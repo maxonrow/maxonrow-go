@@ -336,9 +336,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
 		if token.Flags.HasFlag(0x0080) {
-			OwnerAcc := msg.Owner
-			NewOwnerAcc := msg.To
-			if !OwnerAcc.Equals(NewOwnerAcc) {
+			ownerAcc := msg.Owner
+			newOwnerAcc := msg.To
+			if !ownerAcc.Equals(newOwnerAcc) {
 				return sdkTypes.ErrInternal("Public token can only be minted to oneself.")
 			}
 		}
