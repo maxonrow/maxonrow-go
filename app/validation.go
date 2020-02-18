@@ -231,11 +231,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case nonFungible.MsgSetNonFungibleTokenStatus:
 		// TO-DO: revisit
-		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
-			return sdkTypes.ErrUnauthorized("Not authorised to approve.")
-		}
 		if !app.nonFungibleTokenKeeper.TokenExists(ctx, msg.Payload.Token.Symbol) {
 			return types.ErrInvalidTokenSymbol(msg.Payload.Token.Symbol)
+		}
+		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
+			return sdkTypes.ErrUnauthorized("Not authorised to approve.")
 		}
 		err := app.nonFungibleTokenKeeper.ValidateSignatures(ctx, msg)
 		if err != nil {
@@ -277,9 +277,8 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case nonFungible.MsgSetNonFungibleItemStatus:
-		var token = new(nonFungible.Token)
-		if exists := app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.ItemPayload.Item.Symbol, token); !exists {
-			return sdkTypes.ErrUnknownRequest("No such non fungible token.")
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.ItemPayload.Item.Symbol) {
+			return types.ErrTokenInvalid()
 		}
 
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID)
@@ -295,7 +294,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if signatureErr != nil {
 			return signatureErr
 		}
-
+		
 		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
 				return types.ErrTokenAccountFrozen()
