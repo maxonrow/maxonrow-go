@@ -1,6 +1,6 @@
 # Maxonrow docker
 
-This dockerfile is useful for running maxonrow locally and testing purpose. It has some kys accounts. Some fee settings are set and also maintenance group are defined.
+This dockerfile is useful for running maxonrow locally and testing purpose. It has some kyc accounts. Some fee settings are set and also maintenance group are defined.
 
 This docker file has pre define [genesis](../test/config/genesis.json) file and [config]](../test/config/config.toml) file.
 
