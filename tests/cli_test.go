@@ -31,6 +31,7 @@ func TestSendCli(t *testing.T) {
 	hash, err := hex.DecodeString(matched[8:])
 	require.NoError(t, err)
 
+	WaitForNextHeightTM(tPort)
 	res1 := Tx(hash)
 	assert.Zero(t, res1.TxResult.Code)
 }

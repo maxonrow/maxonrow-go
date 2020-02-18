@@ -78,7 +78,7 @@ func (msg MsgCreateNonFungibleToken) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -173,7 +173,7 @@ func (msg MsgSetNonFungibleTokenStatus) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.Owner.String())
 	}
 
-	if err := validateSymbol(msg.Payload.Token.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Payload.Token.Symbol); err != nil {
 		return err
 	}
 
@@ -256,7 +256,7 @@ func (msg MsgMintNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.To.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -309,7 +309,7 @@ func (msg MsgTransferNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.To.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -352,7 +352,7 @@ func (msg MsgBurnNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -413,7 +413,7 @@ func (msg MsgSetNonFungibleItemStatus) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.ItemPayload.Item.From.String())
 	}
 
-	if err := validateSymbol(msg.ItemPayload.Item.Symbol); err != nil {
+	if err := ValidateSymbol(msg.ItemPayload.Item.Symbol); err != nil {
 		return err
 	}
 
@@ -478,7 +478,7 @@ func (msg MsgTransferNonFungibleTokenOwnership) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.To.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -519,7 +519,7 @@ func (msg MsgAcceptNonFungibleTokenOwnership) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -565,7 +565,7 @@ func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInternal("Item id can not be empty.")
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -617,7 +617,7 @@ func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 
@@ -659,7 +659,7 @@ func (msg MsgUpdateNFTMetadata) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.From.String())
 	}
 
-	if err := validateSymbol(msg.Symbol); err != nil {
+	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
 	if err := validateMetadata(msg.Metadata); err != nil {
