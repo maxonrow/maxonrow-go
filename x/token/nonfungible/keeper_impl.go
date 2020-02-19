@@ -368,7 +368,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenFrozen().Result()
 	}
 
-	if !token.Flags.HasFlag(ModifiableFlag) {
+	if !k.IsItemMetadataModifiable(ctx, symbol, from, itemID) {
 		return types.ErrTokenItemNotModifiable().Result()
 	}
 
@@ -379,12 +379,6 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 
 	if item.Frozen {
 		return types.ErrTokenItemFronzen().Result()
-	}
-
-	itemOwnerAddr := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
-
-	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
-		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
 	}
 
 	item.Metadata = metadata

@@ -183,13 +183,6 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 
-		var token = new(nonFungible.Token)
-		isTokenExisted := app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
-		if isTokenExisted == true {
-			if !token.Owner.Equals(msg.From) {
-				return sdkTypes.ErrUnknownRequest("Invalid token owner.")
-			}
-		}
 	case fungible.MsgTransferFungibleTokenOwnership:
 		if !app.tokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
