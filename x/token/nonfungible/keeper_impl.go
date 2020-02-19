@@ -52,7 +52,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	// check mint limit, if token mint limit !=0
 	if !nonFungibleToken.MintLimit.IsZero() {
 
-		if k.IsMintLimitExisted(ctx, nonFungibleToken.Symbol, to) {
+		if k.IsMintLimitExceeded(ctx, nonFungibleToken.Symbol, to) {
 			return sdkTypes.ErrInternal("Holding limit existed.").Result()
 		}
 		k.increaseMintItemLimit(ctx, symbol, to)
@@ -111,7 +111,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 
 	var item = new(Item)
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(itemValue, item)
-	if k.IsItemTransferLimitExisted(ctx, symbol, itemID) {
+	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
 		return sdkTypes.ErrInternal("Item has existed transfer limit.").Result()
@@ -520,7 +520,7 @@ func (k *Keeper) IsItemMetadataModifiable(ctx sdkTypes.Context, symbol string, f
 	return false
 }
 
-func (k *Keeper) IsItemTransferLimitExisted(ctx sdkTypes.Context, symbol string, itemID string) bool {
+func (k *Keeper) IsItemTransferLimitExceeded(ctx sdkTypes.Context, symbol string, itemID string) bool {
 
 	var token = new(Token)
 	err := k.mustGetTokenData(ctx, symbol, token)
@@ -540,7 +540,7 @@ func (k *Keeper) IsItemTransferLimitExisted(ctx sdkTypes.Context, symbol string,
 	return false
 }
 
-func (k *Keeper) IsMintLimitExisted(ctx sdkTypes.Context, symbol string, to sdkTypes.AccAddress) bool {
+func (k *Keeper) IsMintLimitExceeded(ctx sdkTypes.Context, symbol string, to sdkTypes.AccAddress) bool {
 
 	mintLimitKey := getMintItemLimitKey(symbol, to)
 

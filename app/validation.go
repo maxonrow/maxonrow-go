@@ -316,7 +316,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrUnknownRequest("Invalid Item ID.")
 		}
 
-		if app.nonFungibleTokenKeeper.IsItemTransferLimitExisted(ctx, msg.Symbol, msg.ItemID) {
+		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
 			return sdkTypes.ErrInternal("Transfer limit existed.")
 		}
 
@@ -328,7 +328,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 
-		if app.nonFungibleTokenKeeper.IsMintLimitExisted(ctx, msg.Symbol, msg.To) {
+		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
 			return sdkTypes.ErrInternal("Mint limit existed.")
 		}
 
