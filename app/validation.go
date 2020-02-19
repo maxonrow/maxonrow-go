@@ -317,7 +317,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
-			return sdkTypes.ErrInternal("Transfer limit existed.")
+			return sdkTypes.ErrInternal("Transfer limit exceeded.")
 		}
 
 	case nonFungible.MsgMintNonFungibleItem:
@@ -329,7 +329,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
-			return sdkTypes.ErrInternal("Mint limit existed.")
+			return sdkTypes.ErrInternal("Mint limit exceeded.")
 		}
 
 		//1. [Mint (by Public==TRUE) non fungible token(TNFT-public-01) - Error, Public token can only be minted to itself.]
