@@ -183,13 +183,6 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 
-		var token = new(nonFungible.Token)
-		isTokenExisted := app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
-		if isTokenExisted == true {
-			if !token.Owner.Equals(msg.From) {
-				return sdkTypes.ErrUnknownRequest("Invalid token owner.")
-			}
-		}
 	case fungible.MsgTransferFungibleTokenOwnership:
 		if !app.tokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
@@ -323,12 +316,20 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrUnknownRequest("Invalid Item ID.")
 		}
 
+		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
+			return sdkTypes.ErrInternal("Transfer limit existed.")
+		}
+
 	case nonFungible.MsgMintNonFungibleItem:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
+		}
+
+		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
+			return sdkTypes.ErrInternal("Mint limit existed.")
 		}
 
 		//1. [Mint (by Public==TRUE) non fungible token(TNFT-public-01) - Error, Public token can only be minted to itself.]

@@ -52,17 +52,10 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	// check mint limit, if token mint limit !=0
 	if !nonFungibleToken.MintLimit.IsZero() {
 
-		mintLimitKey := getMintItemLimitKey(nonFungibleToken.Symbol, to)
-
-		store := ctx.KVStore(k.key)
-		limit := store.Get(mintLimitKey)
-		if limit != nil {
-			if sdkTypes.NewUintFromString(string(limit)).GTE(nonFungibleToken.MintLimit) {
-				return sdkTypes.ErrInternal("Holding limit existed.").Result()
-			}
-
-			k.increaseMintItemLimit(ctx, symbol, to)
+		if k.IsMintLimitExceeded(ctx, nonFungibleToken.Symbol, to) {
+			return sdkTypes.ErrInternal("Holding limit existed.").Result()
 		}
+		k.increaseMintItemLimit(ctx, symbol, to)
 	}
 
 	k.storeToken(ctx, symbol, nonFungibleToken)
@@ -118,8 +111,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 
 	var item = new(Item)
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(itemValue, item)
-
-	if item.TransferLimit.GTE(token.TransferLimit) {
+	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
 		return sdkTypes.ErrInternal("Item has existed transfer limit.").Result()
@@ -368,7 +360,7 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 		return types.ErrTokenFrozen().Result()
 	}
 
-	if !token.Flags.HasFlag(ModifiableFlag) {
+	if !k.IsItemMetadataModifiable(ctx, symbol, from, itemID) {
 		return types.ErrTokenItemNotModifiable().Result()
 	}
 
@@ -379,12 +371,6 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 
 	if item.Frozen {
 		return types.ErrTokenItemFronzen().Result()
-	}
-
-	itemOwnerAddr := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
-
-	if !ownerWalletAccount.GetAddress().Equals(itemOwnerAddr) {
-		return sdkTypes.ErrUnknownAddress("Invalid item owner.").Result()
 	}
 
 	item.Metadata = metadata
@@ -529,6 +515,48 @@ func (k *Keeper) IsItemMetadataModifiable(ctx sdkTypes.Context, symbol string, f
 
 	if !token.Flags.HasFlag(ModifiableFlag) && from.Equals(token.Owner) {
 		return true
+	}
+
+	return false
+}
+
+func (k *Keeper) IsItemTransferLimitExceeded(ctx sdkTypes.Context, symbol string, itemID string) bool {
+
+	var token = new(Token)
+	err := k.mustGetTokenData(ctx, symbol, token)
+	if err != nil {
+		return true
+	}
+
+	item := k.GetNonFungibleItem(ctx, symbol, itemID)
+	if item == nil {
+		return true
+	}
+
+	if item.TransferLimit.GTE(token.TransferLimit) {
+		return true
+	}
+
+	return false
+}
+
+func (k *Keeper) IsMintLimitExceeded(ctx sdkTypes.Context, symbol string, to sdkTypes.AccAddress) bool {
+
+	mintLimitKey := getMintItemLimitKey(symbol, to)
+
+	store := ctx.KVStore(k.key)
+	limit := store.Get(mintLimitKey)
+	if limit != nil {
+		var token = new(Token)
+		err := k.mustGetTokenData(ctx, symbol, token)
+		if err != nil {
+			return true
+		}
+
+		if sdkTypes.NewUintFromString(string(limit)).GTE(token.MintLimit) {
+			return true
+		}
+		return false
 	}
 
 	return false
