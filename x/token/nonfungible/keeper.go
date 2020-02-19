@@ -700,8 +700,7 @@ func (k *Keeper) increaseMintItemLimit(ctx sdkTypes.Context, symbol string, owne
 		counter = counter.Add(sdkTypes.NewUintFromString("1"))
 		store.Set(key, []byte(counter.String()))
 	} else {
-		counter := sdkTypes.NewUintFromString(string(v))
-		counter = sdkTypes.NewUintFromString("1")
+		counter := sdkTypes.NewUintFromString("1")
 		store.Set(key, []byte(counter.String()))
 	}
 
