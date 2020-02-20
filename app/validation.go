@@ -129,7 +129,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		if msg.Payload.Token.Status == fungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == fungible.RejectTransferTokenOwnership {
 			if !app.tokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
-				return types.ErrTokenTransferTokenOwnershipApproved()
+				return types.ErrTokenTransferTokenOwnershipInvalid()
 			}
 		}
 	case fungible.MsgSetFungibleTokenAccountStatus:
@@ -234,7 +234,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if err != nil {
 			return err
 		}
-		if msg.Payload.Token.Status == fungible.ApproveToken {
+		if msg.Payload.Token.Status == nonFungible.ApproveToken {
 
 			for _, val := range msg.Payload.Token.TokenFees {
 				if !app.feeKeeper.FeeSettingExists(ctx, val.FeeName) {
@@ -250,7 +250,14 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 				return types.ErrTokenAlreadyApproved(msg.Payload.Token.Symbol)
 			}
 		}
-		if msg.Payload.Token.Status == fungible.FreezeToken {
+
+		if msg.Payload.Token.Status == nonFungible.RejectToken {
+			if app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
+				return types.ErrTokenAlreadyApproved(msg.Payload.Token.Symbol)
+			}
+		}
+
+		if msg.Payload.Token.Status == nonFungible.FreezeToken {
 			if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenFrozen()
 			}
@@ -258,15 +265,15 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 				return types.ErrTokenInvalid()
 			}
 		}
-		if msg.Payload.Token.Status == fungible.UnfreezeToken {
+		if msg.Payload.Token.Status == nonFungible.UnfreezeToken {
 			if !app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenUnFrozen()
 			}
 		}
 
-		if msg.Payload.Token.Status == fungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == fungible.RejectTransferTokenOwnership {
+		if msg.Payload.Token.Status == nonFungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == nonFungible.RejectTransferTokenOwnership {
 			if !app.nonFungibleTokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
-				return types.ErrTokenTransferTokenOwnershipApproved()
+				return types.ErrTokenTransferTokenOwnershipInvalid()
 			}
 		}
 	case nonFungible.MsgSetNonFungibleItemStatus:
@@ -306,6 +313,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+
+		if !app.nonFungibleTokenKeeper.IsItemOwner(ctx, msg.Symbol, msg.ItemID, msg.From) {
+			return types.ErrTokenItemNotFound()
+		}
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
 			return types.ErrTokenAccountFrozen()
 		}
@@ -317,7 +328,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
-			return sdkTypes.ErrInternal("Transfer limit existed.")
+			return sdkTypes.ErrInternal("Transfer limit exceeded.")
 		}
 
 	case nonFungible.MsgMintNonFungibleItem:
@@ -329,7 +340,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
-			return sdkTypes.ErrInternal("Mint limit existed.")
+			return sdkTypes.ErrInternal("Mint limit exceeded.")
 		}
 
 		//1. [Mint (by Public==TRUE) non fungible token(TNFT-public-01) - Error, Public token can only be minted to itself.]
@@ -352,11 +363,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 		// 1. [Burn non fungible token item - Invalid Item-owner]
 		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
-		itemOwner := app.nonFungibleTokenKeeper.GetNonFungibleItemOwnerInfo(ctx, msg.Symbol, msg.ItemID)
 		if item == nil {
-			return types.ErrTokenItemIDInUsed()
+			return types.ErrTokenItemNotFound()
 		}
-		if !itemOwner.Equals(msg.From) {
+		if !app.nonFungibleTokenKeeper.IsItemOwner(ctx, msg.Symbol, msg.ItemID, msg.From) {
 			return types.ErrInvalidItemOwner()
 		}
 

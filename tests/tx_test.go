@@ -149,16 +149,22 @@ func TestTxs(t *testing.T) {
 					msg = makeCreateNonFungibleTokenMsg(t, i.Name, i.Symbol, i.TokenMetadata, i.Owner, i.ApplicationFee, i.FeeCollector)
 				case "approve":
 					msg = makeApproveNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "APPROVE", i.FeeSettingName, i.MintLimit, i.TransferLimit, i.EndorserList, i.Burnable, i.Modifiable, i.Public)
-				case "transfer":
+				case "reject":
+					msg = makeRejectNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "REJECT")
+				case "transfer-item":
 					msg = makeTransferNonFungibleTokenMsg(t, i.Owner, i.NewOwner, i.Symbol, i.ItemID)
-				case "mint":
+				case "mint-item":
 					msg = makeMintNonFungibleTokenMsg(t, i.Owner, i.NewOwner, i.Symbol, i.ItemID, i.Properties, i.Metadata)
-				case "burn":
+				case "burn-item":
 					msg = makeBurnNonFungibleTokenMsg(t, i.Owner, i.Symbol, i.ItemID)
-				case "transfer-ownership":
+				case "transfer-token-ownership":
 					msg = makeTransferNonFungibleTokenOwnershipMsg(t, i.Owner, i.NewOwner, i.Symbol)
-				case "accept-ownership":
+				case "accept-token-ownership":
 					msg = makeAcceptNonFungibleTokenOwnershipMsg(t, i.NewOwner, i.Symbol)
+				case "verify-transfer-token-ownership":
+					msg = makeVerifyTransferNonFungibleTokenOwnershipMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership, i.Burnable, i.Modifiable, i.Public)
+				case "reject-transfer-token-ownership":
+					msg = makeRejectTransferTokenOwnershipMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "REJECT_TRANFER_TOKEN_OWNERSHIP")
 				case "freeze-item":
 					msg = makeFreezeNonFungibleItemMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID)
 				case "unfreeze-item":
@@ -167,10 +173,8 @@ func TestTxs(t *testing.T) {
 					msg = makeFreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable, i.Modifiable, i.Public)
 				case "unfreeze":
 					msg = makeUnfreezeNonFungibleTokenMsg(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable, i.Modifiable, i.Public)
-				case "verify-transfer-tokenOwnership":
-					msg = makeVerifyTransferNonFungibleTokenOwnership(t, tc.signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership, i.Burnable, i.Modifiable, i.Public)
-				case "endorsement":
-					msg = makeEndorsement(t, tc.signer, i.Owner, i.Symbol, i.ItemID)
+				case "endorsement-item":
+					msg = makeEndorsementMsg(t, tc.signer, i.Owner, i.Symbol, i.ItemID)
 				case "update-item-metadata":
 					msg = makeUpdateItemMetadataMsg(t, i.Symbol, i.Owner, i.ItemID, i.Metadata)
 				case "update-nft-metadata":
