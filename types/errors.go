@@ -4,27 +4,28 @@ import sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
 const (
 	// Token
-	CodeTokenDuplicated                     sdkTypes.CodeType = 2001
-	CodeTokenInvalidSymbol                  sdkTypes.CodeType = 2002
-	CodeTokenApproved                       sdkTypes.CodeType = 2003
-	CodeTokenFrozen                         sdkTypes.CodeType = 2004
-	CodeTokenUnfrozen                       sdkTypes.CodeType = 2005
-	CodeTokenInvalid                        sdkTypes.CodeType = 2006
-	CodeTokenAccountFrozen                  sdkTypes.CodeType = 2007
-	CodeTokenAccountUnfrozen                sdkTypes.CodeType = 2008
-	CodeTokenInvalidMinter                  sdkTypes.CodeType = 2009
-	CodeTokenInvalidAccount                 sdkTypes.CodeType = 2010
-	CodeTokenInvalidSupply                  sdkTypes.CodeType = 2099
-	CodeTokenInvalidAccountBalance          sdkTypes.CodeType = 2100
-	CodeTokenInvalidAction                  sdkTypes.CodeType = 2101
-	CodeTokenInvalidNewOwner                sdkTypes.CodeType = 2102
-	CodeTokenInvalidOwner                   sdkTypes.CodeType = 2103
-	CodeTokenTransferTokenOwnershipApproved sdkTypes.CodeType = 2104
-	CodeTokenItemIDInUsed                   sdkTypes.CodeType = 2105
-	CodeTokenInvalidEndorser                sdkTypes.CodeType = 2106
-	CodeTokenItemFrozen                     sdkTypes.CodeType = 2107
-	CodeTokenInvalidItemOwner               sdkTypes.CodeType = 2108
-	CodeTokenItemNotModifiable              sdkTypes.CodeType = 2109
+	CodeTokenDuplicated                    sdkTypes.CodeType = 2001
+	CodeTokenInvalidSymbol                 sdkTypes.CodeType = 2002
+	CodeTokenApproved                      sdkTypes.CodeType = 2003
+	CodeTokenFrozen                        sdkTypes.CodeType = 2004
+	CodeTokenUnfrozen                      sdkTypes.CodeType = 2005
+	CodeTokenInvalid                       sdkTypes.CodeType = 2006
+	CodeTokenAccountFrozen                 sdkTypes.CodeType = 2007
+	CodeTokenAccountUnfrozen               sdkTypes.CodeType = 2008
+	CodeTokenInvalidMinter                 sdkTypes.CodeType = 2009
+	CodeTokenInvalidAccount                sdkTypes.CodeType = 2010
+	CodeTokenInvalidSupply                 sdkTypes.CodeType = 2099
+	CodeTokenInvalidAccountBalance         sdkTypes.CodeType = 2100
+	CodeTokenInvalidAction                 sdkTypes.CodeType = 2101
+	CodeTokenInvalidNewOwner               sdkTypes.CodeType = 2102
+	CodeTokenInvalidOwner                  sdkTypes.CodeType = 2103
+	CodeTokenTransferTokenOwnershipInvalid sdkTypes.CodeType = 2104
+	CodeTokenItemIDInUsed                  sdkTypes.CodeType = 2105
+	CodeTokenInvalidEndorser               sdkTypes.CodeType = 2106
+	CodeTokenItemFrozen                    sdkTypes.CodeType = 2107
+	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2108
+	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2109
+	CodeTokenItemNotFound                  sdkTypes.CodeType = 2110
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -105,8 +106,8 @@ func ErrInvalidItemOwner() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenInvalidItemOwner, "Invalid item owner.")
 }
 
-func ErrTokenTransferTokenOwnershipApproved() sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeTokenTransferTokenOwnershipApproved, "Transfer token ownership has been approved.")
+func ErrTokenTransferTokenOwnershipInvalid() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenTransferTokenOwnershipInvalid, "Verify transfer token ownership invalid.")
 }
 
 // Alias
@@ -143,4 +144,8 @@ func ErrTokenItemFronzen() sdkTypes.Error {
 }
 func ErrTokenItemNotModifiable() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemNotModifiable, "Token item not modifiable.")
+}
+
+func ErrTokenItemNotFound() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemNotFound, "Token item not found.")
 }

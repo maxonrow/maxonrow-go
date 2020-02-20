@@ -76,6 +76,10 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 
 //* TransferNonFungibleItem
 func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+	if !k.IsItemOwner(ctx, symbol, itemID, from) {
+		return types.ErrInvalidItemOwner().Result()
+	}
+
 	var token = new(Token)
 	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
@@ -559,5 +563,13 @@ func (k *Keeper) IsMintLimitExceeded(ctx sdkTypes.Context, symbol string, to sdk
 		return false
 	}
 
+	return false
+}
+
+func (k *Keeper) IsItemOwner(ctx sdkTypes.Context, symbol, itemID string, owner sdkTypes.AccAddress) bool {
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
+	if !itemOwner.Empty() && itemOwner.Equals(owner) {
+		return true
+	}
 	return false
 }
