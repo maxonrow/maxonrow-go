@@ -525,6 +525,7 @@ func (k *Keeper) DeleteAccFeeSetting(ctx sdkTypes.Context, msgDeleteAccFeeSettin
 	}
 }
 
+// get list of sysfeesetting
 func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 
 	store := ctx.KVStore(k.key)
@@ -542,6 +543,54 @@ func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 		var feeSetting = new(FeeSetting)
 		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &feeSetting)
 		lst = append(lst, *feeSetting)
+
+		iter.Next()
+	}
+	return lst
+}
+
+// get list of tokenfeesetting
+func (k *Keeper) ListTokenFeeSetting(ctx sdkTypes.Context) []FeeSetting {
+
+	store := ctx.KVStore(k.key)
+	start := append(prefixTokenFeeSetting, 0x06)
+	end := append(prefixTokenFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+
+	var lst = make([]FeeSetting, 0)
+
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var TokenfeeSetting = new(FeeSetting)
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &TokenfeeSetting)
+		lst = append(lst, *TokenfeeSetting)
+
+		iter.Next()
+	}
+	return lst
+}
+
+// get list of accfeesetting
+func (k *Keeper) ListAccFeeSetting(ctx sdkTypes.Context) []FeeSetting {
+
+	store := ctx.KVStore(k.key)
+	start := append(prefixAccFeeSetting, 0x05)
+	end := append(prefixAccFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+
+	var lst = make([]FeeSetting, 0)
+
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var AccfeeSetting = new(FeeSetting)
+		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &AccfeeSetting)
+		lst = append(lst, *AccfeeSetting)
 
 		iter.Next()
 	}

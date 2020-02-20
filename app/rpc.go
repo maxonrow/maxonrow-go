@@ -53,6 +53,8 @@ type FeeInfo struct {
 	TokenFeeCollectors []sdkTypes.AccAddress
 	AliasFeeCollectors []sdkTypes.AccAddress
 	FeeSettings        []fee.FeeSetting
+	TokenFeeSetting    []fee.FeeSetting
+	AccFeeSetting      []fee.FeeSetting
 }
 
 type KYCInfo struct {
@@ -202,7 +204,6 @@ func (app *mxwApp) KYCInfo(ctx *rpctypes.Context) (KYCInfo, error) {
 	i.Issuers = app.kycKeeper.GetIssuerAddresses(appCtx)
 	i.Authorizers = app.kycKeeper.GetAuthorisedAddresses(appCtx)
 	i.NumOfWhitelisted = app.kycKeeper.NumOfWhitelisted(appCtx)
-
 	return i, nil
 }
 
@@ -216,6 +217,8 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	i.TokenFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "token")
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)
+	i.TokenFeeSetting = app.feeKeeper.ListTokenFeeSetting(appCtx)
+	i.AccFeeSetting = app.feeKeeper.ListAccFeeSetting(appCtx)
 
 	return i, nil
 }
@@ -286,24 +289,18 @@ func parseJSON(in string) []byte {
 
 func (app *mxwApp) FungibleTokenList(ctx *rpctypes.Context) (FungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-
 	lst := app.tokenKeeper.ListTokens(appCtx)
-
 	var i FungibleTokenListInfo
 	i.Count = len(lst)
 	i.Tokens = lst
-
 	return i, nil
 }
 
 func (app *mxwApp) NonFungibleTokenList(ctx *rpctypes.Context) (NonFungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-
 	lst := app.nonFungibleTokenKeeper.ListTokens(appCtx)
-
 	var i NonFungibleTokenListInfo
 	i.Count = len(lst)
 	i.Tokens = lst
-
 	return i, nil
 }

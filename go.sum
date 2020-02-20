@@ -216,6 +216,7 @@ github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213113132-fc89d934ae39 h1:aQC+Vxg3
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213113132-fc89d934ae39/go.mod h1:0sLtjU+qex1OfpGQHjWhJByx74IoH78R742PEAdoQJk=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213114930-7be4083d2051 h1:LR6/6d6AVQWcBS7EaRpPOJIGfw8iZsp5pUSxNzDzt68=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213114930-7be4083d2051/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
+github.com/maxonrow/cosmos-sdk v0.37.4 h1:p75qznQC5SxfjUTMG9D99OzlCGvTZaBwwSkNjPHhbwU=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=
@@ -326,6 +327,7 @@ github.com/tendermint/tendermint v0.32.7/go.mod h1:D2+A3pNjY+Po72X0mTfaXorFhiVI8
 github.com/tendermint/tendermint v0.32.8 h1:eOaLJGRi5x/Rb23fiVsxq9c5fZ/6O5QplExlGjNPDVI=
 github.com/tendermint/tendermint v0.32.8/go.mod h1:5/B1XZjNYtVBso8o1l/Eg4A0Mhu42lDcmftoQl95j/E=
 github.com/tendermint/tendermint v0.33.0 h1:TW1g9sQs3YSqKM8o1+opL3/VmBy4Ke/VKV9MxYpqNbI=
+github.com/tendermint/tendermint v0.33.1 h1:8f68LUBz8yhISZvaLFP4siXXrLWsWeoYfelbdNtmvm4=
 github.com/tendermint/tm-db v0.1.1/go.mod h1:0cPKWu2Mou3IlxecH+MEUSYc1Ch537alLe6CpFrKzgw=
 github.com/tendermint/tm-db v0.2.0 h1:rJxgdqn6fIiVJZy4zLpY1qVlyD0TU6vhkT4kEf71TQQ=
 github.com/tendermint/tm-db v0.2.0/go.mod h1:0cPKWu2Mou3IlxecH+MEUSYc1Ch537alLe6CpFrKzgw=
