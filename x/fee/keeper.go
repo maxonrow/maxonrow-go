@@ -1,6 +1,7 @@
 package fee
 
 import (
+	"bytes"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -552,19 +553,17 @@ func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 // get list of accfeesetting
 func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]string {
 	store := ctx.KVStore(k.key)
-	start := append(prefixAccFeeSetting, 0x05)
+	start := append(prefixAccFeeSetting, 0x00)
 	end := append(prefixAccFeeSetting, 0xFF)
 	iter := store.Iterator(start, end)
 	defer iter.Close()
-
 	var lst = make(map[string]string)
-
 	for {
 		if !iter.Valid() {
 			break
 		}
-
 		var addr sdkTypes.AccAddress = iter.Key()
+		addr = bytes.Trim(iter.Key(), (string)(prefixAccFeeSetting))
 		lst[addr.String()] = (string)(iter.Value())
 		iter.Next()
 	}
