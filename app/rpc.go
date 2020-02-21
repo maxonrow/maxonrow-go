@@ -54,6 +54,8 @@ type FeeInfo struct {
 	AliasFeeCollectors []sdkTypes.AccAddress
 	FeeSettings        []fee.FeeSetting
 	AccountFeeSettings map[string]string
+	MsgFeeSettings     map[string]string
+	TokenFeeSetting    map[string]string
 }
 
 type KYCInfo struct {
@@ -217,11 +219,12 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)
 	i.AccountFeeSettings = app.feeKeeper.ListAllAccountFeeSettings(appCtx)
+	i.MsgFeeSettings = app.feeKeeper.ListAllMsgFeeSettings(appCtx)
+	i.TokenFeeSetting = app.feeKeeper.ListAllMsgFeeSettings(appCtx)
 	return i, nil
 }
 
 func (app *mxwApp) QueryFee(ctx *rpctypes.Context, js string) (sdkAuth.StdFee, error) {
-
 	var fees sdkAuth.StdFee
 	appCtx := app.NewContext(true, abci.Header{})
 	bz := parseJSON(js)
@@ -230,12 +233,10 @@ func (app *mxwApp) QueryFee(ctx *rpctypes.Context, js string) (sdkAuth.StdFee, e
 	if err != nil {
 		return sdkAuth.StdFee{}, err
 	}
-
 	fee, feeErr := app.CalculateFee(appCtx, tx)
 	if feeErr != nil {
 		return sdkAuth.StdFee{}, feeErr
 	}
-
 	// When the fee is empty, return zero
 	if fee.Empty() {
 		zero := sdkTypes.Coin{Amount: sdkTypes.NewInt(0), Denom: types.CIN}

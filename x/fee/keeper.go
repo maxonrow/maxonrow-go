@@ -528,7 +528,6 @@ func (k *Keeper) DeleteAccFeeSetting(ctx sdkTypes.Context, msgDeleteAccFeeSettin
 
 // get list of sysfeesetting
 func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
-
 	store := ctx.KVStore(k.key)
 	start := append(prefixSysFeeSetting, 0x00)
 	end := append(prefixSysFeeSetting, 0xFF)
@@ -565,6 +564,46 @@ func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]stri
 		var addr sdkTypes.AccAddress = iter.Key()
 		addr = bytes.Trim(iter.Key(), (string)(prefixAccFeeSetting))
 		lst[addr.String()] = (string)(iter.Value())
+		iter.Next()
+	}
+	return lst
+
+}
+
+// get list of tokenfeesetting
+func (k *Keeper) ListAllTokenFeeSettings(ctx sdkTypes.Context) map[string]string {
+	store := ctx.KVStore(k.key)
+	start := append(prefixTokenFeeSetting, 0x00)
+	end := append(prefixTokenFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+	var lst = make(map[string]string)
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var Token sdkTypes.AccAddress = iter.Key()[3:]
+		lst[Token.String()] = (string)(iter.Value())
+		iter.Next()
+	}
+	return lst
+
+}
+
+// get list of Msgfeesetting
+func (k *Keeper) ListAllMsgFeeSettings(ctx sdkTypes.Context) map[string]string {
+	store := ctx.KVStore(k.key)
+	start := append(prefixMsgFeeSetting, 0x00)
+	end := append(prefixMsgFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+	var lst = make(map[string]string)
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var msg string = (string)(iter.Key()[4:])
+		lst[msg] = (string)(iter.Value())
 		iter.Next()
 	}
 	return lst
