@@ -1,7 +1,6 @@
 package fee
 
 import (
-	"bytes"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -561,8 +560,7 @@ func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]stri
 		if !iter.Valid() {
 			break
 		}
-		var addr sdkTypes.AccAddress = iter.Key()
-		addr = bytes.Trim(iter.Key(), (string)(prefixAccFeeSetting))
+		var addr sdkTypes.AccAddress = iter.Key()[4:]
 		lst[addr.String()] = (string)(iter.Value())
 		iter.Next()
 	}
@@ -582,7 +580,7 @@ func (k *Keeper) ListAllTokenFeeSettings(ctx sdkTypes.Context) map[string]string
 		if !iter.Valid() {
 			break
 		}
-		var Token sdkTypes.AccAddress = iter.Key()[3:]
+		var Token sdkTypes.AccAddress = iter.Key()[4:]
 		lst[Token.String()] = (string)(iter.Value())
 		iter.Next()
 	}
