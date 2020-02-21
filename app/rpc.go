@@ -53,8 +53,7 @@ type FeeInfo struct {
 	TokenFeeCollectors []sdkTypes.AccAddress
 	AliasFeeCollectors []sdkTypes.AccAddress
 	FeeSettings        []fee.FeeSetting
-	TokenFeeSetting    []fee.FeeSetting
-	AccFeeSetting      []fee.FeeSetting
+	AccountFeeSettings map[string]string
 }
 
 type KYCInfo struct {
@@ -217,9 +216,7 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	i.TokenFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "token")
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)
-	i.TokenFeeSetting = app.feeKeeper.ListTokenFeeSetting(appCtx)
-	i.AccFeeSetting = app.feeKeeper.ListAccFeeSetting(appCtx)
-
+	i.AccountFeeSettings = app.feeKeeper.ListAllAccountFeeSettings(appCtx)
 	return i, nil
 }
 

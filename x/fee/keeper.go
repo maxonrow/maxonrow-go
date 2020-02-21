@@ -549,52 +549,27 @@ func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 	return lst
 }
 
-// get list of tokenfeesetting
-func (k *Keeper) ListTokenFeeSetting(ctx sdkTypes.Context) []FeeSetting {
-
-	store := ctx.KVStore(k.key)
-	start := append(prefixTokenFeeSetting, 0x06)
-	end := append(prefixTokenFeeSetting, 0xFF)
-	iter := store.Iterator(start, end)
-	defer iter.Close()
-
-	var lst = make([]FeeSetting, 0)
-
-	for {
-		if !iter.Valid() {
-			break
-		}
-		var TokenfeeSetting = new(FeeSetting)
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &TokenfeeSetting)
-		lst = append(lst, *TokenfeeSetting)
-
-		iter.Next()
-	}
-	return lst
-}
-
 // get list of accfeesetting
-func (k *Keeper) ListAccFeeSetting(ctx sdkTypes.Context) []FeeSetting {
-
+func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]string {
 	store := ctx.KVStore(k.key)
 	start := append(prefixAccFeeSetting, 0x05)
 	end := append(prefixAccFeeSetting, 0xFF)
 	iter := store.Iterator(start, end)
 	defer iter.Close()
 
-	var lst = make([]FeeSetting, 0)
+	var lst = make(map[string]string)
 
 	for {
 		if !iter.Valid() {
 			break
 		}
-		var AccfeeSetting = new(FeeSetting)
-		k.cdc.MustUnmarshalBinaryLengthPrefixed(iter.Value(), &AccfeeSetting)
-		lst = append(lst, *AccfeeSetting)
 
+		var addr sdkTypes.AccAddress = iter.Key()
+		lst[addr.String()] = (string)(iter.Value())
 		iter.Next()
 	}
 	return lst
+
 }
 
 func (k *Keeper) IsFeeSettingUsed(ctx sdkTypes.Context, feeName string) bool {
