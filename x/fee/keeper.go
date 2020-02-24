@@ -525,8 +525,8 @@ func (k *Keeper) DeleteAccFeeSetting(ctx sdkTypes.Context, msgDeleteAccFeeSettin
 	}
 }
 
+// get list of sysfeesetting
 func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
-
 	store := ctx.KVStore(k.key)
 	start := append(prefixSysFeeSetting, 0x00)
 	end := append(prefixSysFeeSetting, 0xFF)
@@ -546,6 +546,66 @@ func (k *Keeper) ListAllSysFeeSetting(ctx sdkTypes.Context) []FeeSetting {
 		iter.Next()
 	}
 	return lst
+}
+
+// get list of accfeesetting
+func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]string {
+	store := ctx.KVStore(k.key)
+	start := append(prefixAccFeeSetting, 0x00)
+	end := append(prefixAccFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+	var lst = make(map[string]string)
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var addr sdkTypes.AccAddress = iter.Key()[4:]
+		lst[addr.String()] = (string)(iter.Value())
+		iter.Next()
+	}
+	return lst
+
+}
+
+// Get list of tokenfeesetting
+func (k *Keeper) ListAllTokenFeeSettings(ctx sdkTypes.Context) map[string]string {
+	store := ctx.KVStore(k.key)
+	start := append(prefixTokenFeeSetting, 0x00)
+	end := append(prefixTokenFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+	var lst = make(map[string]string)
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var Token string = (string)(iter.Key()[4:])
+		lst[Token] = (string)(iter.Value())
+		iter.Next()
+	}
+	return lst
+
+}
+
+// get list of Msgfeesetting
+func (k *Keeper) ListAllMsgFeeSettings(ctx sdkTypes.Context) map[string]string {
+	store := ctx.KVStore(k.key)
+	start := append(prefixMsgFeeSetting, 0x00)
+	end := append(prefixMsgFeeSetting, 0xFF)
+	iter := store.Iterator(start, end)
+	defer iter.Close()
+	var lst = make(map[string]string)
+	for {
+		if !iter.Valid() {
+			break
+		}
+		var msg string = (string)(iter.Key()[4:])
+		lst[msg] = (string)(iter.Value())
+		iter.Next()
+	}
+	return lst
+
 }
 
 func (k *Keeper) IsFeeSettingUsed(ctx sdkTypes.Context, feeName string) bool {
