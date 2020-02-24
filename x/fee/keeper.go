@@ -568,7 +568,7 @@ func (k *Keeper) ListAllAccountFeeSettings(ctx sdkTypes.Context) map[string]stri
 
 }
 
-// get list of tokenfeesetting
+// Get list of tokenfeesetting
 func (k *Keeper) ListAllTokenFeeSettings(ctx sdkTypes.Context) map[string]string {
 	store := ctx.KVStore(k.key)
 	start := append(prefixTokenFeeSetting, 0x00)
@@ -580,8 +580,8 @@ func (k *Keeper) ListAllTokenFeeSettings(ctx sdkTypes.Context) map[string]string
 		if !iter.Valid() {
 			break
 		}
-		var Token sdkTypes.AccAddress = iter.Key()[4:]
-		lst[Token.String()] = (string)(iter.Value())
+		var Token string = (string)(iter.Key()[4:])
+		lst[Token] = (string)(iter.Value())
 		iter.Next()
 	}
 	return lst

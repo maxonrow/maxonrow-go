@@ -220,7 +220,7 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)
 	i.AccountFeeSettings = app.feeKeeper.ListAllAccountFeeSettings(appCtx)
 	i.MsgFeeSettings = app.feeKeeper.ListAllMsgFeeSettings(appCtx)
-	i.TokenFeeSetting = app.feeKeeper.ListAllMsgFeeSettings(appCtx)
+	i.TokenFeeSetting = app.feeKeeper.ListAllTokenFeeSettings(appCtx)
 	return i, nil
 }
 
