@@ -18,6 +18,16 @@ func GetSignBytes(ctx sdk.Context, tx sdkAuth.StdTx, acc exported.Account) []byt
 	if acc.IsMultiSig() {
 		// 1- check if tx exists in pending tx, then tx_id is same as pending.id
 		// 2. if not, seq = acc.GetCounter()
+		multisig := acc.GetMultiSig()
+		txID, exist := multisig.ValidateMultiSigTx(tx)
+		if exist {
+			return sdkAuth.StdSignBytes(
+				chainID, accNum, txID, tx.Fee, tx.Msgs, tx.Memo,
+			)
+		}
+		return sdkAuth.StdSignBytes(
+			chainID, accNum, multisig.GetCounter(), tx.Fee, tx.Msgs, tx.Memo,
+		)
 	}
 
 	return sdkAuth.StdSignBytes(

@@ -30,7 +30,7 @@ type MultisigInfo struct {
 	TransactionId  string
 }
 
-func MakeMultisigAccsTxs(t *testing.T) {
+func TestMultisigAccsTxs(t *testing.T) {
 	val1 := Validator(tValidator)
 	fmt.Println(val1)
 
@@ -62,7 +62,7 @@ func MakeMultisigAccsTxs(t *testing.T) {
 		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path", "acc-21", "200000000cin", 0, bankInfo{"mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
 
 		// // multiSig-sign-tx-bank
-		// {"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "1"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
+		//{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "1"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
 
 	}
 
@@ -259,7 +259,17 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 	// 2. MultiSig
 	groupAddress := "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce"
 
-	pendingTx := authTypes.NewStdTx([]sdkTypes.Msg{msg}, authTypes.NewStdFee(gas, fees), nil, memo) // no need signatures
+	groupAcc := Account(tKeys[groupAddress].addrStr)
+
+	// 1. signBytes to be sign by sender
+	// 2. sequence using group account counter
+	// 3. account number use group account number
+	signBytes := authTypes.StdSignBytes("maxonrow-chain", groupAcc.GetAccountNumber(), groupAcc.MultiSig.Counter, authTypes.NewStdFee(gas, fees), []sdkTypes.Msg{msg}, memo)
+
+	signedBz, _ := tKeys[signer].priv.Sign(signBytes)
+	signature := authTypes.StdSignature{tKeys[signer].pub, signedBz}
+
+	pendingTx := authTypes.NewStdTx([]sdkTypes.Msg{msg}, authTypes.NewStdFee(gas, fees), []authTypes.StdSignature{signature}, memo)
 	msgCreateMultiSigTx := makeCreateMultiSigTxMsg(t, groupAddress, pendingTx, signer)
 
 	signMsg := authTypes.StdSignMsg{
@@ -361,9 +371,24 @@ func makeSignMultiSigTxMsg(t *testing.T, groupAddress string, txCode string, sen
 
 	senderAddr := tKeys[senderAddress].addr
 	txID, _ := strconv.ParseUint(txCode, 10, 64)
+
+	groupAcc := Account(tKeys[groupAddress].addrStr)
 	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
 
-	msgSignMultiSigTx := multisig.NewMsgSignMultiSigTx(groupAddr, txID, senderAddr)
+	groupMultisig := groupAcc.GetMultiSig()
+	tx := groupMultisig.GetTx(txID)
+
+	stdTx, _ := tx.(authTypes.StdTx)
+
+	// 1. signBytes to be sign by sender
+	// 2. sequence using group account counter
+	// 3. account number use group account number
+	signBytes := authTypes.StdSignBytes("maxonrow-chain", groupAcc.GetAccountNumber(), groupAcc.MultiSig.Counter, stdTx.Fee, stdTx.GetMsgs(), stdTx.Memo)
+
+	signedBz, _ := tKeys[senderAddress].priv.Sign(signBytes)
+	signature := authTypes.StdSignature{tKeys[senderAddress].pub, signedBz}
+
+	msgSignMultiSigTx := multisig.NewMsgSignMultiSigTx(groupAddr, txID, signature, senderAddr)
 	return msgSignMultiSigTx
 }
 

@@ -103,16 +103,47 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
 		}
 
-		signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
+		if signerAcc.IsMultiSig() {
+			signerMultiSig := signerAcc.GetMultiSig()
+			txID, validate := signerMultiSig.ValidateMultiSigTx(stdTx)
+			if !validate {
+				return ctx, sdkTypes.ErrUnknownAddress("Invalid multisig tx.")
+			}
 
-		stdSig := stdSigs[0]
-		signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
-		if err != nil {
-			return ctx, err
+			for _, v := range stdSigs {
+				accAddress, err := sdkTypes.AccAddressFromHex(string(v.PubKey.Address()))
+				if err != nil {
+					return ctx, err
+				}
+				if !signerMultiSig.IsSigner(accAddress) {
+					return ctx, sdkTypes.ErrUnauthorized("Invalid multisig account signer.")
+				}
+				signer := app.accountKeeper.GetAccount(ctx, accAddress)
+				signBytes := types.GetSignBytes(ctx, stdTx, signer)
+				_, err = processSig(ctx, signer, v, signBytes, simulate, params)
+				if err != nil {
+					return ctx, err
+				}
+			}
+			// after validating everything, delete the pendingTx
+			isDeleted := signerMultiSig.RemoveTx(txID)
+			if !isDeleted {
+				return ctx, sdkTypes.ErrUnknownRequest("Delete failed.")
+			}
+			signerAcc.SetMultiSig(signerMultiSig)
+			app.accountKeeper.SetAccount(ctx, signerAcc)
+		} else {
+
+			signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
+
+			stdSig := stdSigs[0]
+			signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
+			if err != nil {
+				return ctx, err
+			}
+
+			app.accountKeeper.SetAccount(ctx, signerAcc)
 		}
-
-		app.accountKeeper.SetAccount(ctx, signerAcc)
-
 		for _, msg := range stdTx.GetMsgs() {
 
 			if !ok {
@@ -185,8 +216,12 @@ func processSig(
 		return nil, sdkTypes.ErrUnauthorized("signature verification failed; verify correct account sequence and chain-id" + string(signBytes))
 	}
 
-	if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
-		panic(err)
+	if acc.IsMultiSig() {
+		acc.GetMultiSig().IncCounter()
+	} else {
+		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
+			panic(err)
+		}
 	}
 
 	return acc, err

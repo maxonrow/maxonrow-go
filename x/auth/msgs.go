@@ -158,6 +158,10 @@ func (msg MsgCreateMultiSigTx) ValidateBasic() sdkTypes.Error {
 	if msg.GroupAddress.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.GroupAddress.String())
 	}
+	err := msg.StdTx.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -172,11 +176,12 @@ func (msg MsgCreateMultiSigTx) GetSigners() []sdkTypes.AccAddress {
 type MsgSignMultiSigTx struct {
 	GroupAddress sdkTypes.AccAddress `json:groupAddress`
 	TxID         uint64              `json:txId`
+	Signature    auth.StdSignature   `json:signature`
 	Sender       sdkTypes.AccAddress `json:sender`
 }
 
-func NewMsgSignMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, sender sdkTypes.AccAddress) MsgSignMultiSigTx {
-	return MsgSignMultiSigTx{groupAddress, txID, sender}
+func NewMsgSignMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, signature auth.StdSignature, sender sdkTypes.AccAddress) MsgSignMultiSigTx {
+	return MsgSignMultiSigTx{groupAddress, txID, signature, sender}
 }
 
 func (msg MsgSignMultiSigTx) Route() string {
@@ -199,6 +204,11 @@ func (msg MsgSignMultiSigTx) ValidateBasic() sdkTypes.Error {
 	if msg.TxID < 0 {
 		return sdkTypes.ErrInternal("TxID not allowed to be less than 0.")
 	}
+
+	if len(msg.Signature.Bytes()) < 0 {
+		return sdkTypes.ErrNoSignatures("Signature not allowed to be empty.")
+	}
+
 	return nil
 }
 

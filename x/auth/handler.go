@@ -7,17 +7,15 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
+	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
+	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
 	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	"golang.org/x/crypto/sha3"
 )
-
-// Internal broadcast tx
-//type RunMxwMsg func(ctx sdkTypes.Context, msg sdkTypes.Msg) (result sdkTypes.Result)
-//type RunMxwMsg func(ctx *rpctypes.Context, js string) (*ctypes.ResultBroadcastTx, error)
 
 func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Handler {
 	return func(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.Result {
@@ -29,7 +27,7 @@ func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEnc
 		case MsgTransferMultiSigOwner:
 			return handleMsgTransferMultiSigOwner(ctx, msg, accountKeeper, kycKeeper)
 		case MsgCreateMultiSigTx:
-			return handleMsgCreateMultiSigTx(ctx, msg, accountKeeper, kycKeeper)
+			return handleMsgCreateMultiSigTx(ctx, msg, accountKeeper, kycKeeper, txEncoder)
 		case MsgSignMultiSigTx:
 			return handleMsgSignMultiSigTx(ctx, msg, accountKeeper, kycKeeper, txEncoder)
 		case MsgDeleteMultiSigTx:
@@ -169,7 +167,7 @@ func handleMsgTransferMultiSigOwner(ctx sdkTypes.Context, msg MsgTransferMultiSi
 
 }
 
-func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
+func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Result {
 
 	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
 	if groupAcc == nil {
@@ -199,15 +197,24 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
+	internalHash, broadcastedEvents, metricErr := checkIsMetric(txID, groupAcc, txEncoder)
+	if metricErr != nil {
+		return metricErr.Result()
+	}
+
 	// TO-DO: event
 	accountSequence := senderAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
+
+	if internalHash != nil {
+		resultLog = resultLog.WithInternalHash(internalHash)
+	}
 
 	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String()}
 	eventSignature := "CreatedMultiSigTx(string,string)"
 
 	return sdkTypes.Result{
-		Events: types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam),
+		Events: types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam).AppendEvents(broadcastedEvents),
 		Log:    resultLog.String(),
 	}
 
@@ -230,53 +237,32 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 	}
 
 	multiSig := groupAcc.GetMultiSig()
+
+	//TO-DO: append real signatures also
 	multiSig.SignTx(msg.Sender, msg.TxID)
+	pendingTx := multiSig.GetTx(msg.TxID)
+	if pendingTx == nil {
+		return sdkTypes.ErrInternal("Pending tx not found.").Result()
+	}
+
+	stdTx, ok := pendingTx.(sdkAuth.StdTx)
+	if !ok {
+		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
+	}
+
+	sigs := stdTx.Signatures
+	stdTx.Signatures = append(sigs, msg.Signature)
+	multiSig.UpdatePendingTx(msg.TxID, stdTx)
 
 	accountKeeper.SetAccount(ctx, groupAcc)
 
-	isMetric := multiSig.IsMetric(msg.TxID)
-	broadcastedEvents := sdkTypes.EmptyEvents()
-	var internalHash common.HexBytes
-	if isMetric {
-		// TO-DO: broadcast tx
-		tx := multiSig.GetTx(msg.TxID)
-		if tx == nil {
-			return sdkTypes.ErrInternal("There is no pending tx.").Result()
-		}
-
-		bz, err := txEncoder(tx)
-		if err != nil {
-			return sdkTypes.ErrInternal("Error encoding pending tx.").Result()
-		}
-
-		var rpcCtx *rpctypes.Context
-		go func() {
-			res, err := rpc.BroadcastTxSync(rpcCtx, bz)
-			if err != nil {
-				panic(err)
-			}
-			internalHash = res.Hash
-		}()
-
-		// Event: broadcast tx
-		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(msg.TxID)}
-		broadcastedEventSignature := "BroadcastedTx(string,string)"
-		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
-
-		isDeleted := multiSig.RemoveTx(msg.TxID)
-		if !isDeleted {
-			return sdkTypes.ErrUnknownRequest("Delete failed.").Result()
-		}
-		groupAcc = accountKeeper.GetAccount(ctx, msg.GroupAddress)
-		if groupAcc == nil {
-			return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
-		}
-
-		groupAcc.SetMultiSig(multiSig)
-		accountKeeper.SetAccount(ctx, groupAcc)
-	}
 	accountSequence := senderAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
+
+	internalHash, broadcastedEvents, metricErr := checkIsMetric(msg.TxID, groupAcc, txEncoder)
+	if metricErr != nil {
+		return metricErr.Result()
+	}
 
 	if internalHash != nil {
 		resultLog = resultLog.WithInternalHash(internalHash)
@@ -339,4 +325,41 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 		Log:    resultLog.String(),
 	}
 
+}
+
+func checkIsMetric(txID uint64, groupAcc exported.Account, txEncoder sdkTypes.TxEncoder) (common.HexBytes, sdkTypes.Events, sdkTypes.Error) {
+
+	multiSig := groupAcc.GetMultiSig()
+	isMetric := multiSig.IsMetric(txID)
+	broadcastedEvents := sdkTypes.EmptyEvents()
+	var internalHash common.HexBytes
+	if isMetric {
+		tx := multiSig.GetTx(txID)
+		if tx == nil {
+			return nil, nil, sdkTypes.ErrInternal("There is no pending tx.")
+		}
+
+		bz, err := txEncoder(tx)
+		if err != nil {
+			return nil, nil, sdkTypes.ErrInternal("Error encoding pending tx.")
+		}
+
+		internalHash = tmhash.Sum(bz)
+
+		var rpcCtx *rpctypes.Context
+		go func() {
+			_, err := rpc.BroadcastTxSync(rpcCtx, bz)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		// Event: broadcast tx
+		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(txID)}
+		broadcastedEventSignature := "BroadcastedTx(string,string)"
+		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
+
+		return internalHash, broadcastedEvents, nil
+	}
+	return nil, nil, nil
 }
