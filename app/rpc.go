@@ -53,6 +53,9 @@ type FeeInfo struct {
 	TokenFeeCollectors []sdkTypes.AccAddress
 	AliasFeeCollectors []sdkTypes.AccAddress
 	FeeSettings        []fee.FeeSetting
+	AccountFeeSettings map[string]string
+	MsgFeeSettings     map[string]string
+	TokenFeeSetting    map[string]string
 }
 
 type KYCInfo struct {
@@ -202,7 +205,6 @@ func (app *mxwApp) KYCInfo(ctx *rpctypes.Context) (KYCInfo, error) {
 	i.Issuers = app.kycKeeper.GetIssuerAddresses(appCtx)
 	i.Authorizers = app.kycKeeper.GetAuthorisedAddresses(appCtx)
 	i.NumOfWhitelisted = app.kycKeeper.NumOfWhitelisted(appCtx)
-
 	return i, nil
 }
 
@@ -216,12 +218,13 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	i.TokenFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "token")
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)
-
+	i.AccountFeeSettings = app.feeKeeper.ListAllAccountFeeSettings(appCtx)
+	i.MsgFeeSettings = app.feeKeeper.ListAllMsgFeeSettings(appCtx)
+	i.TokenFeeSetting = app.feeKeeper.ListAllTokenFeeSettings(appCtx)
 	return i, nil
 }
 
 func (app *mxwApp) QueryFee(ctx *rpctypes.Context, js string) (sdkAuth.StdFee, error) {
-
 	var fees sdkAuth.StdFee
 	appCtx := app.NewContext(true, abci.Header{})
 	bz := parseJSON(js)
@@ -230,12 +233,10 @@ func (app *mxwApp) QueryFee(ctx *rpctypes.Context, js string) (sdkAuth.StdFee, e
 	if err != nil {
 		return sdkAuth.StdFee{}, err
 	}
-
 	fee, feeErr := app.CalculateFee(appCtx, tx)
 	if feeErr != nil {
 		return sdkAuth.StdFee{}, feeErr
 	}
-
 	// When the fee is empty, return zero
 	if fee.Empty() {
 		zero := sdkTypes.Coin{Amount: sdkTypes.NewInt(0), Denom: types.CIN}
@@ -286,24 +287,18 @@ func parseJSON(in string) []byte {
 
 func (app *mxwApp) FungibleTokenList(ctx *rpctypes.Context) (FungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-
 	lst := app.tokenKeeper.ListTokens(appCtx)
-
 	var i FungibleTokenListInfo
 	i.Count = len(lst)
 	i.Tokens = lst
-
 	return i, nil
 }
 
 func (app *mxwApp) NonFungibleTokenList(ctx *rpctypes.Context) (NonFungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-
 	lst := app.nonFungibleTokenKeeper.ListTokens(appCtx)
-
 	var i NonFungibleTokenListInfo
 	i.Count = len(lst)
 	i.Tokens = lst
-
 	return i, nil
 }

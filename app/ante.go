@@ -102,18 +102,13 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 
 			signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
 		}
-		
-		signBytes := stdTx.GetSignBytes(ctx, signerAcc)
 
-		var stdSig sdkAuth.StdSignature
-		if stdSigs != nil {
-			stdSig = stdSigs[0]
-		}
-		if signerAcc.GetMultiSig() == nil {
-			signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
-			if err != nil {
-				return ctx, err
-			}
+		signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
+
+		stdSig := stdSigs[0]
+		signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
+		if err != nil {
+			return ctx, err
 		}
 
 		app.accountKeeper.SetAccount(ctx, signerAcc)
@@ -123,13 +118,10 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			if !ok {
 				ctx.Logger().Info("This message is not MXW message.", "msg", msg.Type())
 			} else {
-
-				// TODO; move it to msgs
 				validateMsgErr := app.validateMsg(ctx, msg)
 				if validateMsgErr != nil {
 					return ctx, validateMsgErr
 				}
-
 			}
 
 			// Create fungible token, pay application fee
