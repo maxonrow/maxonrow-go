@@ -11,6 +11,7 @@ import (
 	multisig "github.com/maxonrow/maxonrow-go/x/auth"
 	"github.com/maxonrow/maxonrow-go/x/bank"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	"github.com/tendermint/tendermint/libs/log"
@@ -75,4 +76,24 @@ func TestDecodeMultiSig(t *testing.T) {
 	assert.Equal(t, msg.Threshold, 2)
 	assert.NotEmpty(t, tx.GetMsgs())
 
+}
+
+func TestPrettyPubKey(t *testing.T) {
+	type pubKey struct {
+		PubKey crypto.PubKey `json:"public_key" `
+	}
+
+	bz := `{
+		"public_key":{
+			"type": "tendermint/PubKeySecp256k1",
+			"value": "Am54ob0PNSDNXzwNO9ranB0RRfczbs6p1Fug5AVGdzQe"
+		}
+	}`
+	cdc := MakeDefaultCodec()
+	var pb pubKey
+	err := cdc.UnmarshalJSON([]byte(bz), &pb)
+	require.NoError(t, err)
+	pk, err := sdkTypes.Bech32ifyAccPub(pb.PubKey)
+	require.NoError(t, err)
+	fmt.Println(pk)
 }

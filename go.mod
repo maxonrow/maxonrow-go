@@ -44,4 +44,4 @@ require (
 	gopkg.in/cheggaaa/pb.v1 v1.0.28
 )
 
-replace github.com/cosmos/cosmos-sdk => github.com/maxonrow/cosmos-sdk v0.34.4-0.20200225075731-ff7c739bac0a
+replace github.com/cosmos/cosmos-sdk => github.com/maxonrow/cosmos-sdk v0.28.2-0.20200226103109-3ee056c44c0d
