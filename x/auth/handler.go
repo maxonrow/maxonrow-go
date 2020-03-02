@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/binary"
 	"fmt"
+	"time"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -184,7 +185,7 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 	}
 
 	multiSig := groupAcc.GetMultiSig()
-	txID := multiSig.GetNewTxID()
+	txID := multiSig.GetCounter()
 
 	pendingTx := sdkTypes.NewPendingTx(txID, msg.StdTx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
 
@@ -348,6 +349,8 @@ func checkIsMetric(txID uint64, groupAcc exported.Account, txEncoder sdkTypes.Tx
 
 		var rpcCtx *rpctypes.Context
 		go func() {
+			// sleep 3 seconds to make sure what ever necessary is completed in preivous block.
+			time.Sleep(3 * time.Second)
 			_, err := rpc.BroadcastTxSync(rpcCtx, bz)
 			if err != nil {
 				panic(err)

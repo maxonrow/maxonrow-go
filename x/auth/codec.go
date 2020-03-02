@@ -32,5 +32,7 @@ func init() {
 	//fee.RegisterCodec(cdc)
 	//maintenance.RegisterCodec(cdc)
 	//auth.RegisterCodec(cdc)
-
+	
+	// To register codec for internal transaction for multi-siog account (cosmos-sdk)
+	bank.RegisterCodec(sdkAuth.ModuleCdc)
 }

@@ -110,16 +110,25 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 				return ctx, sdkTypes.ErrUnknownAddress("Invalid multisig tx.")
 			}
 
+			isMetric := signerMultiSig.IsMetric(txID)
+			if !isMetric {
+				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not valid.")
+			}
+
 			for _, v := range stdSigs {
-				accAddress, err := sdkTypes.AccAddressFromHex(string(v.PubKey.Address()))
+				accAddress, err := sdkTypes.AccAddressFromHex(v.PubKey.Address().String())
 				if err != nil {
 					return ctx, err
 				}
 				if !signerMultiSig.IsSigner(accAddress) {
 					return ctx, sdkTypes.ErrUnauthorized("Invalid multisig account signer.")
 				}
+
+				// Signer is one of the signer in groupAccount
 				signer := app.accountKeeper.GetAccount(ctx, accAddress)
-				signBytes := types.GetSignBytes(ctx, stdTx, signer)
+
+				// signerAcc is groupAccount
+				signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
 				_, err = processSig(ctx, signer, v, signBytes, simulate, params)
 				if err != nil {
 					return ctx, err
@@ -217,7 +226,7 @@ func processSig(
 	}
 
 	if acc.IsMultiSig() {
-		acc.GetMultiSig().IncCounter()
+		return acc, err
 	} else {
 		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
 			panic(err)

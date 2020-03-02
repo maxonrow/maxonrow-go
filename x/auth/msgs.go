@@ -132,7 +132,7 @@ func (msg MsgTransferMultiSigOwner) GetSigners() []sdkTypes.AccAddress {
 
 type MsgCreateMultiSigTx struct {
 	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	StdTx        sdkTypes.Tx         `json:stdTx`
+	StdTx        auth.StdTx          `json:stdTx`
 	Sender       sdkTypes.AccAddress `json:sender`
 }
 
@@ -158,10 +158,10 @@ func (msg MsgCreateMultiSigTx) ValidateBasic() sdkTypes.Error {
 	if msg.GroupAddress.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.GroupAddress.String())
 	}
-	err := msg.StdTx.ValidateBasic()
-	if err != nil {
-		return err
-	}
+	// err := msg.StdTx.ValidateBasic()
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
@@ -204,8 +204,7 @@ func (msg MsgSignMultiSigTx) ValidateBasic() sdkTypes.Error {
 	if msg.TxID < 0 {
 		return sdkTypes.ErrInternal("TxID not allowed to be less than 0.")
 	}
-
-	if len(msg.Signature.Bytes()) < 0 {
+	if msg.Signature.PubKey == nil {
 		return sdkTypes.ErrNoSignatures("Signature not allowed to be empty.")
 	}
 
