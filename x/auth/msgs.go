@@ -158,10 +158,10 @@ func (msg MsgCreateMultiSigTx) ValidateBasic() sdkTypes.Error {
 	if msg.GroupAddress.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.GroupAddress.String())
 	}
-	// err := msg.StdTx.ValidateBasic()
-	// if err != nil {
-	// 	return err
-	// }
+	err := msg.StdTx.ValidateBasic()
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
