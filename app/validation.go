@@ -343,7 +343,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Mint limit exceeded.")
 		}
 
-		//1. [Mint (by Public==TRUE) non fungible token(TNFT-public-01) - Error, Public token can only be minted to itself.]
+		//1. checking: (flag of Public equals to TRUE)
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
 		if token.Flags.HasFlag(0x0080) {
@@ -352,6 +352,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			if !ownerAcc.Equals(newOwnerAcc) {
 				return sdkTypes.ErrInternal("Public token can only be minted to oneself.")
 			}
+		}
+
+		//2. Check for Unique status
+		if !app.nonFungibleTokenKeeper.IsItemIDUnique(ctx, msg.Symbol, msg.ItemID) {
+			return types.ErrTokenItemIDInUsed()
 		}
 
 	case nonFungible.MsgBurnNonFungibleItem:

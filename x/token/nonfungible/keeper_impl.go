@@ -171,7 +171,7 @@ func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 
 	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
-		return types.ErrInvalidTokenOwner().Result()
+		return types.ErrTokenItemNotFound().Result()
 	}
 
 	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
@@ -278,9 +278,9 @@ func (k *Keeper) acceptNonFungibleTokenOwnership(ctx sdkTypes.Context, from sdkT
 	}
 
 	// validation of new owner account
-	newOwnerWalletAccount := k.accountKeeper.GetAccount(ctx, token.Owner)
+	newOwnerWalletAccount := k.accountKeeper.GetAccount(ctx, token.NewOwner)
 	if newOwnerWalletAccount == nil {
-		return sdkTypes.ErrInvalidSequence("Invalid token owner.").Result()
+		return sdkTypes.ErrInvalidSequence("Invalid new token owner.").Result()
 	}
 
 	if newOwnerWalletAccount != nil && token.NewOwner.String() != from.String() {

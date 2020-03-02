@@ -212,6 +212,8 @@ github.com/maxonrow/cosmos-sdk v0.28.2-0.20200109081338-e61eb4306333 h1:BN/X7qbO
 github.com/maxonrow/cosmos-sdk v0.28.2-0.20200109081338-e61eb4306333/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
 github.com/maxonrow/cosmos-sdk v0.28.2-0.20200114070023-908442f4f40b h1:59ENVs0MLalOKYgSHIIQjOPONqAPX6Couj2fs0/zgP4=
 github.com/maxonrow/cosmos-sdk v0.28.2-0.20200114070023-908442f4f40b/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
+github.com/maxonrow/cosmos-sdk v0.28.2-0.20200226103109-3ee056c44c0d h1:11BX7nC23DcgmEzRFmXGjt7m1B1ck242lyHSm7BZqQI=
+github.com/maxonrow/cosmos-sdk v0.28.2-0.20200226103109-3ee056c44c0d/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213113132-fc89d934ae39 h1:aQC+Vxg3weMGqb0LJ+PjmlazoQchktOmiXTljMRWkxk=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213113132-fc89d934ae39/go.mod h1:0sLtjU+qex1OfpGQHjWhJByx74IoH78R742PEAdoQJk=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200213114930-7be4083d2051 h1:LR6/6d6AVQWcBS7EaRpPOJIGfw8iZsp5pUSxNzDzt68=
