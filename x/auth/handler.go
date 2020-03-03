@@ -251,8 +251,7 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
 	}
 
-	sigs := stdTx.Signatures
-	stdTx.Signatures = append(sigs, msg.Signature)
+	stdTx.Signatures = append(stdTx.Signatures, msg.Signature)
 	multiSig.UpdatePendingTx(msg.TxID, stdTx)
 
 	accountKeeper.SetAccount(ctx, groupAcc)
