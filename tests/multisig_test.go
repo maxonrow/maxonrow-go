@@ -34,27 +34,27 @@ func TestMultisigAccsTxs(t *testing.T) {
 	tcs := []*testCase{
 
 		// assign zero fee to an account
-		{"kyc", false, false, "Doing kyc - mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "mostafa", "mostafa", "testKyc123456789", "0"}, "MEMO : Doing kyc - mostafa - commit", nil},
+		{"kyc", false, false, "Doing kyc - multisig-auth-1 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-auth-1", "multisig-auth-1", "testKyc123456789", "0"}, "MEMO : Doing kyc - multisig-auth-1 - commit", nil},
 
 		//goh123 - prepare for MultiSig module
-		{"kyc", false, false, "Doing kyc - acc-21 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-21", "acc-21", "testKyc122222222", "0"}, "MEMO : Doing kyc - acc-21 - commit", nil},
-		{"kyc", false, false, "Doing kyc - acc-23 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-23", "acc-23", "testKyc111111111", "0"}, "MEMO : Doing kyc - acc-23 - commit", nil},
-		{"kyc", false, false, "Doing kyc - acc-24 - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "acc-24", "acc-24", "testKyc133333333", "0"}, "MEMO : Doing kyc - acc-24 - commit", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-21", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-21", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-23", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-23", nil},
-		{"bank", false, false, "sending 10000000000 cin", "alice", "200000000cin", 0, bankInfo{"alice", "acc-24", "10000000000cin"}, "MEMO : alice sending 10000000000cin to acc-24", nil},
+		{"kyc", false, false, "Doing kyc - multisig-acc-21 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-21", "multisig-acc-21", "testKyc122222222", "0"}, "MEMO : Doing kyc - multisig-acc-21 - commit", nil},
+		{"kyc", false, false, "Doing kyc - multisig-acc-23 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-23", "multisig-acc-23", "testKyc111111111", "0"}, "MEMO : Doing kyc - multisig-acc-23 - commit", nil},
+		{"kyc", false, false, "Doing kyc - multisig-acc-24 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-24", "multisig-acc-24", "testKyc133333333", "0"}, "MEMO : Doing kyc - multisig-acc-24 - commit", nil},
+		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-21", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-21", nil},
+		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-23", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-23", nil},
+		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-24", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-24", nil},
 
 		//create MultiSig Account
-		{"multiSig", false, false, "Create MultiSig Account - Happy Path - commit", "acc-21", "200000000cin", 0, MultisigInfo{"create", "10000000", "mostafa", "acc-21", "", 2, []string{"acc-21", "acc-24"}, "", ""}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		{"multiSig", false, false, "Create MultiSig Account - Happy Path - commit", "multisig-acc-21", "200000000cin", 0, MultisigInfo{"create", "10000000", "multisig-auth-1", "multisig-acc-21", "", 2, []string{"multisig-acc-21", "multisig-acc-24"}, "", ""}, "MEMO : Create MultiSig Account - Happy Path", nil},
 
-		//NOTE : THIS for GroupAddress send BankTx
-		{"bank-multisig", false, false, "BankTx sending 70000000000cin from acc-alice to Multisig Group-address", "alice", "200000000cin", 0, bankInfo{"alice", "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "10000000000cin"}, "MEMO : alice sending 70000000000cin to multisig-GroupAddress", nil},
+		//NOTE : THIS for GroupAddress send BankTx : 'mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0'
+		{"bank-multisig", false, false, "BankTx sending 70000000000cin from acc-alice to Multisig Group-address", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "10000000000cin"}, "MEMO : multisig-alice sending 70000000000cin to multisig-GroupAddress", nil},
 
 		// multiSig-create-tx-bank
-		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path - commit", "acc-21", "200000000cin", 0, bankInfo{"mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
+		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path - commit", "multisig-acc-21", "200000000cin", 0, bankInfo{"mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "multisig-acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
 
 		// // multiSig-sign-tx-bank
-		//{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce", "0`"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
+		//{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "0"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
 
 	}
 
@@ -246,7 +246,7 @@ func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdk
 	require.NotNil(t, acc)
 
 	// 2. MultiSig
-	groupAddress := "mxw14fr3w8ffacdtkn6cmeg2ndpe7lxdzwt453crce"
+	groupAddress := "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0"
 	groupAcc := Account(groupAddress)
 
 	// 1. signBytes to be sign by sender
