@@ -73,7 +73,8 @@ func main() {
 	}
 
 	keyComd := keys.Commands()
-	addImportKeyCommand(keyComd)
+	addImportMnemonicCommand(keyComd)
+	multisigAddressCommand(keyComd)
 
 	rootCmd.AddCommand(
 		rpc.StatusCommand(),
@@ -87,7 +88,7 @@ func main() {
 		client.LineBreak,
 		bechCommand(),
 		kycCommand(),
-		createAccount(),
+		createKeyPairCommand(),
 		Version,
 	)
 

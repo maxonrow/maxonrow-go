@@ -9,8 +9,21 @@ import (
 
 type ResultLog struct {
 	Hash         common.HexBytes `json:"hash"`
-	InternalHash common.HexBytes `json:"internalHash"`
+	InternalHash common.HexBytes `json:"internalHash,omitempty"`
 	Nonce        uint64          `json:"nonce"`
+}
+
+func ResultLogFromTMLog(log string) *ResultLog {
+	type _tmLog struct {
+		Log string `json:"log"`
+	}
+	var tmLog []_tmLog
+	json.Unmarshal([]byte(log), &tmLog)
+
+	resultLog := new(ResultLog)
+	json.Unmarshal([]byte(tmLog[0].Log), resultLog)
+
+	return resultLog
 }
 
 func NewResultLog(nonce uint64, txBytes []byte) *ResultLog {

@@ -1,13 +1,12 @@
 package app
 
 import (
-	"bytes"
 	"fmt"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
 	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
 	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 	rpc "github.com/tendermint/tendermint/rpc/core"
@@ -35,8 +34,8 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			ctx = ctx.WithBlockHeight(blockHeight)
 		}
 
+		params := app.accountKeeper.GetParams(ctx)
 		stdTx, ok := tx.(sdkAuth.StdTx)
-
 		if !ok {
 			return ctx, sdkTypes.ErrInternal("tx must be StdTx")
 		}
@@ -53,15 +52,8 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			return ctx, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions are gas free. tx_gas: %v", stdTx.Fee.Gas))
 		}
 
-		params := app.accountKeeper.GetParams(ctx)
-
-		signer := stdTx.GetMsgs()[0].GetSigners()[0]
-		signerAcc := app.accountKeeper.GetAccount(ctx, signer)
-		if signerAcc.GetMultiSig() == nil {
-			if err := tx.ValidateBasic(); err != nil {
-				return ctx, err
-			}
-
+		if err := tx.ValidateBasic(); err != nil {
+			return ctx, err
 		}
 
 		if err := app.ValidateMemo(stdTx, params); err != nil {
@@ -76,83 +68,48 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 				return ctx, checkFeeErr
 			}
 		}
-		signerAddrs := stdTx.GetSigners()
-		if len(signerAddrs) != 1 {
-			return ctx, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signer. it has %v senders", len(signerAddrs)))
-		}
 
-		stdSigs := stdTx.Signatures
-		if signerAcc.GetMultiSig() == nil {
-			if len(stdSigs) != 1 {
-				return ctx, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature. it has %v signatures", len(stdSigs)))
-			}
-		}
-
-		signerAcc, err := sdkAuth.GetSignerAcc(ctx, app.accountKeeper, signerAddrs[0])
+		// -------------------------------------------------------------------------
+		// Check signatures and updat sequence and public_keys (if it hasn't set yet)
+		// It may update account's PublicKey
+		acc, err := utils.CheckTxSig(ctx, stdTx, app.accountKeeper, app.kycKeeper)
 		if err != nil {
 			return ctx, err
 		}
 
-		// removing this condition will cause app-hash change
-		if !stdTx.Fee.Amount.IsZero() {
-			err = sdkAuth.DeductFees(app.supplyKeeper, ctx, signerAcc, stdTx.Fee.Amount)
-			if err != nil {
-				return ctx, err
-			}
-
-			signerAcc = app.accountKeeper.GetAccount(ctx, signerAcc.GetAddress())
-		}
-
-		if signerAcc.IsMultiSig() {
-			signerMultiSig := signerAcc.GetMultiSig()
-			txID, validate := signerMultiSig.ValidateMultiSigTx(stdTx)
-			if !validate {
-				return ctx, sdkTypes.ErrUnknownAddress("Invalid multisig tx.")
-			}
-
-			isMetric := signerMultiSig.IsMetric(txID)
+		// Try to delete it from pending list
+		if acc.IsMultiSig() {
+			multisig := acc.GetMultiSig()
+			txID, _ := multisig.CheckTx(stdTx)
+			isMetric := multisig.IsMetric(txID)
 			if !isMetric {
 				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not valid.")
 			}
-
-			for _, v := range stdSigs {
-				accAddress, err := sdkTypes.AccAddressFromHex(v.PubKey.Address().String())
-				if err != nil {
-					return ctx, err
-				}
-				if !signerMultiSig.IsSigner(accAddress) {
-					return ctx, sdkTypes.ErrUnauthorized("Invalid multisig account signer.")
-				}
-
-				// Signer is one of the signer in groupAccount
-				signer := app.accountKeeper.GetAccount(ctx, accAddress)
-
-				// signerAcc is groupAccount
-				signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
-				_, err = processSig(ctx, signer, v, signBytes, simulate, params)
-				if err != nil {
-					return ctx, err
-				}
-			}
 			// after validating everything, delete the pendingTx
-			isDeleted := signerMultiSig.RemoveTx(txID)
+			isDeleted := multisig.RemoveTx(txID)
 			if !isDeleted {
 				return ctx, sdkTypes.ErrUnknownRequest("Delete failed.")
 			}
-			signerAcc.SetMultiSig(signerMultiSig)
-			app.accountKeeper.SetAccount(ctx, signerAcc)
-		} else {
+			acc.SetMultiSig(multisig)
+		}
 
-			signBytes := types.GetSignBytes(ctx, stdTx, signerAcc)
+		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
+			panic(err)
+		}
+		app.accountKeeper.SetAccount(ctx, acc)
+		// -------------------------------------------------------------------------
 
-			stdSig := stdSigs[0]
-			signerAcc, err = processSig(ctx, signerAcc, stdSig, signBytes, simulate, params)
+		// removing this condition will cause app-hash change
+		if !stdTx.Fee.Amount.IsZero() {
+			err := sdkAuth.DeductFees(app.supplyKeeper, ctx, acc, stdTx.Fee.Amount)
 			if err != nil {
 				return ctx, err
 			}
 
-			app.accountKeeper.SetAccount(ctx, signerAcc)
+			// TODO: WHY we get account again here? Try to add some test cases for this
+			acc = app.accountKeeper.GetAccount(ctx, acc.GetAddress())
 		}
+
 		for _, msg := range stdTx.GetMsgs() {
 
 			if !ok {
@@ -195,45 +152,6 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 
 		return ctx, nil // continue...
 	}
-}
-
-// verify the signature and increment the sequence. If the account doesn't have
-// a pubkey, set it.
-func processSig(
-	ctx sdkTypes.Context, acc exported.Account, sig sdkAuth.StdSignature, signBytes []byte, _ bool, params sdkAuth.Params,
-) (updatedAcc exported.Account, err error) {
-
-	pubKey := acc.GetPubKey()
-	if pubKey == nil {
-		pubKey = sig.PubKey
-		if pubKey == nil {
-			return nil, sdkTypes.ErrInvalidPubKey("PubKey not found")
-		}
-
-		if !bytes.Equal(pubKey.Address(), acc.GetAddress()) {
-			return nil, sdkTypes.ErrInvalidPubKey(
-				fmt.Sprintf("PubKey does not match Signer address %s", acc.GetAddress()))
-		}
-
-		err = acc.SetPubKey(pubKey)
-		if err != nil {
-			return nil, sdkTypes.ErrInternal("setting PubKey on signer's account")
-		}
-	}
-
-	if !pubKey.VerifyBytes(signBytes, sig.Signature) {
-		return nil, sdkTypes.ErrUnauthorized("signature verification failed; verify correct account sequence and chain-id" + string(signBytes))
-	}
-
-	if acc.IsMultiSig() {
-		return acc, err
-	} else {
-		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
-			panic(err)
-		}
-	}
-
-	return acc, err
 }
 
 func (app *mxwApp) retrieveChainID() (string, int64) {
