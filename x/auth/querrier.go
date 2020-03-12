@@ -37,7 +37,7 @@ func queryMultiSigAcc(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ a
 
 	groupAddr, err := sdkTypes.AccAddressFromBech32(path[0])
 	if err != nil {
-		return nil, sdkTypes.ErrUnknownAddress(fmt.Sprintf("Invliad group address %s", path[0]))
+		return nil, sdkTypes.ErrUnknownAddress(fmt.Sprintf("Invalid group address %s", path[0]))
 	}
 
 	groupAcc := accountKeeper.GetAccount(ctx, groupAddr)
@@ -55,22 +55,19 @@ func queryMultiSigPendingTx(cdc *codec.Codec, ctx sdkTypes.Context, path []strin
 
 	groupAddr, err := sdkTypes.AccAddressFromBech32(path[0])
 	if err != nil {
-		return nil, sdkTypes.ErrUnknownAddress(fmt.Sprintf("Invliad group address %s", path[0]))
+		return nil, sdkTypes.ErrUnknownAddress(fmt.Sprintf("Invalid group address %s", path[0]))
 	}
 
 	txID, err := strconv.ParseUint(path[1], 0, 64)
 	if err != nil {
-		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invliad txID %s", path[1]))
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid txID %s", path[1]))
 	}
 
 	groupAcc := accountKeeper.GetAccount(ctx, groupAddr)
 
 	multiSig := groupAcc.GetMultiSig()
-	ok, pendingTx := multiSig.GetPendingTx(txID)
-	if !ok {
-		return nil, sdkTypes.ErrInternal("Tx not found.")
-	}
-	tx := pendingTx.Tx
+	pendingTx := multiSig.GetPendingTx(txID)
+	tx := pendingTx.GetTx()
 
 	stdTx, ok := tx.(sdkAuth.StdTx)
 	if !ok {
