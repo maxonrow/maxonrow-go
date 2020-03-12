@@ -15,7 +15,6 @@ func (app *mxwApp) deliverMultiSigTxAsync(tx []byte) *ctypes.ResultBroadcastTx {
 	return BroadcastTxAsync(tx)
 }
 
-// yk1
 func BroadcastTxAsync(tx []byte) *ctypes.ResultBroadcastTx {
 	result := new(ctypes.ResultBroadcastTx)
 	fmt.Printf("\n============BroadcastTxAsync() - tx : %v\n", string(tx))

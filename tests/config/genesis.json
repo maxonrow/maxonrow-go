@@ -679,24 +679,21 @@
         "mxw1fd6659xn28vrtt6a60hlfcqkfmf2asu4vy4sd6",
         "mxw1lt2c9nrg4rxjw4804lw9sx5ewesxp66wxp7yc8",
         "mxw1yzvfp8ku2p378qh7hhejt73c99txvd5jfx4e5l",
-        "mxw1ff32lgz0pffjgxvlgg38jz9p7pgunhkvnhx54q",
-        "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr"
+        "mxw1ff32lgz0pffjgxvlgg38jz9p7pgunhkvnhx54q"
       ],
       "issuer_addresses": [
         "mxw1ktyq5damgnfqkj6qy2l8fqc54drnznlujckdnf",
         "mxw1czapnz7d8kadvn2gjqsvcjcah0gencj04ksg34",
         "mxw1pcjgmatnwqqzu30q54g82ng5cg93a00palr4vk",
         "mxw16s6z7ydpen30u9lpvxx0362wgeww2y9a9rz9mp",
-        "mxw163gpxlqtgcexpal0wuth9zx789mq0qfsctjnyx",
-        "mxw1cntgdz7z8lm26xmzxkn2jcr9djx8rnhdf3dl7c"
+        "mxw163gpxlqtgcexpal0wuth9zx789mq0qfsctjnyx"
       ],
       "provider_addresses": [
         "mxw126l5vx5s478khryv5l597lhdsfvnq9tmvmzfsl",
         "mxw1cjfaadhr0fypvs0ujuw87q0cxsq87496q92fxj",
         "mxw1jhcjfsqyrpmsqartw4xtsnmvpn4nxkjlnsmvf6",
         "mxw1qht067z8s5e6fq5kx3k544kl554l6zkyz56l6l",
-        "mxw1we5y4ckamtdrhuf43phmg0x7z93qhh0qkfmk9p",
-        "mxw1gh9hlcdevh94rrxj7gd3wtngjrhj50gkt9txvk"
+        "mxw1we5y4ckamtdrhuf43phmg0x7z93qhh0qkfmk9p"
       ],
       "whitelisted_addresses": [
         "mxw1ytw2ydf7nnwt3mlyt6f00vk4tj8gwn3s4txnye",
@@ -706,7 +703,6 @@
         "mxw1mnfa7rjecg4ha0nxgz4j0shtpmxuazspqds8e0",
         "mxw123xwuat5h9x92w6vdtn4fl2l03t7d793qugxvc",
         "mxw1g6cjz0pgtchedjyacjcsldhmxcvu2z4nrud9qt",
-        "mxw1858220s2tacfhzgjrxrgyyn5huxsf4r9s9tq5j",
         "mxw1qgwzdxf66tp5mjpkpfe593nvsst7qzfxzqq73d",
         "mxw1nj5xdz6ychva2mjr7dnzp36tsfzefphadq230m",
         "mxw1dww3nwtpvfcq2h94rmlftwywy7skc48yaku27p",
@@ -1742,9 +1738,9 @@
         "mxw1m2n2axmj47egpkexpe762wr5qvmecrerxm6dsf",
         "mxw17yy9sn9lt8w5hfs60hs6nrzy47e3k32w5cs9cn",
         "mxw1n7x309jdpx7y0m0kq99agjjlart2zg4psrkuk6",
-        "mxw15t40pslhza6alat5ls0uth6x233c5545sc994h",
-        "mxw1u8nflv8uzphyakflkt74ya36f3etx8jcz55szn",
-        "mxw19f3hdj9pxkwv7cl7fszj7taguu673hstlh34et"
+        "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr",
+        "mxw1cntgdz7z8lm26xmzxkn2jcr9djx8rnhdf3dl7c",
+        "mxw1gh9hlcdevh94rrxj7gd3wtngjrhj50gkt9txvk"
       ]
     },
     "token": {
@@ -1872,10 +1868,7 @@
         "mxw1643vtl03p3xgyxjgf7wmfuqeg04rkx9txjw6w6",
         "mxw1r2y3nvkl9lzwav4aku4q6nwltcj6ms4xnlpkr2",
         "mxw16jjtd4y0pg0qrksqdctn3r2sap54p0y2nsmjtr",
-        "mxw1tahf2gyz4kw0922eumzdywywp5yg9w3qepqzqj",
-        "mxw15t40pslhza6alat5ls0uth6x233c5545sc994h",
-        "mxw1u8nflv8uzphyakflkt74ya36f3etx8jcz55szn",
-        "mxw19f3hdj9pxkwv7cl7fszj7taguu673hstlh34et"
+        "mxw1tahf2gyz4kw0922eumzdywywp5yg9w3qepqzqj"
       ],
       "starting_proposal_id": "1",
       "validator_set": [

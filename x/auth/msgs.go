@@ -2,7 +2,7 @@ package auth
 
 import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/x/auth"
+	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 )
 
 const RouterKey = "auth"
@@ -48,10 +48,10 @@ func (msg MsgCreateMultiSigAccount) GetSigners() []sdkTypes.AccAddress {
 }
 
 type MsgUpdateMultiSigAccount struct {
-	Owner        sdkTypes.AccAddress   `json:owner`
-	GroupAddress sdkTypes.AccAddress   `json:groupAddress`
-	NewThreshold int                   `json:threshold`
-	NewSigners   []sdkTypes.AccAddress `json:signers`
+	Owner        sdkTypes.AccAddress   `json:"owner"`
+	GroupAddress sdkTypes.AccAddress   `json:"groupAddress"`
+	NewThreshold int                   `json:"threshold"`
+	NewSigners   []sdkTypes.AccAddress `json:"signers"`
 }
 
 func NewMsgUpdateMultiSigAccount(owner, groupAddress sdkTypes.AccAddress, threshold int, signers []sdkTypes.AccAddress) MsgUpdateMultiSigAccount {
@@ -90,9 +90,9 @@ func (msg MsgUpdateMultiSigAccount) GetSigners() []sdkTypes.AccAddress {
 }
 
 type MsgTransferMultiSigOwner struct {
-	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	Owner        sdkTypes.AccAddress `json:owner`
-	NewOwner     sdkTypes.AccAddress `json:newOwner`
+	GroupAddress sdkTypes.AccAddress `json:"groupAddress"`
+	Owner        sdkTypes.AccAddress `json:"owner"`
+	NewOwner     sdkTypes.AccAddress `json:"newOwner"`
 }
 
 func NewMsgTransferMultiSigOwner(groupAddress sdkTypes.AccAddress, newOwner, owner sdkTypes.AccAddress) MsgTransferMultiSigOwner {
@@ -131,14 +131,14 @@ func (msg MsgTransferMultiSigOwner) GetSigners() []sdkTypes.AccAddress {
 }
 
 type MsgCreateMultiSigTx struct {
-	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	StdTx        auth.StdTx          `json:stdTx`
-	Sender       sdkTypes.AccAddress `json:sender`
+	GroupAddress sdkTypes.AccAddress `json:"groupAddress"`
+	StdTx        sdkAuth.StdTx       `json:"stdTx"`
+	Sender       sdkTypes.AccAddress `json:"sender"`
 }
 
 // start :
 // NewMsgCreateMultiSigTx :
-func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, tx auth.StdTx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
+func NewMsgCreateMultiSigTx(groupAddress sdkTypes.AccAddress, tx sdkAuth.StdTx, sender sdkTypes.AccAddress) MsgCreateMultiSigTx {
 	return MsgCreateMultiSigTx{groupAddress, tx, sender}
 }
 
@@ -174,13 +174,13 @@ func (msg MsgCreateMultiSigTx) GetSigners() []sdkTypes.AccAddress {
 }
 
 type MsgSignMultiSigTx struct {
-	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	TxID         uint64              `json:txId`
-	Signature    auth.StdSignature   `json:signature`
-	Sender       sdkTypes.AccAddress `json:sender`
+	GroupAddress sdkTypes.AccAddress  `json:"groupAddress"`
+	TxID         uint64               `json:"txId"`
+	Signature    sdkAuth.StdSignature `json:"signature"`
+	Sender       sdkTypes.AccAddress  `json:"sender"`
 }
 
-func NewMsgSignMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, signature auth.StdSignature, sender sdkTypes.AccAddress) MsgSignMultiSigTx {
+func NewMsgSignMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, signature sdkAuth.StdSignature, sender sdkTypes.AccAddress) MsgSignMultiSigTx {
 	return MsgSignMultiSigTx{groupAddress, txID, signature, sender}
 }
 
@@ -220,9 +220,9 @@ func (msg MsgSignMultiSigTx) GetSigners() []sdkTypes.AccAddress {
 }
 
 type MsgDeleteMultiSigTx struct {
-	GroupAddress sdkTypes.AccAddress `json:groupAddress`
-	TxID         uint64              `json:txId`
-	Sender       sdkTypes.AccAddress `json:sender`
+	GroupAddress sdkTypes.AccAddress `"json:"groupAddress"`
+	TxID         uint64              `"json:"txId"`
+	Sender       sdkTypes.AccAddress `"json:"sender"`
 }
 
 func NewMsgDeleteMultiSigTx(groupAddress sdkTypes.AccAddress, txID uint64, sender sdkTypes.AccAddress) MsgDeleteMultiSigTx {

@@ -1,296 +1,110 @@
 package tests
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
 	"testing"
 
-	"github.com/maxonrow/maxonrow-go/types"
-
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	authTypes "github.com/cosmos/cosmos-sdk/x/auth"
+	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/maxonrow/maxonrow-go/types"
 	multisig "github.com/maxonrow/maxonrow-go/x/auth"
-	"github.com/maxonrow/maxonrow-go/x/bank"
-
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 type MultisigInfo struct {
-	Action         string
-	ApplicationFee string
-	FeeCollector   string
-	Owner          string
-	NewOwner       string
-	Threshold      int
-	Signers        []string
-	GroupAddress   string
-	TransactionId  string
+	Action       string
+	Owner        string
+	NewOwner     string
+	Threshold    int
+	Signers      []string
+	GroupAddress string
+	TxID         uint64
+	InternalTx   *testCase
 }
 
-func TestMultisigAccsTxs(t *testing.T) {
+func mustGetAccAddressFromBech32(bech32 string) sdkTypes.AccAddress {
+	addr, _ := sdkTypes.AccAddressFromBech32(bech32)
+	return addr
+}
+
+func makeMultisigTxs() []*testCase {
+
+	// Group addresses:
+	// You can generate group address via `mxwcli` command. ex.
+	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 1`
+	tKeys["grp-addr-1"] = &keyInfo{
+		mustGetAccAddressFromBech32("mxw1n94cgykexyzjuxmt97eaz2q2jecak2n84my0ny"), nil, nil, "mxw1n94cgykexyzjuxmt97eaz2q2jecak2n84my0ny",
+	}
+	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 2`
+	tKeys["grp-addr-2"] = &keyInfo{
+		mustGetAccAddressFromBech32("mxw1gs8fq6sd5nd4vppnancpkjjh0gycdfr2g9dw0f"), nil, nil, "mxw1gs8fq6sd5nd4vppnancpkjjh0gycdfr2g9dw0f",
+	}
+	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 3`
+	tKeys["grp-addr-3"] = &keyInfo{
+		mustGetAccAddressFromBech32("mxw1je73yfjvpmms68jswd42ceq6k8dl92uz45qztp"), nil, nil, "mxw1je73yfjvpmms68jswd42ceq6k8dl92uz45qztp",
+	}
+	// not exist account
+	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 4`
+	tKeys["grp-addr-4"] = &keyInfo{
+		mustGetAccAddressFromBech32("mxw1nnem49mcz6532fhn69nrwmp7p7kl65s397hvs6"), nil, nil, "mxw1nnem49mcz6532fhn69nrwmp7p7kl65s397hvs6",
+	}
+
+	internalTx_1 := &testCase{"bank", true, true, "sending 1 cin  ", "multisig-acc-1", "800400000cin", 0, bankInfo{"mostafa", "bob", "1cin"}, "tx1", nil}
+	internalTx_2 := &testCase{"bank", true, true, "sending 1 cin  ", "multisig-acc-1", "800400000cin", 0, bankInfo{"grp-addr-3", "bob", "1cin"}, "tx2", nil}
+	internalTx_3 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-1", "800400000cin", 0, bankInfo{"grp-addr-1", "bob", "1cin"}, "tx3", nil}
+	internalTx_4 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx4", nil}
+	internalTx_5 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx5", nil}
 
 	tcs := []*testCase{
 
-		// assign zero fee to an account
-		{"kyc", false, false, "Doing kyc - multisig-auth-1 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-auth-1", "multisig-auth-1", "testKyc123456789", "0"}, "MEMO : Doing kyc - multisig-auth-1 - commit", nil},
-
-		//goh123 - prepare for MultiSig module
-		{"kyc", false, false, "Doing kyc - multisig-acc-21 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-21", "multisig-acc-21", "testKyc122222222", "0"}, "MEMO : Doing kyc - multisig-acc-21 - commit", nil},
-		{"kyc", false, false, "Doing kyc - multisig-acc-23 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-23", "multisig-acc-23", "testKyc111111111", "0"}, "MEMO : Doing kyc - multisig-acc-23 - commit", nil},
-		{"kyc", false, false, "Doing kyc - multisig-acc-24 - commit", "multisig-kyc-auth-1", "0cin", 0, kycInfo{"multisig-kyc-auth-1", "multisig-kyc-issuer-1", "multisig-kyc-prov-1", "whitelist", "multisig-acc-24", "multisig-acc-24", "testKyc133333333", "0"}, "MEMO : Doing kyc - multisig-acc-24 - commit", nil},
-		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-21", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-21", nil},
-		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-23", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-23", nil},
-		{"bank", false, false, "sending 10000000000 cin", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "multisig-acc-24", "10000000000cin"}, "MEMO : multisig-alice sending 10000000000cin to multisig-acc-24", nil},
-
 		//create MultiSig Account
-		{"multiSig", false, false, "Create MultiSig Account - Happy Path - commit", "multisig-acc-21", "200000000cin", 0, MultisigInfo{"create", "10000000", "multisig-auth-1", "multisig-acc-21", "", 2, []string{"multisig-acc-21", "multisig-acc-24"}, "", ""}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		{"multiSig", false, false, "Create MultiSig Account1 - Happy Path - commit ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 1, []string{"multisig-acc-1"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		{"multiSig", false, false, "Create MultiSig Account2- Happy Path - commit  ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-2", "multisig-acc-3"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		{"multiSig", false, false, "Create MultiSig Account3 - Happy Path - commit ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		{"multiSig", false, true, "Create MultiSig Account - non-kyc               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-1", "multisig-acc-no-kyc"}, "", 0, nil}, "", nil},
 
-		//NOTE : THIS for GroupAddress send BankTx : 'mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0'
-		{"bank-multisig", false, false, "BankTx sending 70000000000cin from acc-alice to Multisig Group-address", "multisig-alice", "200000000cin", 0, bankInfo{"multisig-alice", "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "10000000000cin"}, "MEMO : multisig-alice sending 70000000000cin to multisig-GroupAddress", nil},
+		{"bank", false, false, "top-up Multisig Group-address1 - commit", "multisig-acc-1", "800400000cin", 0, bankInfo{"multisig-acc-1", "grp-addr-1", "10000000000cin"}, "MEMO : top-up account", nil},
+		{"bank", false, false, "top-up Multisig Group-address2 - commit", "multisig-acc-2", "800400000cin", 0, bankInfo{"multisig-acc-2", "grp-addr-2", "10000000000cin"}, "MEMO : top-up account", nil},
+		{"bank", false, false, "top-up Multisig Group-address3 - commit", "multisig-acc-3", "800400000cin", 0, bankInfo{"multisig-acc-3", "grp-addr-3", "10000000000cin"}, "MEMO : top-up account", nil},
 
-		// multiSig-create-tx-bank
-		{"multiSig-create-tx-bank", false, false, "MultiSig-create-tx-bank - Happy Path - commit", "multisig-acc-21", "200000000cin", 0, bankInfo{"mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "multisig-acc-24", "20cin"}, "MEMO : MultiSig-create-tx-bank - Happy Path", nil}, // OK
+		{"multiSig", false, true, "MultiSig-create-tx-bank - Invalid sequence", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 5, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil},
 
-		// // multiSig-sign-tx-bank
-		//{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "acc-24", "200000000cin", 0, MultisigInfo{"multiSig-sign-tx-bank", "10000000", "mostafa", "acc-24", "", 2, []string{"acc-21", "acc-24"}, "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0", "0"}, "MEMO : MultiSig-sign-tx-bank - Happy Path", nil}, // OK
+		// multiSig-create-tx-bank with one signer, should broadcast immediately
+		{"multiSig", false, true, "MultiSig-create-tx-bank - wrong signer       ", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_1}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - invalid sender     ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_1}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - invalid sender2           ", "mostafa", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_1}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - invalid tx-id      ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx_1}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - Invalid internal_tx", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_1}, "MEMO : MultiSig-create-tx-bank", nil},
+		// this case will print an error messsage which can't find pending tx.
+		{"multiSig", false, true, "MultiSig-create-tx-bank - Invalid internal_tx", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_2}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, false, "MultiSig-create-tx-bank - Happy path        ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil},
 
+		//
+		{"multiSig", false, true, "MultiSig-create-tx-bank - counter+5            ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 5, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - counter+1            ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 1, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, false, "MultiSig-create-tx-bank - Happy Path          ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - Resubmit fail        ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank - Resubmit counter+2   ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, false, "MultiSig-create-tx-bank - Resubmit counter+1  ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 1, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+
+		{"multiSig", false, true, "MultiSig-sign-tx-bank - wrong signer      ", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-sign-tx-bank - owner can't sign  ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-sign-tx-bank - wrong sender             ", "mostafa", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path-commit", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-sign-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-sign-tx-bank - resubmit          ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-sign-tx-bank", nil},
+
+		// Note: msg signed by acc-2, internal_tx signed by acc-3. acc_2 sends both acc_2 and acc_3 signatures
+		{"multiSig", false, true, "MultiSig-create-tx-bank2 - unknown signer                 ", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank2 - owner can't sign               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank2 - Invalid signer                        ", "mostafa", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank2 - Owner can't create internal-tx ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, false, "MultiSig-create-tx-bank2 - Happy path                    ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-create-tx-bank2 - Resubmit with same tx_id       ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
+
+		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
+		{"multiSig", false, true, "MultiSig-sign-tx-bank - resubmit   ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
 	}
 
-	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
-	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
-
-	for n, tc := range tcs {
-
-		fees, err := types.ParseCoins(tc.fees)
-		assert.NoError(t, err, tc.fees)
-
-		var msg sdkTypes.Msg
-		switch tc.msgType {
-		case "bank-multisig":
-			{
-				i := tc.msgInfo.(bankInfo)
-				amt, err := types.ParseCoins(i.amount)
-				assert.NoError(t, err, i.amount)
-
-				groupAddr, _ := sdkTypes.AccAddressFromBech32(i.to)
-				msg = bank.NewMsgSend(tKeys[i.from].addr, groupAddr, amt)
-
-				if !tc.deliverFailed {
-					if i.from == "alice" {
-						totalFee = totalFee.Add(fees[0])
-						totalAmt = totalAmt.Add(amt[0])
-					}
-				}
-			}
-		case "bank":
-			{
-				i := tc.msgInfo.(bankInfo)
-				amt, err := types.ParseCoins(i.amount)
-				assert.NoError(t, err, i.amount)
-
-				msg = bank.NewMsgSend(tKeys[i.from].addr, tKeys[i.to].addr, amt)
-
-				if !tc.deliverFailed {
-					if i.from == "alice" {
-						totalFee = totalFee.Add(fees[0])
-						totalAmt = totalAmt.Add(amt[0])
-					}
-				}
-			}
-		case "kyc":
-			{
-				i := tc.msgInfo.(kycInfo)
-
-				switch i.action {
-				case "whitelist":
-					msg = makeKycWhitelistMsg(t, i.authorised, i.issuer, i.provider, i.from, i.signer, i.data, i.nonce)
-
-				case "revokeWhitelist":
-					msg = makeKycRevokeWhitelistMsg(t, i.authorised, i.issuer, i.provider, i.from)
-				}
-			}
-
-		case "multiSig":
-			{
-				i := tc.msgInfo.(MultisigInfo)
-
-				switch i.Action {
-				case "create":
-					msg = makeCreateMultiSigAccountMsg(t, i.Owner, i.Threshold, i.Signers)
-				case "update":
-					msg = makeUpdateMultiSigAccountMsg(t, i.Owner, i.GroupAddress, i.Threshold, i.Signers)
-				case "transfer-ownership":
-					msg = makeTransferMultiSigOwnerMsg(t, i.GroupAddress, i.NewOwner, i.Owner)
-				case "multiSig-sign-tx-bank":
-					msg = makeSignMultiSigTxMsg(t, i.GroupAddress, i.TransactionId, i.Owner)
-				case "multiSig-delete-tx-bank":
-					msg = makeDeleteMultiSigTxMsg(t, i.GroupAddress, i.TransactionId, i.Owner)
-
-				}
-			}
-		case "multiSig-create-tx-bank":
-			{
-				i := tc.msgInfo.(bankInfo)
-				msg = makeBanksendMsg(t, i.from, i.to, i.amount)
-			}
-		}
-
-		isMultiSig := checkMultiSig(tc.msgType)
-		tx, bz := MakeMultiSigOrSingleSigTx(t, tc.signer, tc.gas, fees, tc.memo, msg, isMultiSig)
-
-		txb, err := tCdc.MarshalJSON(tx)
-		assert.NoError(t, err)
-		fmt.Printf("============\nBroadcasting %d tx (%s): %s\n", n+1, tc.desc, string(txb))
-
-		res := BroadcastTxCommit(bz)
-		tc.hash = res.Hash.Bytes()
-
-		if !tc.checkFailed {
-			tKeys[tc.signer].seq++
-			require.Zero(t, res.CheckTx.Code, "test case %v(%v) check failed--111: %v", n+1, tc.desc, res.CheckTx.GetLog())
-
-			if !tc.deliverFailed {
-				require.Zero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed - 001: %v", n+1, tc.desc, res.DeliverTx.Log)
-			} else {
-				require.NotZero(t, res.DeliverTx.Code, "test case %v(%v) deliver failed - 002: %v", n+1, tc.desc, res.DeliverTx.Log)
-			}
-
-		} else {
-			require.NotZero(t, res.CheckTx.Code, "test case %v(%v) check failed--222: %v", n+1, tc.desc, res.CheckTx.Log)
-		}
-
-		if strings.Contains(tc.desc, "commit") {
-			WaitForNextHeightTM(tPort)
-		}
-	}
-
-	WaitForNextHeightTM(tPort)
-
-	/// check results
-	for i, tc := range tcs {
-		res := Tx(tc.hash)
-		_ = Tx(tc.hash)
-		if tc.checkFailed {
-			assert.Nil(t, res, "test case %v(%v) failed", i, tc.desc)
-		} else {
-			if tc.deliverFailed {
-				assert.NotZero(t, res.TxResult.Code, "test case %v(%v) failed", i, tc.desc)
-
-			} else {
-				//fmt.Printf("get Group-Address : %v \n", res.TxResult.Log)
-				assert.Zero(t, res.TxResult.Code, "test case %v(%v) failed: %v", i, tc.desc, res.TxResult.Log)
-			}
-		}
-	}
-}
-
-func checkMultiSig(msgType string) bool {
-
-	multiSigArray := [1]string{"multiSig-create-tx-bank"}
-
-	for _, item := range multiSigArray {
-		if item == msgType {
-			return true
-		}
-	}
-
-	return false
-}
-
-//
-func MakeMultiSigOrSingleSigTx(t *testing.T, signer string, gas uint64, fees sdkTypes.Coins, memo string, msg sdkTypes.Msg,
-	isMultiSig bool) (authTypes.StdTx, []byte) {
-
-	//1. SingleSig
-	if isMultiSig == false {
-		acc := Account(tKeys[signer].addrStr)
-		require.NotNil(t, acc)
-
-		signMsg := authTypes.StdSignMsg{
-			AccountNumber: acc.GetAccountNumber(),
-			ChainID:       "maxonrow-chain",
-			Fee:           authTypes.NewStdFee(gas, fees),
-			Memo:          memo,
-			Msgs:          []sdkTypes.Msg{msg},
-			Sequence:      tKeys[signer].seq,
-		}
-
-		signBz, signBzErr := tCdc.MarshalJSON(signMsg)
-		if signBzErr != nil {
-			panic(signBzErr)
-		}
-
-		sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
-		if err != nil {
-			panic(err)
-		}
-
-		pub := tKeys[signer].priv.PubKey()
-		stdSig := authTypes.StdSignature{
-			PubKey:    pub,
-			Signature: sig,
-		}
-
-		sdtTx := authTypes.NewStdTx(signMsg.Msgs, signMsg.Fee, []authTypes.StdSignature{stdSig}, signMsg.Memo)
-		bz, err := tCdc.MarshalBinaryLengthPrefixed(sdtTx)
-
-		if err != nil {
-			panic(err)
-		}
-		return sdtTx, bz
-	}
-
-	acc := Account(tKeys[signer].addrStr)
-	require.NotNil(t, acc)
-
-	// 2. MultiSig
-	groupAddress := "mxw1fnvyr5uvw70g4w4a3jfv0k3g545uakjrpg4wn0"
-	groupAcc := Account(groupAddress)
-
-	// 1. signBytes to be sign by sender
-	// 2. sequence using group account counter
-	// 3. account number use group account number
-	signBytes := authTypes.StdSignBytes("maxonrow-chain", groupAcc.GetAccountNumber(), groupAcc.MultiSig.Counter, authTypes.NewStdFee(gas, fees), []sdkTypes.Msg{msg}, memo)
-
-	signedBz, _ := tKeys[signer].priv.Sign(signBytes)
-	signature := authTypes.StdSignature{tKeys[signer].pub, signedBz}
-
-	pendingTx := authTypes.NewStdTx([]sdkTypes.Msg{msg}, authTypes.NewStdFee(gas, fees), []authTypes.StdSignature{signature}, memo)
-	msgCreateMultiSigTx := makeCreateMultiSigTxMsg(t, groupAddress, pendingTx, signer)
-
-	signMsg := authTypes.StdSignMsg{
-		AccountNumber: acc.GetAccountNumber(),
-		ChainID:       "maxonrow-chain",
-		Fee:           authTypes.NewStdFee(gas, fees),
-		Memo:          memo,
-		Msgs:          []sdkTypes.Msg{msgCreateMultiSigTx},
-		Sequence:      1,
-	}
-
-	signBz := sdkTypes.MustSortJSON(tCdc.MustMarshalJSON(signMsg))
-
-	sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
-	if err != nil {
-		panic(err)
-	}
-
-	pub := tKeys[signer].priv.PubKey()
-	stdSig := authTypes.StdSignature{
-		PubKey:    pub,
-		Signature: sig,
-	}
-
-	stdMultiSigtx := authTypes.NewStdTx([]sdkTypes.Msg{msgCreateMultiSigTx}, signMsg.Fee, []authTypes.StdSignature{stdSig}, memo)
-	bz, err := tCdc.MarshalBinaryLengthPrefixed(stdMultiSigtx)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return stdMultiSigtx, bz
-
+	return tcs
 }
 
 //module of CreateMultiSigAccount
@@ -332,6 +146,19 @@ func makeUpdateMultiSigAccountMsg(t *testing.T, owner string, groupAddress strin
 
 }
 
+func createInternalTx(t *testing.T, sender, groupAddress string, counter uint64, internalTxTemplate *testCase) sdkTypes.Msg {
+	senderAddr := tKeys[sender].addr
+	groupAddr := tKeys[groupAddress].addr
+
+	internalTxMsg := makeMsg(t, internalTxTemplate.msgType, internalTxTemplate.signer, internalTxTemplate.msgInfo)
+	fees, _ := types.ParseCoins(internalTxTemplate.fees)
+	internalTx, _ := makeSignedTx(t, groupAddress, internalTxTemplate.signer, counter, internalTxTemplate.gas, fees, internalTxTemplate.memo, internalTxMsg)
+
+	msgCreateMultiSigTx := multisig.NewMsgCreateMultiSigTx(groupAddr, internalTx, senderAddr)
+	return msgCreateMultiSigTx
+
+}
+
 //moduel of TransferMultiSigOwner
 func makeTransferMultiSigOwnerMsg(t *testing.T, groupAddress string, newOwner string, owner string) sdkTypes.Msg {
 
@@ -344,63 +171,27 @@ func makeTransferMultiSigOwnerMsg(t *testing.T, groupAddress string, newOwner st
 	return msgTransferMultiSigOwnerPayload
 }
 
-//makeCreateMultiSigTxMsg
-func makeCreateMultiSigTxMsg(t *testing.T, groupAddress string, tx authTypes.StdTx, senderAddress string) sdkTypes.Msg {
-
-	senderAddr := tKeys[senderAddress].addr
-	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
-
-	msgCreateMultiSigTx := multisig.NewMsgCreateMultiSigTx(groupAddr, tx, senderAddr)
-	return msgCreateMultiSigTx
-}
-
-//makeSignMultiSigTxMsg : as Acknowledgement
-func makeSignMultiSigTxMsg(t *testing.T, groupAddress string, txCode string, senderAddress string) sdkTypes.Msg {
-
-	senderAddr := tKeys[senderAddress].addr
-	txID, _ := strconv.ParseUint(txCode, 10, 64)
-
-	groupAcc := Account(groupAddress)
-	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
-
-	groupMultisig := groupAcc.GetMultiSig()
-	tx := groupMultisig.GetTx(txID)
-
-	stdTx, _ := tx.(authTypes.StdTx)
-
-	// 1. signBytes to be sign by sender
-	// 2. sequence using group account counter
-	// 3. account number use group account number
-	signBytes := authTypes.StdSignBytes("maxonrow-chain", groupAcc.GetAccountNumber(), txID, stdTx.Fee, stdTx.GetMsgs(), stdTx.Memo)
-
-	signedBz, _ := tKeys[senderAddress].priv.Sign(signBytes)
-	signature := authTypes.StdSignature{tKeys[senderAddress].pub, signedBz}
-
-	msgSignMultiSigTx := multisig.NewMsgSignMultiSigTx(groupAddr, txID, signature, senderAddr)
-	return msgSignMultiSigTx
-}
-
 //makeDeleteMultiSigTxMsg
-func makeDeleteMultiSigTxMsg(t *testing.T, groupAddress string, txCode string, senderAddress string) sdkTypes.Msg {
+func makeDeleteMultiSigTxMsg(t *testing.T, groupAddress string, txID uint64, senderAddress string) sdkTypes.Msg {
 
 	senderAddr := tKeys[senderAddress].addr
-	txID, _ := strconv.ParseUint(txCode, 10, 64)
 	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
 
 	msgDeleteMultiSigTx := multisig.NewMsgDeleteMultiSigTx(groupAddr, txID, senderAddr)
 	return msgDeleteMultiSigTx
 }
 
-// Tx
-//module of CreateMultiSigTx
-func makeBanksendMsg(t *testing.T, from string, to string, amount string) sdkTypes.Msg {
+func makeSignMultiSigTxMsg(t *testing.T, signer, groupAddress string, txID uint64) sdkTypes.Msg {
+	groupAcc := Account(tKeys[groupAddress].addrStr)
+	groupMultisig := groupAcc.GetMultiSig()
+	require.NotNil(t, groupMultisig)
+	ptx := groupMultisig.GetPendingTx(txID)
+	require.NotNil(t, ptx)
+	internalTx := ptx.GetTx().(sdkAuth.StdTx)
+	require.NotNil(t, internalTx)
 
-	var msgBanksendPayload sdkTypes.Msg
-	amt, err := types.ParseCoins(amount)
-	assert.NoError(t, err, amount)
+	signedTx, _ := makeSignedTx(t, groupAddress, signer, txID, internalTx.Fee.Gas, internalTx.Fee.Amount, internalTx.Memo, internalTx.Msgs[0])
 
-	fromAddr, _ := sdkTypes.AccAddressFromBech32(from)
-
-	msgBanksendPayload = bank.NewMsgSend(fromAddr, tKeys[to].addr, amt)
-	return msgBanksendPayload
+	msgSignMultiSigTx := multisig.NewMsgSignMultiSigTx(groupAcc.Address, txID, signedTx.Signatures[0], tKeys[signer].addr)
+	return msgSignMultiSigTx
 }

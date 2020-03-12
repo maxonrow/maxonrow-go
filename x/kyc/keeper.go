@@ -236,6 +236,8 @@ func (k Keeper) Whitelist(ctx sdkTypes.Context, targetAddress sdkTypes.AccAddres
 		acc = k.accountKeeper.NewAccountWithAddress(ctx, targetAddress)
 		acc.SetAccountNumber(k.accountKeeper.GetNextAccountNumber(ctx))
 		k.accountKeeper.SetAccount(ctx, acc)
+		
+
 	}
 
 	whitelistStore := ctx.KVStore(k.whitelistedStoreKey)

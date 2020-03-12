@@ -9,7 +9,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
+	sdkAuthTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
 	"github.com/tendermint/tendermint/crypto/tmhash"
 	"github.com/tendermint/tendermint/libs/common"
@@ -47,7 +49,6 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 	}
 	addr := DeriveMultiSigAddress(msg.Owner, OwnerAcc.GetSequence())
 
-	// TODO: Check signers has passed KYC
 	for _, signer := range msg.Signers {
 		if !kycKeeper.IsWhitelisted(ctx, signer) {
 			return sdkTypes.ErrUnknownRequest("Signer is not whitelisted.").Result()
@@ -55,18 +56,13 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 	}
 
 	acc := accountKeeper.NewAccountWithAddress(ctx, addr)
-	multisig := new(sdkTypes.MultiSig)
-	multisig.Owner = msg.Owner
-	multisig.Threshold = msg.Threshold
-	multisig.Signers = msg.Signers
+	multisig := sdkAuthTypes.NewMultiSig(msg.Owner, msg.Threshold, msg.Signers)
 	acc.SetMultiSig(multisig)
 	accountKeeper.SetAccount(ctx, acc)
 
-	// TODO
 	// Whitelisted this address in kyc keeper.
 	kycKeeper.Whitelist(ctx, addr, "msig:"+addr.String())
 
-	// TODO: Events
 	accountSequence := OwnerAcc.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
@@ -106,16 +102,14 @@ func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigA
 	// TO-DO: check add or remove signers.
 	multiSig := groupAcc.GetMultiSig()
 
-	if !multiSig.Owner.Equals(msg.Owner) {
+	if !multiSig.GetOwner().Equals(msg.Owner) {
 		return sdkTypes.ErrUnknownRequest("Owner address invalid.").Result()
 	}
 
-	if len(multiSig.PendingTxs) > 0 {
-		return sdkTypes.ErrUnknownRequest("Please clear the pending tx before editting signers.").Result()
+	err := multiSig.UpdateSigners(msg.NewSigners, msg.NewThreshold)
+	if err != nil {
+		return sdkTypes.ResultFromError(err)
 	}
-
-	multiSig.Signers = msg.NewSigners
-	multiSig.Threshold = msg.NewThreshold
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
@@ -144,13 +138,12 @@ func handleMsgTransferMultiSigOwner(ctx sdkTypes.Context, msg MsgTransferMultiSi
 	if ownerAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Owner address invalid.").Result()
 	}
-
-	if !groupAcc.GetMultiSig().Owner.Equals(msg.Owner) {
+	multiSig := groupAcc.GetMultiSig()
+	if !multiSig.IsOwner(msg.Owner) {
 		return sdkTypes.ErrUnknownRequest("Owner of group address invalid.").Result()
 	}
 
-	multiSig := groupAcc.GetMultiSig()
-	multiSig.Owner = msg.NewOwner
+	multiSig.UpdateOwner(msg.NewOwner)
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
@@ -180,25 +173,34 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}
 
-	if !groupAcc.GetMultiSig().IsSigner(msg.Sender) {
+	if !groupAcc.IsMultiSig() {
+		return sdkTypes.ErrUnknownRequest("Sender is not a multisig account.").Result()
+	}
+
+	if !groupAcc.IsSigner(msg.Sender) {
 		return sdkTypes.ErrUnknownRequest("Sender is not signer of group address.").Result()
 	}
 
 	multiSig := groupAcc.GetMultiSig()
-	txID := multiSig.GetCounter()
-
-	pendingTx := sdkTypes.NewPendingTx(txID, msg.StdTx, msg.Sender, []sdkTypes.AccAddress{msg.Sender})
-
-	err := multiSig.AddTx(pendingTx)
+	ptx, err := multiSig.AddPendingTx(msg.StdTx, msg.Sender)
 	if err != nil {
-		return err.Result()
+		return sdkTypes.ResultFromError(err)
 	}
 
-	multiSig.IncCounter()
+	// We need to first update keeper, then check signatures
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
 
-	internalHash, broadcastedEvents, metricErr := checkIsMetric(txID, groupAcc, txEncoder)
+	stdTx, ok := ptx.GetTx().(sdkAuth.StdTx)
+	if !ok {
+		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
+	}
+	_, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
+	if sigErr != nil {
+		return sdkTypes.ResultFromError(sigErr)
+	}
+
+	internalHash, broadcastedEvents, metricErr := checkIsMetric(ctx, ptx.GetID(), groupAcc, txEncoder)
 	if metricErr != nil {
 		return metricErr.Result()
 	}
@@ -233,34 +235,39 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}
 
-	if !groupAcc.GetMultiSig().IsSigner(msg.Sender) {
+	if !groupAcc.IsMultiSig() {
+		return sdkTypes.ErrUnknownRequest("Sender is not a multisig account.").Result()
+	}
+
+	if !groupAcc.IsSigner(msg.Sender) {
 		return sdkTypes.ErrUnknownRequest("Sender is not signer of group address.").Result()
 	}
 
 	multiSig := groupAcc.GetMultiSig()
 
-	//TO-DO: append real signatures also
-	multiSig.SignTx(msg.Sender, msg.TxID)
-	pendingTx := multiSig.GetTx(msg.TxID)
-	if pendingTx == nil {
-		return sdkTypes.ErrInternal("Pending tx not found.").Result()
+	ptx, err := multiSig.AddSignature(msg.TxID, msg.Sender, msg.Signature.Signature)
+	if err != nil {
+		return sdkTypes.ResultFromError(err)
 	}
 
-	stdTx, ok := pendingTx.(sdkAuth.StdTx)
+
+	// We need to first update keeper, then check signatures
+	groupAcc.SetMultiSig(multiSig)
+	accountKeeper.SetAccount(ctx, groupAcc)
+
+	stdTx, ok := ptx.GetTx().(sdkAuth.StdTx)
 	if !ok {
 		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
 	}
-
-	sigs := stdTx.Signatures
-	stdTx.Signatures = append(sigs, msg.Signature)
-	multiSig.UpdatePendingTx(msg.TxID, stdTx)
-
-	accountKeeper.SetAccount(ctx, groupAcc)
+	_, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
+	if sigErr != nil {
+		return sdkTypes.ResultFromError(sigErr)
+	}
 
 	accountSequence := senderAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
-	internalHash, broadcastedEvents, metricErr := checkIsMetric(msg.TxID, groupAcc, txEncoder)
+	internalHash, broadcastedEvents, metricErr := checkIsMetric(ctx, msg.TxID, groupAcc, txEncoder)
 	if metricErr != nil {
 		return metricErr.Result()
 	}
@@ -277,7 +284,6 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 		Events: events.AppendEvents(broadcastedEvents),
 		Log:    resultLog.String(),
 	}
-
 }
 
 func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
@@ -292,17 +298,21 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}
 
-	if !groupAcc.GetMultiSig().IsSigner(msg.Sender) {
+	if !groupAcc.IsMultiSig() {
+		return sdkTypes.ErrUnknownRequest("Sender is not a multisig account.").Result()
+	}
+
+	if !groupAcc.IsSigner(msg.Sender) {
 		return sdkTypes.ErrUnknownRequest("Sender is not signer of group address.").Result()
 	}
 
 	multiSig := groupAcc.GetMultiSig()
-	ok, pendingTx := multiSig.GetPendingTx(msg.TxID)
-	if !ok {
+	pendingTx := multiSig.GetPendingTx(msg.TxID)
+	if pendingTx == nil {
 		return sdkTypes.ErrUnknownRequest("Pending tx is not found.").Result()
 	}
 
-	if !pendingTx.Sender.Equals(msg.Sender) && !multiSig.Owner.Equals(msg.Sender) {
+	if !pendingTx.GetSender().Equals(msg.Sender) && !multiSig.GetOwner().Equals(msg.Sender) {
 		return sdkTypes.ErrUnknownRequest("Sender is invalid.").Result()
 	}
 
@@ -328,19 +338,19 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 
 }
 
-func checkIsMetric(txID uint64, groupAcc exported.Account, txEncoder sdkTypes.TxEncoder) (common.HexBytes, sdkTypes.Events, sdkTypes.Error) {
+func checkIsMetric(ctx sdkTypes.Context, txID uint64, groupAcc exported.Account, txEncoder sdkTypes.TxEncoder) (common.HexBytes, sdkTypes.Events, sdkTypes.Error) {
 
 	multiSig := groupAcc.GetMultiSig()
 	isMetric := multiSig.IsMetric(txID)
 	broadcastedEvents := sdkTypes.EmptyEvents()
 	var internalHash common.HexBytes
 	if isMetric {
-		tx := multiSig.GetTx(txID)
-		if tx == nil {
+		ptx := multiSig.GetPendingTx(txID)
+		if ptx == nil {
 			return nil, nil, sdkTypes.ErrInternal("There is no pending tx.")
 		}
 
-		bz, err := txEncoder(tx)
+		bz, err := txEncoder(ptx.GetTx())
 		if err != nil {
 			return nil, nil, sdkTypes.ErrInternal("Error encoding pending tx.")
 		}
@@ -349,11 +359,17 @@ func checkIsMetric(txID uint64, groupAcc exported.Account, txEncoder sdkTypes.Tx
 
 		var rpcCtx *rpctypes.Context
 		go func() {
-			// sleep 3 seconds to make sure what ever necessary is completed in preivous block.
+			// sleep 3 seconds to make sure what ever necessary is completed in previous block.
 			time.Sleep(3 * time.Second)
-			_, err := rpc.BroadcastTxSync(rpcCtx, bz)
+			res, err := rpc.BroadcastTxSync(rpcCtx, bz)
 			if err != nil {
+				ctx.Logger().Error("Panic on broadcasting internal transaction", "Error", err)
 				panic(err)
+			}
+
+			if res.Code != 0 {
+				ctx.Logger().Error("Broadcasting internal transaction failed", "Result", res)
+
 			}
 		}()
 

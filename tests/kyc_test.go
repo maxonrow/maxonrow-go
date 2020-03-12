@@ -128,7 +128,16 @@ func makeKycWhitelistMsg(t *testing.T, authorised, issuer, provider, from, signe
 
 func makeKycRevokeWhitelistMsg(t *testing.T, authorised, issuer, provider, to string) sdkTypes.Msg {
 	// convert uint64 to string
-	providerNonceStr := strconv.FormatUint(tKeys[provider].seq, 10)
+	var seq uint64
+	if provider == "nope" {
+		seq = 0
+	} else {
+		acc := Account(tKeys[provider].addrStr)
+		require.NotNil(t, acc)
+		seq = acc.GetSequence()
+	}
+
+	providerNonceStr := strconv.FormatUint(seq, 10)
 
 	// create new kyc data to be revoked
 	revokeKycData := kyc.NewRevokeKycData(tKeys[provider].addr, providerNonceStr, tKeys[to].addr)

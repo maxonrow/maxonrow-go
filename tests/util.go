@@ -233,6 +233,14 @@ func Tx(hash []byte) *ctypes.ResultTx {
 	return nil
 }
 
+func AccSequence(addr string) uint64 {
+	acc := Account(addr)
+	if acc != nil {
+		return acc.GetSequence()
+	}
+	return uint64(0)
+}
+
 func Account(addr string) *sdkAuth.BaseAccount {
 	var bz string
 	_, err := tClient.Call("account", map[string]interface{}{"address": addr}, &bz)

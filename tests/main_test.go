@@ -19,15 +19,14 @@ import (
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
 )
 
-type info struct {
+type keyInfo struct {
 	addr    sdkTypes.AccAddress
 	priv    tmCrypto.PrivKey
 	pub     tmCrypto.PubKey
 	addrStr string
-	seq     uint64
 }
 
-var tKeys map[string]*info
+var tKeys map[string]*keyInfo
 var tCdc *codec.Codec
 var tClient *rpcclient.JSONRPCClient
 var tPort = "26657"
@@ -82,7 +81,7 @@ func TestMain(m *testing.M) {
 	var keys []key
 	content, _ := ioutil.ReadFile("./config/keys.json")
 	json.Unmarshal(content, &keys)
-	tKeys = make(map[string]*info)
+	tKeys = make(map[string]*keyInfo)
 
 	for _, k := range keys {
 		bz, _ := hex.DecodeString(k.DerivedPriv)
@@ -90,12 +89,11 @@ func TestMain(m *testing.M) {
 		copy(priv[:], bz)
 		addr, _ := sdkTypes.AccAddressFromBech32(k.Address)
 
-		tKeys[k.Name] = &info{
+		tKeys[k.Name] = &keyInfo{
 			addr,
 			secp256k1.PrivKeySecp256k1(priv),
 			secp256k1.PrivKeySecp256k1(priv).PubKey(),
 			k.Address,
-			0,
 		}
 
 		proc, err := CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
@@ -107,14 +105,14 @@ func TestMain(m *testing.M) {
 		if err != nil {
 			panic(err)
 		}
-		out, err1, _ := proc.ReadAll()
-		fmt.Printf("%s%s", string(out), string(err1))
+		//out, err1, _ := proc.ReadAll()
+		//fmt.Printf("%s%s", string(out), string(err1))
 		proc.Cmd.Wait()
 	}
 
-	tKeys["nope"] = &info{
+	tKeys["nope"] = &keyInfo{
 		sdkTypes.AccAddress{}, nil, nil,
-		"", 0,
+		"", 
 	}
 
 	done := make(chan struct{})
