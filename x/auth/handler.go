@@ -250,7 +250,6 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 		return sdkTypes.ResultFromError(err)
 	}
 
-
 	// We need to first update keeper, then check signatures
 	groupAcc.SetMultiSig(multiSig)
 	accountKeeper.SetAccount(ctx, groupAcc)
@@ -302,18 +301,14 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 		return sdkTypes.ErrUnknownRequest("Sender is not a multisig account.").Result()
 	}
 
-	if !groupAcc.IsSigner(msg.Sender) {
-		return sdkTypes.ErrUnknownRequest("Sender is not signer of group address.").Result()
-	}
-
 	multiSig := groupAcc.GetMultiSig()
 	pendingTx := multiSig.GetPendingTx(msg.TxID)
 	if pendingTx == nil {
 		return sdkTypes.ErrUnknownRequest("Pending tx is not found.").Result()
 	}
 
-	if !pendingTx.GetSender().Equals(msg.Sender) && !multiSig.GetOwner().Equals(msg.Sender) {
-		return sdkTypes.ErrUnknownRequest("Sender is invalid.").Result()
+	if !multiSig.IsOwner(msg.Sender) {
+		return sdkTypes.ErrUnknownRequest("Only group account owner can remove pending tx.").Result()
 	}
 
 	isDeleted := multiSig.RemoveTx(msg.TxID)
