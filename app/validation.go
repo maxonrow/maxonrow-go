@@ -4,6 +4,8 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
+	"github.com/maxonrow/maxonrow-go/x/auth"
 	"github.com/maxonrow/maxonrow-go/x/bank"
 	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
@@ -450,7 +452,67 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if !app.maintenanceKeeper.IsValidator(ctx, msg.PubKey) {
 			return sdkTypes.ErrUnauthorized("Not authorised validator address.")
 		}
-
+	case auth.MsgCreateMultiSigAccount:
+		for _, signer := range msg.Signers {
+			if !app.kycKeeper.IsWhitelisted(ctx, signer) {
+				return sdkTypes.ErrUnknownRequest("Signer is not whitelisted.")
+			}
+		}
+	case auth.MsgCreateMultiSigTx:
+		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if !groupAcc.IsMultiSig() {
+			return sdkTypes.ErrInternal("MultiSig Tx create failed, group address is not a multisig account.")
+		}
+		if !groupAcc.IsSigner(msg.Sender) {
+			return sdkTypes.ErrInternal("Sender is not group account's signer.")
+		}
+		_, exist := groupAcc.GetMultiSig().CheckTx(msg.StdTx)
+		if exist {
+			return sdkTypes.ErrInternal("Tx already existed in pending tx.")
+		}
+		_, sigErr := utils.CheckTxSig(ctx, msg.StdTx, app.accountKeeper, app.kycKeeper)
+		if sigErr != nil {
+			return sdkTypes.ErrInternal("Internal transaction signature error.")
+		}
+	case auth.MsgUpdateMultiSigAccount:
+		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if !groupAcc.IsMultiSig() {
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+		}
+		if !groupAcc.GetMultiSig().GetOwner().Equals(msg.Owner) {
+			return sdkTypes.ErrUnknownRequest("Owner address invalid.")
+		}
+	case auth.MsgTransferMultiSigOwner:
+		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if !groupAcc.IsMultiSig() {
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+		}
+		if !groupAcc.GetMultiSig().IsOwner(msg.Owner) {
+			return sdkTypes.ErrUnknownRequest("Owner of group address invalid.")
+		}
+	case auth.MsgDeleteMultiSigTx:
+		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if !groupAcc.IsMultiSig() {
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+		}
+		if !groupAcc.GetMultiSig().IsOwner(msg.Sender) {
+			return sdkTypes.ErrUnknownRequest("Only group account owner can remove pending tx.")
+		}
+	case auth.MsgSignMultiSigTx:
+		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		if !groupAcc.IsMultiSig() {
+			return sdkTypes.ErrInternal("MultiSig Tx sign failed, group address is not a multisig account.")
+		}
+		if !groupAcc.IsSigner(msg.Sender) {
+			return sdkTypes.ErrInternal("Sender is not group account's signer.")
+		}
+		pendingTx := groupAcc.GetMultiSig().GetPendingTx(msg.TxID)
+		if pendingTx == nil {
+			return sdkTypes.ErrInternal("MultiSig pending tx not found.")
+		}
+		if pendingTx.IsSignedBy(msg.Sender) {
+			return sdkTypes.ErrInternal("Signer already signed this tx.")
+		}
 	case fee.MsgSysFeeSetting:
 		if !app.feeKeeper.IsAuthorised(ctx, msg.Issuer) {
 			return sdkTypes.ErrUnauthorized("Not authorised to create fee setting.")
