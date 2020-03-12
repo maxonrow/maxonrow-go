@@ -102,6 +102,9 @@ func makeMultisigTxs() []*testCase {
 
 		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-sign-tx-bank - resubmit   ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
+
+		// signer without through KYC
+		{"multiSig", true, true, "Create MultiSig Account - Error, due to without KYC            ", "multisig-acc-no-kyc", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-no-kyc", "", 2, []string{"multisig-acc-1", "multisig-acc-no-kyc"}, "", 0, nil}, "", nil},
 	}
 
 	return tcs
