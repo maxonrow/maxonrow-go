@@ -105,9 +105,6 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 			if err != nil {
 				return ctx, err
 			}
-
-			// TODO: WHY we get account again here? Try to add some test cases for this
-			acc = app.accountKeeper.GetAccount(ctx, acc.GetAddress())
 		}
 
 		for _, msg := range stdTx.GetMsgs() {
