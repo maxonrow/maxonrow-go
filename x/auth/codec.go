@@ -14,6 +14,7 @@ func RegisterCodec(cdc *codec.Codec) {
 	cdc.RegisterConcrete(MsgCreateMultiSigTx{}, "mxw/msgCreateMultiSigTx", nil)
 
 	cdc.RegisterConcrete(MsgSignMultiSigTx{}, "mxw/msgSignMultiSigTx", nil)
+	cdc.RegisterConcrete(MsgDeleteMultiSigTx{}, "mxw/msgDeleteMultiSigTx", nil)
 
 }
 
@@ -32,7 +33,7 @@ func init() {
 	//fee.RegisterCodec(cdc)
 	//maintenance.RegisterCodec(cdc)
 	//auth.RegisterCodec(cdc)
-	
+
 	// To register codec for internal transaction for multi-siog account (cosmos-sdk)
 	bank.RegisterCodec(sdkAuth.ModuleCdc)
 }

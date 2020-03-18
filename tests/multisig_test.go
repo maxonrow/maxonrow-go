@@ -7,6 +7,7 @@ import (
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/maxonrow/maxonrow-go/types"
 	multisig "github.com/maxonrow/maxonrow-go/x/auth"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -56,15 +57,21 @@ func makeMultisigTxs() []*testCase {
 
 	tcs := []*testCase{
 
-		//create MultiSig Account
+		//create MultiSig Account1 : {"multisig-acc-1"}, owner=="multisig-acc-1"
 		{"multiSig", false, false, "Create MultiSig Account1 - Happy Path - commit ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 1, []string{"multisig-acc-1"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		//create MultiSig Account2 : {"multisig-acc-2", "multisig-acc-3"}, owner=="multisig-acc-1"
 		{"multiSig", false, false, "Create MultiSig Account2- Happy Path - commit  ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-2", "multisig-acc-3"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
+		//create MultiSig Account3 : {"multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}, owner=="multisig-acc-1"
 		{"multiSig", false, false, "Create MultiSig Account3 - Happy Path - commit ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}, "", 0, nil}, "MEMO : Create MultiSig Account - Happy Path", nil},
-		{"multiSig", true, true, "Create MultiSig Account - non-kyc               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-1", "multisig-acc-no-kyc"}, "", 0, nil}, "", nil},
+		{"multiSig", true, true, "Create MultiSig Account - non-kyc                ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-1", "", 2, []string{"multisig-acc-1", "multisig-acc-no-kyc"}, "", 0, nil}, "", nil},
 
 		{"bank", false, false, "top-up Multisig Group-address1 - commit", "multisig-acc-1", "800400000cin", 0, bankInfo{"multisig-acc-1", "grp-addr-1", "10000000000cin"}, "MEMO : top-up account", nil},
 		{"bank", false, false, "top-up Multisig Group-address2 - commit", "multisig-acc-2", "800400000cin", 0, bankInfo{"multisig-acc-2", "grp-addr-2", "10000000000cin"}, "MEMO : top-up account", nil},
 		{"bank", false, false, "top-up Multisig Group-address3 - commit", "multisig-acc-3", "800400000cin", 0, bankInfo{"multisig-acc-3", "grp-addr-3", "10000000000cin"}, "MEMO : top-up account", nil},
+
+		//====================start : case-1.1
+		//-- Using : 'MultiSig Account1' which owner=="multisig-acc-1"
+		//-- Scenario : using 'grp-addr-1' which only with ONE signer {'MultiSig Account1'}, should broadcast immediately
 
 		{"multiSig", true, true, "MultiSig-create-tx-bank - Invalid sequence", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 5, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil},
 
@@ -78,7 +85,34 @@ func makeMultisigTxs() []*testCase {
 		{"multiSig", true, true, "MultiSig-create-tx-bank - Invalid internal_tx", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_2}, "MEMO : MultiSig-create-tx-bank", nil},
 		{"multiSig", false, false, "MultiSig-create-tx-bank - Happy path        ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil},
 
-		//
+		//Topic : create tx / sign tx
+		{"multiSig", true, true, "case-1.1-Sign MultiSig Tx - Errr, due to All signers must pass kyc.										", "multisig-acc-no-kyc", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : xxxx", nil}, //ok-20200316
+		{"multiSig", true, true, "case-1.1-Re-sign MultiSig Tx - Error for counter+0, due to already signed by multisig-acc-1 while create-tx-bank.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : Sign MultiSig Tx", nil}, //ok-20200316
+		{"multiSig", false, false, "case-1.1-Create MultiSig Tx - submit counter+1.															 ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx_3}, "MEMO : MultiSig-create-tx-bank - Resubmit counter+1", nil}, //ok-20200316
+		{"multiSig", true, true, "case-1.1-Re-create MultiSig Tx - submit counter+1 - Error, due to Re-create Tx with same sequence			 ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil}, //ok-20200316
+		{"multiSig", true, true, "case-1.1-Re-sign MultiSig Tx - Error for counter+1, due to already signed by multisig-acc-1 while create-tx-bank.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx_3}, "MEMO : SignTx for counter+1.", nil}, //ok-20200316
+		{"multiSig", false, false, "case-1.1-Create MultiSig Tx - submit counter+2.															 ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 2, internalTx_3}, "MEMO : MultiSig-create-tx-bank - Resubmit counter+2", nil}, //ok-20200316
+		{"multiSig", true, true, "case-1.1-Re-create MultiSig Tx - submit counter+2 - Error, due to Re-create Tx with same sequence			 ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 2, internalTx_3}, "MEMO : MultiSig-create-tx-bank", nil}, //ok-20200316
+		{"multiSig", true, true, "case-1.1-Re-sign MultiSig Tx - Error for counter+2, due to already signed by multisig-acc-1 while create-tx-bank.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 2, internalTx_3}, "MEMO : SignTx for counter+2.", nil}, //ok-20200316
+
+		//Topic : delete tx
+		{"multiSig", true, true, "case-1.1-Delete MultiSig Tx - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-4", 0, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},                   //ok-20200316
+		{"multiSig", true, true, "case-1.1-Delete MultiSig Tx - Error, due to Owner address invalid.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},                   //ok-20200316
+		{"multiSig", false, true, "case-1.1-Delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 3.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-1", 3, internalTx_3}, "MEMO : Delete MultiSig Tx", nil}, //ok-20200316
+		// {"multiSig", false, false, "case-1.1-Delete MultiSig Tx - Happy-path, due to the Valid PendingTx ID: 2. been found", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-1", 2, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},
+		// {"multiSig", false, false, "case-1.1-Delete MultiSig Tx - Happy-path, due to the Valid PendingTx ID: 1. been found", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-1", 1, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},
+		// {"multiSig", false, false, "case-1.1-Delete MultiSig Tx - Happy-path, due to the Valid PendingTx ID: 0. been found", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},
+		// {"multiSig", false, true, "case-1.1-Re-delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 0.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-1", 0, internalTx_3}, "MEMO : Delete MultiSig Tx", nil},
+
+		//Topic : transfer ownership
+		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                                 // ok-20200317
+		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to Owner of group address invalid.", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-3", "multisig-acc-1", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                        // ok-20200317
+		{"multiSig", false, false, "case-1.1-Transfer MultiSig Owner - [from multisig-acc-1 to multisig-acc-2] - Happy Path - commit.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                     // ok-20200317
+		{"multiSig", true, true, "case-1.1-Re-transfer MultiSig Owner - Error, due to Owner of group address invalid as MultiSig-account already been transfer to others.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
+
+		//====================start : case-1.2
+		//-- Scenario : using 'grp-addr-2' with 'internalTx_4'
+
 		{"multiSig", true, true, "MultiSig-create-tx-bank - counter+5            ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 5, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-create-tx-bank - counter+1            ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 1, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
 		{"multiSig", false, false, "MultiSig-create-tx-bank - Happy Path          ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-create-tx-bank", nil},
@@ -92,7 +126,14 @@ func makeMultisigTxs() []*testCase {
 		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path-commit", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-sign-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-sign-tx-bank - resubmit          ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 0, internalTx_4}, "MEMO : MultiSig-sign-tx-bank", nil},
 
-		// Note: msg signed by acc-2, internal_tx signed by acc-3. acc_2 sends both acc_2 and acc_3 signatures
+		//====================start : case-2
+		//-- Using : 'MultiSig Account2' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3"}
+		//-- Scenario : using 'grp-addr-2' which 'msg signed by acc-2, internal_tx signed by acc-3. acc_2 sends both acc_2 and acc_3 signatures'
+
+		//Topic : update
+		{"multiSig", true, true, "case-2-Update MultiSig Account - Error, due to Group address invalid.                   ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"update", "multisig-acc-1", "", 2, []string{"multisig-acc-2", "multisig-acc-3"}, "grp-addr-4", 0, nil}, "MEMO : xxxx", nil},   // ok-20200316
+		{"multiSig", true, true, "case-2-Update MultiSig Account - Error, due to MultiSig Account's 'Owner address invalid.'", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"update", "multisig-acc-4", "", 2, []string{"multisig-acc-2", "multisig-acc-3"}, "grp-addr-2", 0, nil}, "MEMO : xxxx", nil}, // ok-20200316
+
 		{"multiSig", true, true, "MultiSig-create-tx-bank2 - unknown signer                 ", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-create-tx-bank2 - owner can't sign               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-create-tx-bank2 - Invalid signer                        ", "mostafa", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-create-tx-bank", nil},
@@ -102,6 +143,51 @@ func makeMultisigTxs() []*testCase {
 
 		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-sign-tx-bank - resubmit   ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 2, internalTx_5}, "MEMO : MultiSig-sign-tx-bank", nil},
+
+		//Topic : transfer ownership
+		{"multiSig", true, true, "case-2-Transfer MultiSig Owner - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                                // ok-20200317
+		{"multiSig", true, true, "case-2-Transfer MultiSig Owner - Error, due to Owner of group address invalid.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-2", "multisig-acc-1", 0, nil, "grp-addr-2", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                       // ok-20200317
+		{"multiSig", false, false, "case-2-Transfer MultiSig Owner - [from multisig-acc-1 to multisig-acc-2] Happy Path - commit.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-2", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                      // ok-20200317
+		{"multiSig", true, true, "case-2-Re-transfer MultiSig Owner - Error, due to Owner of group address invalid [MultiSig-account already been transfer to others].", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-2", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
+
+		//Topic : delete tx
+		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-4", 0, internalTx_5}, "MEMO : Delete MultiSig Tx", nil},                          // ok-20200317
+		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Only group account owner can remove pending tx.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-2", 0, internalTx_5}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
+		{"multiSig", false, true, "case-2-Delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 9.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-2", 9, internalTx_5}, "MEMO : Delete MultiSig Tx", nil},        // ok-20200317
+		//{"multiSig", false, false, "case-2-Delete MultiSig Tx - Happy-path, due to the Valid PendingTx ID: 9. been found", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-2", 9, internalTx_5}, "MEMO : Delete MultiSig Tx", nil},
+
+		//====================start : case-3
+		//-- Using : 'MultiSig Account3' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}
+		//-- Scenario : using 'grp-addr-3' which 'Early with THREE signers "multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}, then after update with THREE signers {"multisig-acc-1", "multisig-acc-3", "multisig-acc-4"}'
+
+		//Topic : update
+		{"multiSig", true, true, "case-3-Update MultiSig Account - Error, due to number of thresholds bigger than signers list               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"update", "multisig-acc-1", "", 3, []string{"multisig-acc-2", "multisig-acc-3"}, "grp-addr-3", 0, nil}, "MEMO : xxxx", nil}, // ok-20200317
+		{"multiSig", false, false, "case-3-Update MultiSig Account - Happy Path - commit.                                 					 ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"update", "multisig-acc-1", "", 2, []string{"multisig-acc-1", "multisig-acc-3", "multisig-acc-4"}, "grp-addr-3", 0, nil}, "MEMO : xxxx", nil}, // ok-20200317
+
+		//Topic : create tx / sign tx
+		{"multiSig", false, false, "case-3-Create MultiSig Tx - submit counter+0 - Happy Path commit.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},
+		{"multiSig", true, true, "case-3-Re-create MultiSig Tx - submit counter+0 - Error, due to Re-create Tx with same sequence		", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : MultiSig-create-tx-bank", nil}, //ok-20200316
+		{"multiSig", true, true, "case-3-Sign MultiSig Tx - Error, due to All signers must pass kyc.", "multisig-acc-no-kyc", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},       // ok-20200317
+		{"multiSig", true, true, "case-3-Sign MultiSig Tx - Error, due to Sender is not group account's signer.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil}, // ok-20200317
+
+		{"multiSig", true, true, "case-3-Sign MultiSig Tx - Error, due to already signed by multisig-acc-1", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},                            // ok-20200317
+		{"multiSig", false, false, "case-3-Sign MultiSig Tx - submit counter+0 which signed by multisig-acc-3 - commit.", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},               // ok-20200317
+		{"multiSig", true, true, "case-3-Re-sign MultiSig Tx - Error, due to counter+0 already signed by multisig-acc-3", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},               // ok-20200317
+		{"multiSig", false, false, "case-3-Sign MultiSig Tx - submit counter+0 which signed by multisig-acc-4 - commit.", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},               // ok-20200317
+		{"multiSig", true, true, "case-3-Re-sign MultiSig Tx - Error, due to counter+0 already signed by multisig-acc-4", "multisig-acc-4", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil},               // ok-20200317
+		{"multiSig", true, true, "case-3-Sign MultiSig Tx - Error, is Invalid as Sender multisig-acc-2 is not group account's signer.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : xxxx", nil}, // ok-20200317
+
+		//Topic : delete tx
+		{"multiSig", true, true, "case-3-Delete MultiSig Tx - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-4", 0, internalTx_2}, "MEMO : Delete MultiSig Tx", nil},                          // ok-20200317
+		{"multiSig", true, true, "case-3-Delete MultiSig Tx - Error, due to Only group account owner can remove pending tx.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
+		{"multiSig", false, true, "case-3-Delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 2.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-3", 2, internalTx_2}, "MEMO : Delete MultiSig Tx", nil},        // ok-20200317
+		//{"multiSig", false, false, "case-3-Delete MultiSig Tx - Happy-path, due to the Valid PendingTx ID: 0. been found", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-3", 0, internalTx_2}, "MEMO : Delete MultiSig Tx", nil},
+
+		//Topic : transfer ownership
+		{"multiSig", true, true, "case-3-Transfer MultiSig Owner - Error, due to Group address invalid.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                                // ok-20200317
+		{"multiSig", true, true, "case-3-Transfer MultiSig Owner - Error, due to Owner of group address invalid.", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-2", "multisig-acc-1", 0, nil, "grp-addr-3", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                                       // ok-20200317
+		{"multiSig", false, false, "case-3-Transfer MultiSig Owner - [from multisig-acc-1 to multisig-acc-2] Happy Path - commit.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-3", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},                                      // ok-20200317
+		{"multiSig", true, true, "case-3-Re-transfer MultiSig Owner - Error, due to Owner of group address invalid [MultiSig-account already been transfer to others].", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-3", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 
 		// signer without through KYC
 		{"multiSig", true, true, "Create MultiSig Account - Error, due to without KYC            ", "multisig-acc-no-kyc", "800400000cin", 0, MultisigInfo{"create", "multisig-acc-no-kyc", "", 2, []string{"multisig-acc-1", "multisig-acc-no-kyc"}, "", 0, nil}, "", nil},
@@ -134,7 +220,8 @@ func makeCreateMultiSigAccountMsg(t *testing.T, owner string, threshold int, sig
 func makeUpdateMultiSigAccountMsg(t *testing.T, owner string, groupAddress string, threshold int, signers []string) sdkTypes.Msg {
 
 	ownerAddr := tKeys[owner].addr
-	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
+	groupAddr := tKeys[groupAddress].addr
+	assert.NotNil(t, groupAddr)
 
 	var signersAddr []sdkTypes.AccAddress
 	for i := 0; i < len(signers); i++ {
@@ -152,6 +239,7 @@ func makeUpdateMultiSigAccountMsg(t *testing.T, owner string, groupAddress strin
 func createInternalTx(t *testing.T, sender, groupAddress string, counter uint64, internalTxTemplate *testCase) sdkTypes.Msg {
 	senderAddr := tKeys[sender].addr
 	groupAddr := tKeys[groupAddress].addr
+	assert.NotNil(t, groupAddr)
 
 	internalTxMsg := makeMsg(t, internalTxTemplate.msgType, internalTxTemplate.signer, internalTxTemplate.msgInfo)
 	fees, _ := types.ParseCoins(internalTxTemplate.fees)
@@ -167,7 +255,8 @@ func makeTransferMultiSigOwnerMsg(t *testing.T, groupAddress string, newOwner st
 
 	ownerAddr := tKeys[owner].addr
 	newOwnerAddr := tKeys[newOwner].addr
-	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
+	groupAddr := tKeys[groupAddress].addr
+	assert.NotNil(t, groupAddr)
 
 	msgTransferMultiSigOwnerPayload := multisig.NewMsgTransferMultiSigOwner(groupAddr, newOwnerAddr, ownerAddr)
 
@@ -178,7 +267,8 @@ func makeTransferMultiSigOwnerMsg(t *testing.T, groupAddress string, newOwner st
 func makeDeleteMultiSigTxMsg(t *testing.T, groupAddress string, txID uint64, senderAddress string) sdkTypes.Msg {
 
 	senderAddr := tKeys[senderAddress].addr
-	groupAddr, _ := sdkTypes.AccAddressFromBech32(groupAddress)
+	groupAddr := tKeys[groupAddress].addr
+	assert.NotNil(t, groupAddr)
 
 	msgDeleteMultiSigTx := multisig.NewMsgDeleteMultiSigTx(groupAddr, txID, senderAddr)
 	return msgDeleteMultiSigTx
