@@ -498,6 +498,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if !groupAcc.GetMultiSig().IsOwner(msg.Sender) {
 			return sdkTypes.ErrUnknownRequest("Only group account owner can remove pending tx.")
 		}
+		pendingTx := groupAcc.GetMultiSig().GetPendingTx(msg.TxID)
+		if pendingTx == nil {
+			return sdkTypes.ErrInternal("MultiSig pending tx not found.")
+		}
 	case auth.MsgSignMultiSigTx:
 		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
