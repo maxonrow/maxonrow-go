@@ -106,7 +106,6 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	for _, stdSig := range stdSigs {
 		// signerAcc is groupAccount
 		signBytes := GetSignBytes(ctx, tx, signerAcc)
-		fmt.Println(string(signBytes))
 		matched := false
 		for i, pubKey := range pubKeys {
 			if pubKey == nil {
