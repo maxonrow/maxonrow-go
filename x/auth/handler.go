@@ -1,7 +1,8 @@
 package auth
 
 import (
-	"encoding/binary"
+	"bytes"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -17,7 +18,7 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
 	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
-	"golang.org/x/crypto/sha3"
+	"golang.org/x/crypto/ripemd160"
 )
 
 func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Handler {
@@ -77,14 +78,20 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 }
 
 func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.AccAddress {
-	temp := make([]byte, 20+8)
-	copy(temp, addr.Bytes())
-	binary.BigEndian.PutUint64(temp[20:], sequence)
-	hasher := sha3.New256()
-	hasher.Write(temp) // does not error
-	hash := hasher.Sum(nil)
 
-	return sdkTypes.AccAddress(hash[12:])
+	addrBz := addr.Bytes()
+	sequenceBz := sdkTypes.Uint64ToBigEndian(sequence)
+	sequenceBz = bytes.TrimLeft(sequenceBz, "\x00")
+	temp := append(addrBz[:], sequenceBz[:]...)
+
+	hasherSHA256 := sha256.New()
+	hasherSHA256.Write(temp[:]) // does not error
+	sha := hasherSHA256.Sum(nil)
+
+	hasherRIPEMD160 := ripemd160.New()
+	hasherRIPEMD160.Write(sha) // does not error
+
+	return sdkTypes.AccAddress(hasherRIPEMD160.Sum(nil))
 }
 
 func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigAccount, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {

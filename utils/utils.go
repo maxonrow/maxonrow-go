@@ -50,7 +50,7 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	}
 
 	signers := msgs[0].GetSigners()
-	if len(msgs) != 1 {
+	if len(signers) != 1 {
 		return nil, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature per message. it has %v messages", len(signers)))
 	}
 	signer := signers[0]
@@ -106,7 +106,6 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	for _, stdSig := range stdSigs {
 		// signerAcc is groupAccount
 		signBytes := GetSignBytes(ctx, tx, signerAcc)
-
 		matched := false
 		for i, pubKey := range pubKeys {
 			if pubKey == nil {
