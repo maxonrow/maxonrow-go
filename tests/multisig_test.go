@@ -33,20 +33,20 @@ func makeMultisigTxs() []*testCase {
 	// You can generate group address via `mxwcli` command. ex.
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 1`
 	tKeys["grp-addr-1"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1n94cgykexyzjuxmt97eaz2q2jecak2n84my0ny"), nil, nil, "mxw1n94cgykexyzjuxmt97eaz2q2jecak2n84my0ny",
+		mustGetAccAddressFromBech32("mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503"), nil, nil, "mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503",
 	}
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 2`
 	tKeys["grp-addr-2"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1gs8fq6sd5nd4vppnancpkjjh0gycdfr2g9dw0f"), nil, nil, "mxw1gs8fq6sd5nd4vppnancpkjjh0gycdfr2g9dw0f",
+		mustGetAccAddressFromBech32("mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6"), nil, nil, "mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6",
 	}
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 3`
 	tKeys["grp-addr-3"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1je73yfjvpmms68jswd42ceq6k8dl92uz45qztp"), nil, nil, "mxw1je73yfjvpmms68jswd42ceq6k8dl92uz45qztp",
+		mustGetAccAddressFromBech32("mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9"), nil, nil, "mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9",
 	}
 	// not exist account
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 4`
 	tKeys["grp-addr-4"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1nnem49mcz6532fhn69nrwmp7p7kl65s397hvs6"), nil, nil, "mxw1nnem49mcz6532fhn69nrwmp7p7kl65s397hvs6",
+		mustGetAccAddressFromBech32("mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f"), nil, nil, "mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f",
 	}
 
 	internalTx1 := &testCase{"bank", true, true, "sending 1 cin  ", "multisig-acc-1", "800400000cin", 0, bankInfo{"mostafa", "bob", "1cin"}, "tx1", nil}
