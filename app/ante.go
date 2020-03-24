@@ -80,7 +80,10 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 		// Try to delete it from pending list
 		if acc.IsMultiSig() {
 			multisig := acc.GetMultiSig()
-			txID, _ := multisig.CheckTx(stdTx)
+			txID, exist := multisig.CheckTx(stdTx)
+			if !exist {
+				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not found.")
+			}
 			isMetric := multisig.IsMetric(txID)
 			if !isMetric {
 				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not valid.")
