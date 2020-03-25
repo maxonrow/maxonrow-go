@@ -44,7 +44,7 @@ func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEnc
 }
 
 func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigAccount, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
-	OwnerAcc := accountKeeper.GetAccount(ctx, msg.Owner)
+	OwnerAcc := utils.GetAccount(ctx, accountKeeper, msg.Owner)
 	if OwnerAcc == nil {
 		return sdkTypes.ErrInvalidAddress(fmt.Sprintf("Invalid account address: %s", msg.Owner)).Result()
 	}
@@ -96,12 +96,12 @@ func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.A
 
 func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigAccount, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
 
-	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
+	groupAcc := utils.GetAccount(ctx, accountKeeper, msg.GroupAddress)
 	if groupAcc == nil {
 		return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
 	}
 
-	ownerAccount := accountKeeper.GetAccount(ctx, msg.Owner)
+	ownerAccount := utils.GetAccount(ctx, accountKeeper, msg.Owner)
 	if ownerAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Owner address invalid.").Result()
 	}
@@ -136,12 +136,12 @@ func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigA
 
 func handleMsgTransferMultiSigOwner(ctx sdkTypes.Context, msg MsgTransferMultiSigOwner, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
 
-	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
+	groupAcc := utils.GetAccount(ctx, accountKeeper, msg.GroupAddress)
 	if groupAcc == nil {
 		return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
 	}
 
-	ownerAccount := accountKeeper.GetAccount(ctx, msg.Owner)
+	ownerAccount := utils.GetAccount(ctx, accountKeeper, msg.Owner)
 	if ownerAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Owner address invalid.").Result()
 	}
@@ -170,12 +170,12 @@ func handleMsgTransferMultiSigOwner(ctx sdkTypes.Context, msg MsgTransferMultiSi
 
 func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Result {
 
-	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
+	groupAcc := utils.GetAccount(ctx, accountKeeper, msg.GroupAddress)
 	if groupAcc == nil {
 		return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
 	}
 
-	senderAccount := accountKeeper.GetAccount(ctx, msg.Sender)
+	senderAccount := utils.GetAccount(ctx, accountKeeper, msg.Sender)
 	if senderAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}
@@ -232,12 +232,12 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 
 func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Result {
 
-	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
+	groupAcc := utils.GetAccount(ctx, accountKeeper, msg.GroupAddress)
 	if groupAcc == nil {
 		return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
 	}
 
-	senderAccount := accountKeeper.GetAccount(ctx, msg.Sender)
+	senderAccount := utils.GetAccount(ctx, accountKeeper, msg.Sender)
 	if senderAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}
@@ -294,12 +294,12 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 
 func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
 
-	groupAcc := accountKeeper.GetAccount(ctx, msg.GroupAddress)
+	groupAcc := utils.GetAccount(ctx, accountKeeper, msg.GroupAddress)
 	if groupAcc == nil {
 		return sdkTypes.ErrUnknownRequest("Group address invalid.").Result()
 	}
 
-	senderAccount := accountKeeper.GetAccount(ctx, msg.Sender)
+	senderAccount := utils.GetAccount(ctx, accountKeeper, msg.Sender)
 	if senderAccount == nil {
 		return sdkTypes.ErrUnknownRequest("Sender address invalid.").Result()
 	}

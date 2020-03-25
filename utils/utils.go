@@ -59,8 +59,7 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %v", signer))
 	}
 
-	signerAcc := accountKeeper.GetAccount(ctx, signer)
-
+	signerAcc := GetAccount(ctx, accountKeeper, signer)
 	stdSigs := tx.Signatures
 	if len(stdSigs) == 0 {
 		return nil, sdkTypes.ErrInternal(fmt.Sprintf("No signature found. You should sign the transaction"))
@@ -139,4 +138,14 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	}
 
 	return signerAcc, nil
+}
+
+func GetAccount(ctx sdkTypes.Context, keeper sdkAuth.AccountKeeper, address sdkTypes.AccAddress) exported.Account {
+	acc := keeper.GetAccount(ctx, address)
+
+	if acc == nil {
+		ctx.Logger().Error("Try to get account for {} which is nil", address)
+	}
+
+	return acc
 }

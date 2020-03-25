@@ -44,7 +44,7 @@ func (k Keeper) ValidateSignatures(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTy
 		return sdkTypes.ErrUnknownRequest(errMsg)
 	}
 
-	//* check account sequence with passed in nonce
+	// check account sequence with passed in nonce
 	acc := k.accountKeeper.GetAccount(ctx, fromAddr)
 	if acc == nil {
 		nonce, nonceErr := strconv.ParseUint(fromAccountNonce, 10, 64)
@@ -87,6 +87,9 @@ func (k Keeper) ValidateSignatures(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTy
 	for i := 0; i < len(issuerSignatures); i++ {
 		issuerAddr := sdkTypes.AccAddress(issuerSignatures[i].PubKey.Address())
 		issuerAcc := k.accountKeeper.GetAccount(ctx, issuerAddr)
+		if issuerAcc == nil {
+			return sdkTypes.ErrUnauthorized("Issuer address is invalid.")
+		}
 
 		if k.IsIssuer(ctx, issuerAddr) {
 			issuerCounter++
