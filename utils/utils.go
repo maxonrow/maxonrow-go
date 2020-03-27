@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
 	"github.com/tendermint/tendermint/crypto"
+	"golang.org/x/crypto/ripemd160"
 )
 
 func GetSignBytes(ctx sdkTypes.Context, tx sdkAuth.StdTx, acc exported.Account) []byte {
@@ -147,4 +149,21 @@ func GetAccount(ctx sdkTypes.Context, keeper sdkAuth.AccountKeeper, address sdkT
 	}
 
 	return acc
+}
+
+func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.AccAddress {
+
+	addrBz := addr.Bytes()
+	sequenceBz := sdkTypes.Uint64ToBigEndian(sequence)
+	sequenceBz = bytes.TrimLeft(sequenceBz, "\x00")
+	temp := append(addrBz[:], sequenceBz[:]...)
+
+	hasherSHA256 := sha256.New()
+	hasherSHA256.Write(temp[:]) // does not error
+	sha := hasherSHA256.Sum(nil)
+
+	hasherRIPEMD160 := ripemd160.New()
+	hasherRIPEMD160.Write(sha) // does not error
+
+	return sdkTypes.AccAddress(hasherRIPEMD160.Sum(nil))
 }

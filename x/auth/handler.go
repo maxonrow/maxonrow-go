@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"bytes"
-	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -18,7 +16,6 @@ import (
 	"github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
 	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
-	"golang.org/x/crypto/ripemd160"
 )
 
 func NewHandler(accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, txEncoder sdkTypes.TxEncoder) sdkTypes.Handler {
@@ -48,7 +45,7 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 	if OwnerAcc == nil {
 		return sdkTypes.ErrInvalidAddress(fmt.Sprintf("Invalid account address: %s", msg.Owner)).Result()
 	}
-	addr := DeriveMultiSigAddress(msg.Owner, OwnerAcc.GetSequence())
+	addr := utils.DeriveMultiSigAddress(msg.Owner, OwnerAcc.GetSequence())
 
 	for _, signer := range msg.Signers {
 		if !kycKeeper.IsWhitelisted(ctx, signer) {
@@ -75,23 +72,6 @@ func handleMsgCreateMultiSigAccount(ctx sdkTypes.Context, msg MsgCreateMultiSigA
 		Log:    resultLog.String(),
 	}
 
-}
-
-func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.AccAddress {
-
-	addrBz := addr.Bytes()
-	sequenceBz := sdkTypes.Uint64ToBigEndian(sequence)
-	sequenceBz = bytes.TrimLeft(sequenceBz, "\x00")
-	temp := append(addrBz[:], sequenceBz[:]...)
-
-	hasherSHA256 := sha256.New()
-	hasherSHA256.Write(temp[:]) // does not error
-	sha := hasherSHA256.Sum(nil)
-
-	hasherRIPEMD160 := ripemd160.New()
-	hasherRIPEMD160.Write(sha) // does not error
-
-	return sdkTypes.AccAddress(hasherRIPEMD160.Sum(nil))
 }
 
 func handleMsgUpdateMultiSigAccount(ctx sdkTypes.Context, msg MsgUpdateMultiSigAccount, accountKeeper auth.AccountKeeper, kycKeeper kyc.Keeper) sdkTypes.Result {
