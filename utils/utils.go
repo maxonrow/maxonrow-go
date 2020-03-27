@@ -142,9 +142,8 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 
 func GetAccount(ctx sdkTypes.Context, keeper sdkAuth.AccountKeeper, address sdkTypes.AccAddress) exported.Account {
 	acc := keeper.GetAccount(ctx, address)
-
 	if acc == nil {
-		ctx.Logger().Error("Try to get account for {} which is nil", address)
+		ctx.Logger().Error("Invalid or non-exist address", "address", address)
 	}
 
 	return acc
