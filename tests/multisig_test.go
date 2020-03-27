@@ -6,6 +6,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
 	multisig "github.com/maxonrow/maxonrow-go/x/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -22,31 +23,26 @@ type MultisigInfo struct {
 	InternalTx   *testCase
 }
 
-func mustGetAccAddressFromBech32(bech32 string) sdkTypes.AccAddress {
-	addr, _ := sdkTypes.AccAddressFromBech32(bech32)
-	return addr
-}
-
 func makeMultisigTxs() []*testCase {
 
 	// Group addresses:
 	// You can generate group address via `mxwcli` command. ex.
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 1`
 	tKeys["grp-addr-1"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503"), nil, nil, "mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503",
+		utils.MustGetAccAddressFromBech32("mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503"), nil, nil, "mxw1z8r356ll7aum0530xve2upx74ed8ffavyxy503",
 	}
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 2`
 	tKeys["grp-addr-2"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6"), nil, nil, "mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6",
+		utils.MustGetAccAddressFromBech32("mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6"), nil, nil, "mxw1q6nmfejarl5e4xzceqxcygner7a6llgwnrdtl6",
 	}
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 3`
 	tKeys["grp-addr-3"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9"), nil, nil, "mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9",
+		utils.MustGetAccAddressFromBech32("mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9"), nil, nil, "mxw1hkm4p04nsmv9q0hg4m9eeuapfdr7n4rfl04vh9",
 	}
 	// not exist account
 	// `mxwcli keys multisig-address "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr" 4`
 	tKeys["grp-addr-4"] = &keyInfo{
-		mustGetAccAddressFromBech32("mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f"), nil, nil, "mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f",
+		utils.MustGetAccAddressFromBech32("mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f"), nil, nil, "mxw1szm87m362urkvj833jd7nekwdjh7s8p4q3f25f",
 	}
 
 	internalTx1 := &testCase{"bank", true, true, "sending 1 cin  ", "multisig-acc-1", "800400000cin", 0, bankInfo{"mostafa", "bob", "1cin"}, "tx1", nil}
@@ -89,7 +85,7 @@ func makeMultisigTxs() []*testCase {
 		//Remarks : Since with one signer, and should broadcast immediately,
 		//          so this 'create tx' which include process of checkIsMetric will not left any pending Tx (as Broadcasted internal transaction successfully).
 		//                    Thus this case-1.1 should not include cases of [false, false] under 'Delete MultiSig Tx'.
-		{"multiSig", true, true, "case-1.1-Sign MultiSig Tx - Errr, due to All signers must pass kyc.                                              ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx3}, "MEMO : Sign MultiSig Tx", nil},          //ok-20200316
+		{"multiSig", true, true, "case-1.1-Sign MultiSig Tx - Errr, due to All signers must pass kyc.                                              ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx3}, "MEMO : Sign MultiSig Tx", nil},     //ok-20200316
 		{"multiSig", true, true, "case-1.1-Re-sign MultiSig Tx - Error for counter+0, due to already signed by multisig-acc-1 while create-tx-bank.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-1", 0, internalTx3}, "MEMO : Sign MultiSig Tx", nil},     //ok-20200316
 		{"multiSig", false, false, "case-1.1-Create MultiSig Tx - submit counter+1.                                                                ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx3}, "MEMO : Create MultiSig Tx", nil}, //ok-20200316
 		{"multiSig", true, true, "case-1.1-Re-create MultiSig Tx - submit counter+1 - Error, due to Re-create Tx with same sequence                ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-1", 1, internalTx3}, "MEMO : Create MultiSig Tx", nil}, //ok-20200316
@@ -106,7 +102,7 @@ func makeMultisigTxs() []*testCase {
 		//Topic : transfer ownership
 		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to Group address invalid.                                                                ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to Owner of group address invalid.                                                       ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-3", "multisig-acc-1", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
-		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to without KYC                                                                           ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-nokyc", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},      //
+		{"multiSig", true, true, "case-1.1-Transfer MultiSig Owner - Error, due to without KYC                                                                           ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-nokyc", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, //
 		{"multiSig", false, false, "case-1.1-Transfer MultiSig Owner - [from multisig-acc-1 to multisig-acc-2] - Happy Path - commit.                                    ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 		{"multiSig", true, true, "case-1.1-Re-transfer MultiSig Owner - Error, due to Owner of group address invalid as MultiSig-account already been transfer to others.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-1", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 

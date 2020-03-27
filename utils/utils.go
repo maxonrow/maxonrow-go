@@ -31,7 +31,7 @@ func GetSignBytes(ctx sdkTypes.Context, tx sdkAuth.StdTx, acc exported.Account) 
 				chainID, accNum, txID, tx.Fee, tx.Msgs, tx.Memo,
 			)
 		} else {
-			ctx.Logger().Error("Unable to find transaction from pending list", "address", acc.GetAddress(), "Tx", tx)
+			ctx.Logger().Info("Unable to find transaction from pending list", "address", acc.GetAddress(), "Tx", tx)
 			return sdkAuth.StdSignBytes(
 				chainID, accNum, multisig.GetCounter(), tx.Fee, tx.Msgs, tx.Memo,
 			)
@@ -58,7 +58,7 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	signer := signers[0]
 
 	if !kycKeeper.IsWhitelisted(ctx, signer) {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %v", signer))
+		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %s", signer))
 	}
 
 	signerAcc := GetAccount(ctx, accountKeeper, signer)
@@ -112,7 +112,7 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 			if pubKey == nil {
 				continue
 			}
-
+			
 			if pubKey.VerifyBytes(signBytes, stdSig.Signature) {
 				signedBy, err := sdkTypes.AccAddressFromHex(pubKey.Address().String())
 				if err != nil {
@@ -166,4 +166,9 @@ func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.A
 	hasherRIPEMD160.Write(sha) // does not error
 
 	return sdkTypes.AccAddress(hasherRIPEMD160.Sum(nil))
+}
+
+func MustGetAccAddressFromBech32(bech32 string) sdkTypes.AccAddress {
+	addr, _ := sdkTypes.AccAddressFromBech32(bech32)
+	return addr
 }

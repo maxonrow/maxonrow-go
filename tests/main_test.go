@@ -14,6 +14,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/maxonrow/maxonrow-go/app"
 	cp "github.com/otiai10/copy"
+	"github.com/maxonrow/maxonrow-go/utils"
 	tmCrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
@@ -33,7 +34,7 @@ var tPort = "26657"
 var tWorkingDir string
 var tValidator = "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"
 
-func startServer(done chan struct{}) *Process {
+func startServer(done chan struct{}) *utils.Process {
 	configFldr := path.Join(tWorkingDir, "config")
 	dataFldr := path.Join(tWorkingDir, "data")
 	cp.Copy("./config", configFldr)
@@ -41,7 +42,7 @@ func startServer(done chan struct{}) *Process {
 	ioutil.WriteFile(path.Join(dataFldr, "priv_validator_state.json"), []byte("{}"), 0755)
 
 	tCdc = app.MakeDefaultCodec()
-	proc, err := CreateProcess("", "mxwd", []string{"start", "--home", tWorkingDir})
+	proc, err := utils.CreateProcess("", "mxwd", []string{"start", "--home", tWorkingDir})
 	if err != nil {
 		panic(err)
 	}
@@ -96,7 +97,7 @@ func TestMain(m *testing.M) {
 			k.Address,
 		}
 
-		proc, err := CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
+		proc, err := utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
 		if err != nil {
 			panic(err)
 		}
@@ -112,7 +113,7 @@ func TestMain(m *testing.M) {
 
 	tKeys["nope"] = &keyInfo{
 		sdkTypes.AccAddress{}, nil, nil,
-		"", 
+		"",
 	}
 
 	done := make(chan struct{})
