@@ -23,7 +23,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInvalidAddress("Fee collector invalid.")
 		}
 
-		ownerAcc := app.accountKeeper.GetAccount(ctx, msg.Owner)
+		ownerAcc := utils.GetAccount(ctx, app.accountKeeper, msg.Owner)
 		appFeeAmt, err := sdkTypes.ParseCoins(msg.Fee.Value + types.CIN)
 		if err != nil {
 			return sdkTypes.ErrInternal("Invalid fee amount.")
@@ -71,7 +71,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrUnauthorized("Not authorized to whitelist.")
 		}
 	case fungible.MsgCreateFungibleToken:
-		ownerAcc := app.accountKeeper.GetAccount(ctx, msg.Owner)
+		ownerAcc := utils.GetAccount(ctx, app.accountKeeper, msg.Owner)
 		appFeeAmt, err := sdkTypes.ParseCoins(msg.Fee.Value + types.CIN)
 		if err != nil {
 			return sdkTypes.ErrInternal("Invalid fee amount.")
@@ -208,7 +208,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenInvalid()
 		}
 	case nonFungible.MsgCreateNonFungibleToken:
-		ownerAcc := app.accountKeeper.GetAccount(ctx, msg.Owner)
+		ownerAcc := utils.GetAccount(ctx, app.accountKeeper, msg.Owner)
 		appFeeAmt, err := sdkTypes.ParseCoins(msg.Fee.Value + types.CIN)
 		if err != nil {
 			return sdkTypes.ErrInternal("Invalid fee amount.")
@@ -459,7 +459,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case auth.MsgCreateMultiSigTx:
-		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx create failed, group address is not a multisig account.")
 		}
@@ -475,7 +475,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Internal transaction signature error.")
 		}
 	case auth.MsgUpdateMultiSigAccount:
-		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -483,7 +483,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrUnknownRequest("Owner address invalid.")
 		}
 	case auth.MsgTransferMultiSigOwner:
-		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -491,7 +491,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrUnknownRequest("Owner of group address invalid.")
 		}
 	case auth.MsgDeleteMultiSigTx:
-		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -503,7 +503,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("MultiSig pending tx not found.")
 		}
 	case auth.MsgSignMultiSigTx:
-		groupAcc := app.accountKeeper.GetAccount(ctx, msg.GroupAddress)
+		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx sign failed, group address is not a multisig account.")
 		}

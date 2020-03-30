@@ -87,7 +87,9 @@ func (k Keeper) ValidateSignatures(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTy
 	for i := 0; i < len(issuerSignatures); i++ {
 		issuerAddr := sdkTypes.AccAddress(issuerSignatures[i].PubKey.Address())
 		issuerAcc := k.accountKeeper.GetAccount(ctx, issuerAddr)
-
+		if issuerAcc == nil {
+			return sdkTypes.ErrUnauthorized("Issuer address is invalid.")
+		}
 		if k.IsIssuer(ctx, issuerAddr) {
 			issuerCounter++
 		} else {

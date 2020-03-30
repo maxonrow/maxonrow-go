@@ -252,6 +252,8 @@ github.com/maxonrow/cosmos-sdk v0.34.4-0.20200311075035-358016cc8854 h1:X5wO/imy
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200311075035-358016cc8854/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200311134208-140408d9ed52 h1:/+xbd+WePfA6S3d7UrA6a+5XMmNHdzHzXUf45FehjuM=
 github.com/maxonrow/cosmos-sdk v0.34.4-0.20200311134208-140408d9ed52/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
+github.com/maxonrow/cosmos-sdk v0.34.4-0.20200327064102-9821b6bce6b6 h1:wdCsgRB6hmmUf/7B69zT2Fv8ZpBl2j+XKTVT+F3DaJ8=
+github.com/maxonrow/cosmos-sdk v0.34.4-0.20200327064102-9821b6bce6b6/go.mod h1:hasIdlU9b3FEFCWpoStvNQQPg1ZpAKnpmlFklAk1W1o=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/mapstructure v1.1.2 h1:fmNYVwqnSfB9mZU6OS2O6GsXM+wcskZDuKQzvN1EDeE=
