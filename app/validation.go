@@ -472,7 +472,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 		_, sigErr := utils.CheckTxSig(ctx, msg.StdTx, app.accountKeeper, app.kycKeeper)
 		if sigErr != nil {
-			return sdkTypes.ErrInternal("Internal transaction signature error.")
+			return sdkTypes.ConvertError(sigErr)
 		}
 	case auth.MsgUpdateMultiSigAccount:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
