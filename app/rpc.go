@@ -8,6 +8,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
 	ver "github.com/maxonrow/maxonrow-go/version"
 	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/maxonrow/maxonrow-go/x/token/fungible"
@@ -168,7 +169,7 @@ func (app *mxwApp) Account(ctx *rpctypes.Context, str string) (string, error) {
 		return "", err
 	}
 	appCtx := app.NewContext(true, abci.Header{})
-	acc := app.accountKeeper.GetAccount(appCtx, addr)
+	acc := utils.GetAccount(appCtx, app.accountKeeper, addr)
 
 	out, err := app.cdc.MarshalJSON(acc)
 	if err != nil {

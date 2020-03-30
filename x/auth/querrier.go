@@ -64,9 +64,14 @@ func queryMultiSigPendingTx(cdc *codec.Codec, ctx sdkTypes.Context, path []strin
 	}
 
 	groupAcc := accountKeeper.GetAccount(ctx, groupAddr)
-
+	if !groupAcc.IsMultiSig() {
+		return nil, nil
+	}
 	multiSig := groupAcc.GetMultiSig()
 	pendingTx := multiSig.GetPendingTx(txID)
+	if pendingTx == nil {
+		return nil,nil
+	}
 	tx := pendingTx.GetTx()
 
 	stdTx, ok := tx.(sdkAuth.StdTx)

@@ -5,7 +5,7 @@ import (
 	"strconv"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	"github.com/maxonrow/maxonrow-go/x/auth"
+	"github.com/maxonrow/maxonrow-go/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +34,7 @@ func runMultisigAddressCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	groupAddr := auth.DeriveMultiSigAddress(addr, seq)
+	groupAddr := utils.DeriveMultiSigAddress(addr, seq)
 	fmt.Println(groupAddr.String())
 	return nil
 
