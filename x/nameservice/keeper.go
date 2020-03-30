@@ -241,7 +241,6 @@ func (k Keeper) IsProvider(ctx sdkTypes.Context, address sdkTypes.AccAddress) bo
 // CreateAlias
 func (k *Keeper) CreateAlias(ctx sdkTypes.Context, from sdkTypes.AccAddress, alias string, fee Fee) sdkTypes.Result {
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
-
 	if ownerWalletAccount == nil {
 		return sdkTypes.ErrInvalidSequence("Not authorised to apply for alias creation.").Result()
 	}
@@ -515,7 +514,10 @@ func (k Keeper) ValidateSignatures(ctx sdkTypes.Context, msg MsgSetAliasStatus) 
 	for i := 0; i < len(issuerSignatures); i++ {
 		issuerAddr := sdkTypes.AccAddress(issuerSignatures[i].PubKey.Address())
 		issuerAcc := k.accountKeeper.GetAccount(ctx, issuerAddr)
-
+		if issuerAcc == nil {
+			return sdkTypes.ErrUnauthorized("Issuer address is invalid.")
+		}
+		
 		if k.IsIssuer(ctx, issuerAddr) {
 			issuerCounter++
 		} else {

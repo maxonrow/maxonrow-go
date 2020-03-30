@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"fmt"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -9,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
 	"github.com/tendermint/tendermint/crypto"
+	"golang.org/x/crypto/ripemd160"
 )
 
 func GetSignBytes(ctx sdkTypes.Context, tx sdkAuth.StdTx, acc exported.Account) []byte {
@@ -29,7 +31,7 @@ func GetSignBytes(ctx sdkTypes.Context, tx sdkAuth.StdTx, acc exported.Account) 
 				chainID, accNum, txID, tx.Fee, tx.Msgs, tx.Memo,
 			)
 		} else {
-			ctx.Logger().Error("Unable to find transaction from pending list", "address", acc.GetAddress(), "Tx", tx)
+			ctx.Logger().Info("Unable to find transaction from pending list", "address", acc.GetAddress(), "Tx", tx)
 			return sdkAuth.StdSignBytes(
 				chainID, accNum, multisig.GetCounter(), tx.Fee, tx.Msgs, tx.Memo,
 			)
@@ -56,11 +58,10 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	signer := signers[0]
 
 	if !kycKeeper.IsWhitelisted(ctx, signer) {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %v", signer))
+		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %s", signer))
 	}
 
-	signerAcc := accountKeeper.GetAccount(ctx, signer)
-
+	signerAcc := GetAccount(ctx, accountKeeper, signer)
 	stdSigs := tx.Signatures
 	if len(stdSigs) == 0 {
 		return nil, sdkTypes.ErrInternal(fmt.Sprintf("No signature found. You should sign the transaction"))
@@ -111,7 +112,7 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 			if pubKey == nil {
 				continue
 			}
-
+			
 			if pubKey.VerifyBytes(signBytes, stdSig.Signature) {
 				signedBy, err := sdkTypes.AccAddressFromHex(pubKey.Address().String())
 				if err != nil {
@@ -139,4 +140,35 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 	}
 
 	return signerAcc, nil
+}
+
+func GetAccount(ctx sdkTypes.Context, keeper sdkAuth.AccountKeeper, address sdkTypes.AccAddress) exported.Account {
+	acc := keeper.GetAccount(ctx, address)
+	if acc == nil {
+		ctx.Logger().Error("Invalid or non-exist address", "address", address)
+	}
+
+	return acc
+}
+
+func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.AccAddress {
+
+	addrBz := addr.Bytes()
+	sequenceBz := sdkTypes.Uint64ToBigEndian(sequence)
+	sequenceBz = bytes.TrimLeft(sequenceBz, "\x00")
+	temp := append(addrBz[:], sequenceBz[:]...)
+
+	hasherSHA256 := sha256.New()
+	hasherSHA256.Write(temp[:]) // does not error
+	sha := hasherSHA256.Sum(nil)
+
+	hasherRIPEMD160 := ripemd160.New()
+	hasherRIPEMD160.Write(sha) // does not error
+
+	return sdkTypes.AccAddress(hasherRIPEMD160.Sum(nil))
+}
+
+func MustGetAccAddressFromBech32(bech32 string) sdkTypes.AccAddress {
+	addr, _ := sdkTypes.AccAddressFromBech32(bech32)
+	return addr
 }
