@@ -51,6 +51,9 @@ func makeMultisigTxs() []*testCase {
 	internalTx4 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx4", nil}
 	internalTx5 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx5", nil}
 
+	internalTx6 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "1cin"}, "tx6", nil}
+	internalTx7 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "yk", "1cin"}, "tx7", nil}
+
 	tcs := []*testCase{
 
 		//create MultiSig Account1 : {"multisig-acc-1"}, owner=="multisig-acc-1"
@@ -145,6 +148,15 @@ func makeMultisigTxs() []*testCase {
 
 		{"multiSig", false, false, "MultiSig-sign-tx-bank - Happy Path", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 3, internalTx5}, "MEMO : MultiSig-sign-tx-bank", nil},
 		{"multiSig", true, true, "MultiSig-sign-tx-bank - resubmit    ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 3, internalTx5}, "MEMO : MultiSig-sign-tx-bank", nil},
+
+		//====================start : case-2.1
+		//-- Using : 'MultiSig Account2' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3"}
+		//-- Scenario-1 : Create multisig-tx-1 with Internal Fund-transfer, only Signed this multisig-tx-1 & broadcast AFTER the complete process of Scenario-2.
+		//-- Scenario-2 : Create multisig-tx-2 with Internal Fund-transfer, then directly Signed this multisig-tx-2 and broadcast.
+		{"multiSig", false, false, "case-2.1-Create MultiSig Tx-1 - submit - Happy Path commit.												 ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 4, internalTx6}, "MEMO : Create MultiSig Tx", nil}, //ok-20200402
+		{"multiSig", false, false, "case-2.1-Create MultiSig Tx-2 - submit - Happy Path commit.                        ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 5, internalTx7}, "MEMO : Create MultiSig Tx", nil}, //ok-20200402
+		{"multiSig", false, false, "case-2.1-Sign MultiSig Tx-2 - submit which signed by multisig-acc-3 - commit.      ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 5, internalTx7}, "MEMO : Sign MultiSig Tx", nil},     //ok-20200402
+		{"multiSig", false, false, "case-2.1-Sign MultiSig Tx-1 - submit which signed by multisig-acc-3 - commit.      ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 4, internalTx6}, "MEMO : Sign MultiSig Tx", nil},     //ok-20200402
 
 		//Topic : transfer ownership
 		{"multiSig", true, true, "case-2-Transfer MultiSig Owner - Error, due to Group address invalid.                                                               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
