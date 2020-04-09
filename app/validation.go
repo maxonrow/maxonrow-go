@@ -460,6 +460,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case auth.MsgCreateMultiSigTx:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrInternal("Group account not found.")
+		}
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx create failed, group address is not a multisig account.")
 		}
@@ -470,12 +473,19 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if exist {
 			return sdkTypes.ErrInternal("Tx already existed in pending tx.")
 		}
+		internalMsgErr := msg.StdTx.GetMsgs()[0].ValidateBasic()
+		if internalMsgErr != nil {
+			return sdkTypes.ErrInternal("Internal transaction invalid.")
+		}
 		_, sigErr := utils.CheckTxSig(ctx, msg.StdTx, app.accountKeeper, app.kycKeeper)
 		if sigErr != nil {
-			return sdkTypes.ErrInternal("Internal transaction signature error.")
+			return sdkTypes.ConvertError(sigErr)
 		}
 	case auth.MsgUpdateMultiSigAccount:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrInternal("Group account not found.")
+		}
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -484,6 +494,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case auth.MsgTransferMultiSigOwner:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrInternal("Group account not found.")
+		}
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -492,6 +505,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case auth.MsgDeleteMultiSigTx:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrInternal("Group account not found.")
+		}
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
 		}
@@ -504,6 +520,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case auth.MsgSignMultiSigTx:
 		groupAcc := utils.GetAccount(ctx, app.accountKeeper, msg.GroupAddress)
+		if groupAcc == nil {
+			return sdkTypes.ErrInternal("Group account not found.")
+		}
 		if !groupAcc.IsMultiSig() {
 			return sdkTypes.ErrInternal("MultiSig Tx sign failed, group address is not a multisig account.")
 		}
