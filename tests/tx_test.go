@@ -47,6 +47,7 @@ func TestTxs(t *testing.T) {
 	tcs = append(tcs, makeFungibleTokenTxs()...)
 	tcs = append(tcs, makeNameservicesTxs()...)
 	tcs = append(tcs, makeMultisigTxs()...)
+	tcs = append(tcs, makeMultisigTxsNFTs()...)
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
@@ -99,6 +100,8 @@ func TestTxs(t *testing.T) {
 
 		if strings.Contains(tc.desc, "commit") {
 			WaitForNextHeightTM(tPort)
+		} else if strings.Contains(tc.desc, "wait-15-seconds") {
+			time.Sleep(15 * time.Second) // need wait for 15 seconds, due to Blockchain consensus concern
 		}
 	}
 

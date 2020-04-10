@@ -54,6 +54,7 @@ func makeMultisigTxs() []*testCase {
 	internalTx6 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "1cin"}, "tx6", nil}
 	internalTx7 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "yk", "1cin"}, "tx7", nil}
 
+	// Case-1. Broadcasting internal transaction failed : due to 'Insufficient fee amount' (Please ignore this error if found, as will resposibled by block-Scanner)
 	internalTx8 := &testCase{"bank", true, true, "sending 9990000000000 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "9990000000000cin"}, "tx6", nil} // 20200409
 
 	tcs := []*testCase{

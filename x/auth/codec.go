@@ -5,6 +5,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	bank "github.com/maxonrow/maxonrow-go/x/bank"
+	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 )
 
 func RegisterCodec(cdc *codec.Codec) {
@@ -29,11 +30,13 @@ func init() {
 
 	bank.RegisterCodec(msgCdc)
 	//fungible.RegisterCodec(cdc)
-	//nonFungible.RegisterCodec(cdc)
+	nonFungible.RegisterCodec(msgCdc)
 	//fee.RegisterCodec(cdc)
 	//maintenance.RegisterCodec(cdc)
 	//auth.RegisterCodec(cdc)
 
 	// To register codec for internal transaction for multi-siog account (cosmos-sdk)
 	bank.RegisterCodec(sdkAuth.ModuleCdc)
+	nonFungible.RegisterCodec(sdkAuth.ModuleCdc)
+
 }
