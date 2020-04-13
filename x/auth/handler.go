@@ -200,8 +200,8 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 		resultLog = resultLog.WithInternalHash(internalHash)
 	}
 
-	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String()}
-	eventSignature := "CreatedMultiSigTx(string,string)"
+	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(ptx.GetID())}
+	eventSignature := "CreatedMultiSigTx(string,string,string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam).AppendEvents(broadcastedEvents),
@@ -356,8 +356,8 @@ func checkIsMetric(ctx sdkTypes.Context, txID uint64, groupAcc exported.Account,
 		}()
 
 		// Event: broadcast tx
-		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(txID)}
-		broadcastedEventSignature := "BroadcastedTx(string,string)"
+		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(txID), string(internalHash)}
+		broadcastedEventSignature := "BroadcastedTx(string,string,string)"
 		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
 
 		return internalHash, broadcastedEvents, nil
