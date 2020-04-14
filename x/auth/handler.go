@@ -182,7 +182,7 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 	if !ok {
 		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
 	}
-	_, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
+	_, _, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
 	if sigErr != nil {
 		return sdkTypes.ResultFromError(sigErr)
 	}
@@ -245,7 +245,7 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 	if !ok {
 		return sdkTypes.ErrInternal("Pending tx must be StdTx.").Result()
 	}
-	_, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
+	_, _, sigErr := utils.CheckTxSig(ctx, stdTx, accountKeeper, kycKeeper)
 	if sigErr != nil {
 		return sdkTypes.ResultFromError(sigErr)
 	}

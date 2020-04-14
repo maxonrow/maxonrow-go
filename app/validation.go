@@ -477,7 +477,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if internalMsgErr != nil {
 			return sdkTypes.ErrInternal("Internal transaction invalid.")
 		}
-		_, sigErr := utils.CheckTxSig(ctx, msg.StdTx, app.accountKeeper, app.kycKeeper)
+		_, _, sigErr := utils.CheckTxSig(ctx, msg.StdTx, app.accountKeeper, app.kycKeeper)
 		if sigErr != nil {
 			return sdkTypes.ConvertError(sigErr)
 		}

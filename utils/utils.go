@@ -9,7 +9,6 @@ import (
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/exported"
 	"github.com/maxonrow/maxonrow-go/x/kyc"
-	"github.com/tendermint/tendermint/crypto"
 	"golang.org/x/crypto/ripemd160"
 )
 
@@ -44,44 +43,36 @@ func GetSignBytes(ctx sdkTypes.Context, tx sdkAuth.StdTx, acc exported.Account) 
 	}
 }
 
-func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper) (exported.Account, error) {
+func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper) (exported.Account, bool, error) {
 	params := accountKeeper.GetParams(ctx)
 	msgs := tx.GetMsgs()
 	if len(msgs) != 1 {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one message per transaction. it has %v messages", len(msgs)))
+		return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one message per transaction. it has %v messages", len(msgs)))
 	}
 
 	signers := msgs[0].GetSigners()
 	if len(signers) != 1 {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature per message. it has %v messages", len(signers)))
+		return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("MXW transactions accept only one signature per message. it has %v messages", len(signers)))
 	}
 	signer := signers[0]
 
 	if !kycKeeper.IsWhitelisted(ctx, signer) {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %s", signer))
+		return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("Message signer is not whitelisted: %s", signer))
 	}
 
 	signerAcc := GetAccount(ctx, accountKeeper, signer)
 	stdSigs := tx.Signatures
 	if len(stdSigs) == 0 {
-		return nil, sdkTypes.ErrInternal(fmt.Sprintf("No signature found. You should sign the transaction"))
+		return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("No signature found. You should sign the transaction"))
 	}
 
-	var pubKeys []crypto.PubKey
 	if signerAcc.IsMultiSig() {
 		if len(stdSigs) > int(params.TxSigLimit) {
-			return nil, sdkTypes.ErrInternal(fmt.Sprintf("Maximum signatures should be %v. It has %v signatures.", params.TxSigLimit, len(stdSigs)))
-		}
-
-		multisig := signerAcc.GetMultiSig()
-		signers := multisig.GetSigners()
-		for _, signer := range signers {
-			acc := accountKeeper.GetAccount(ctx, signer)
-			pubKeys = append(pubKeys, acc.GetPubKey())
+			return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("Maximum signatures should be %v. It has %v signatures.", params.TxSigLimit, len(stdSigs)))
 		}
 	} else {
 		if len(stdSigs) != 1 {
-			return nil, sdkTypes.ErrInternal(fmt.Sprintf("One signature per transaction for normal transactions. It has %v signatures.", len(stdSigs)))
+			return nil, false, sdkTypes.ErrInternal(fmt.Sprintf("One signature per transaction for normal transactions. It has %v signatures.", len(stdSigs)))
 		}
 
 		sig := stdSigs[0]
@@ -89,57 +80,26 @@ func CheckTxSig(ctx sdkTypes.Context, tx sdkAuth.StdTx, accountKeeper sdkAuth.Ac
 		if pubKey == nil {
 			pubKey = sig.PubKey
 			if pubKey == nil {
-				return nil, sdkTypes.ErrInvalidPubKey("PubKey not found")
+				return nil, false, sdkTypes.ErrInvalidPubKey("PubKey not found")
 			}
 
 			if !bytes.Equal(pubKey.Address(), signerAcc.GetAddress()) {
-				return nil, sdkTypes.ErrInvalidPubKey(
+				return nil, false, sdkTypes.ErrInvalidPubKey(
 					fmt.Sprintf("PubKey does not match Signer address %s", signerAcc.GetAddress()))
 			}
 
 			// Set public key for the first time
 			signerAcc.SetPubKey(pubKey)
 		}
-
-		pubKeys = append(pubKeys, pubKey)
 	}
 
-	for _, stdSig := range stdSigs {
-		// signerAcc is groupAccount
-		signBytes := GetSignBytes(ctx, tx, signerAcc)
-		matched := false
-		for i, pubKey := range pubKeys {
-			if pubKey == nil {
-				continue
-			}
-			
-			if pubKey.VerifyBytes(signBytes, stdSig.Signature) {
-				signedBy, err := sdkTypes.AccAddressFromHex(pubKey.Address().String())
-				if err != nil {
-					return nil, err
-				}
-				if !signerAcc.IsSigner(signedBy) {
-					return nil, sdkTypes.ErrUnauthorized("Unauthorized signer: %v")
-				}
-
-				if !kycKeeper.IsWhitelisted(ctx, signedBy) {
-					return nil, sdkTypes.ErrInternal(fmt.Sprintf("Transaction signer is not whitelisted: %v", signer))
-				}
-
-				//
-				pubKeys[i] = nil
-
-				matched = true
-				break
-			}
-		}
-
-		if !matched {
-			return nil, sdkTypes.ErrUnauthorized("signature verification failed; verify correct account sequence and chain-id" + string(signBytes))
-		}
+	validSignatures := 0
+	signBytes := GetSignBytes(ctx, tx, signerAcc)
+	isMetric := checkSigsRecursively(ctx, accountKeeper, kycKeeper, signerAcc, stdSigs, signBytes, &validSignatures)
+	if validSignatures < len(stdSigs) {
+		return nil, false, sdkTypes.ErrUnauthorized("signature verification failed; verify correct account sequence and chain-id" + string(signBytes))
 	}
-
-	return signerAcc, nil
+	return signerAcc, isMetric, nil
 }
 
 func GetAccount(ctx sdkTypes.Context, keeper sdkAuth.AccountKeeper, address sdkTypes.AccAddress) exported.Account {
@@ -171,4 +131,58 @@ func DeriveMultiSigAddress(addr sdkTypes.AccAddress, sequence uint64) sdkTypes.A
 func MustGetAccAddressFromBech32(bech32 string) sdkTypes.AccAddress {
 	addr, _ := sdkTypes.AccAddressFromBech32(bech32)
 	return addr
+}
+
+func checkSigsRecursively(ctx sdkTypes.Context, accountKeeper sdkAuth.AccountKeeper, kycKeeper kyc.Keeper, acc exported.Account, stdSigs []sdkAuth.StdSignature, signBytes []byte, validSignatures *int) bool {
+	if acc.IsMultiSig() {
+		ms := acc.GetMultiSig()
+		signers := ms.GetSigners()
+		threshold := ms.GetThreshold()
+		for _, signer := range signers {
+			signerAcc := accountKeeper.GetAccount(ctx, signer)
+			ok := checkSigsRecursively(ctx, accountKeeper, kycKeeper, signerAcc, stdSigs, signBytes, validSignatures)
+			if ok {
+				threshold = threshold - 1
+				if threshold == 0 {
+					return true
+				}
+			}
+		}
+	} else {
+		pubKey := acc.GetPubKey()
+		if pubKey == nil {
+			ctx.Logger().Error("Public key is not set ", "Address", acc.GetAddress())
+			return false
+		}
+
+		for _, stdSig := range stdSigs {
+			if pubKey.VerifyBytes(signBytes, stdSig.Signature) {
+				signedBy, err := sdkTypes.AccAddressFromHex(pubKey.Address().String())
+				if err != nil {
+					return false
+				}
+
+				if !kycKeeper.IsWhitelisted(ctx, signedBy) {
+					ctx.Logger().Error("Signer is not whitelisted", "Address", signedBy)
+					return false
+				}
+
+				// Extra checks
+				if !acc.GetAddress().Equals(signedBy) {
+					ctx.Logger().Error("Public is match with the address ", "Address", signedBy)
+					return false
+				}
+
+				if !acc.IsSigner(signedBy) {
+					ctx.Logger().Error("Unauthorized signer", "Address", signedBy)
+					return false
+				}
+
+				*validSignatures = *validSignatures + 1
+				return true
+			}
+		}
+	}
+
+	return false
 }

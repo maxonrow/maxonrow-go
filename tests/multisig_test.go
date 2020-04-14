@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"fmt"
 	"testing"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
@@ -50,10 +51,8 @@ func makeMultisigTxs() []*testCase {
 	internalTx3 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-1", "800400000cin", 0, bankInfo{"grp-addr-1", "bob", "1cin"}, "tx3", nil}
 	internalTx4 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx4", nil}
 	internalTx5 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-2", "bob", "1cin"}, "tx5", nil}
-
 	internalTx6 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "1cin"}, "tx6", nil}
 	internalTx7 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "yk", "1cin"}, "tx7", nil}
-
 	internalTx8 := &testCase{"bank", true, true, "sending 9990000000000 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "9990000000000cin"}, "tx6", nil} // 20200409
 
 	tcs := []*testCase{
@@ -273,7 +272,7 @@ func createInternalTx(t *testing.T, sender, groupAddress string, counter uint64,
 
 	internalTxMsg := makeMsg(t, internalTxTemplate.msgType, internalTxTemplate.signer, internalTxTemplate.msgInfo)
 	fees, _ := types.ParseCoins(internalTxTemplate.fees)
-	internalTx, _ := makeSignedTx(t, groupAddress, internalTxTemplate.signer, counter, internalTxTemplate.gas, fees, internalTxTemplate.memo, internalTxMsg)
+	internalTx, _ := makeSignedTx(t, fmt.Sprintf("%s:%s", groupAddress, internalTxTemplate.signer), counter, internalTxTemplate.gas, fees, internalTxTemplate.memo, internalTxMsg)
 
 	msgCreateMultiSigTx := multisig.NewMsgCreateMultiSigTx(groupAddr, internalTx, senderAddr)
 	return msgCreateMultiSigTx
@@ -313,7 +312,7 @@ func makeSignMultiSigTxMsg(t *testing.T, signer, groupAddress string, txID uint6
 	internalTx := ptx.GetTx().(sdkAuth.StdTx)
 	require.NotNil(t, internalTx)
 
-	signedTx, _ := makeSignedTx(t, groupAddress, signer, txID, internalTx.Fee.Gas, internalTx.Fee.Amount, internalTx.Memo, internalTx.Msgs[0])
+	signedTx, _ := makeSignedTx(t, fmt.Sprintf("%s:%s", groupAddress, signer), txID, internalTx.Fee.Gas, internalTx.Fee.Amount, internalTx.Memo, internalTx.Msgs[0])
 
 	msgSignMultiSigTx := multisig.NewMsgSignMultiSigTx(groupAcc.Address, txID, signedTx.Signatures[0], tKeys[signer].addr)
 	return msgSignMultiSigTx

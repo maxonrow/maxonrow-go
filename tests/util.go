@@ -9,13 +9,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/maxonrow/maxonrow-go/app"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	sdkStaking "github.com/cosmos/cosmos-sdk/x/staking"
+	"github.com/maxonrow/maxonrow-go/app"
+	"github.com/stretchr/testify/require"
 	tmclient "github.com/tendermint/tendermint/rpc/client"
 	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
@@ -295,4 +294,13 @@ var cdc = codec.New()
 
 func init() {
 	ctypes.RegisterAmino(cdc)
+}
+
+func GetAliasFromAddress(addr sdkTypes.AccAddress) string {
+	for key, value := range tKeys {
+		if value.addr.Equals(addr) {
+			return key
+		}
+	}
+	panic("Invalid address")
 }

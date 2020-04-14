@@ -236,7 +236,7 @@ func (k Keeper) Whitelist(ctx sdkTypes.Context, targetAddress sdkTypes.AccAddres
 		acc = k.accountKeeper.NewAccountWithAddress(ctx, targetAddress)
 		acc.SetAccountNumber(k.accountKeeper.GetNextAccountNumber(ctx))
 		k.accountKeeper.SetAccount(ctx, acc)
-		
+
 
 	}
 
@@ -295,6 +295,7 @@ func (k Keeper) CheckTx(ctx sdkTypes.Context, tx sdkAuth.StdTx) bool {
 	allSigners := tx.GetSigners()
 	for _, signer := range allSigners {
 		if !k.IsWhitelisted(ctx, signer) {
+			ctx.Logger().Error("Signer is ot whitelisted", "Address", signer)
 			return false
 		}
 	}

@@ -47,6 +47,7 @@ func TestTxs(t *testing.T) {
 	tcs = append(tcs, makeFungibleTokenTxs()...)
 	tcs = append(tcs, makeNameservicesTxs()...)
 	tcs = append(tcs, makeMultisigTxs()...)
+	tcs = append(tcs, makeNestedMultisigTxs()...)
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
@@ -75,7 +76,7 @@ func TestTxs(t *testing.T) {
 			}
 		}
 
-		tx, bz := makeSignedTx(t, tc.signer, tc.signer, 0, tc.gas, fees, tc.memo, msg)
+		tx, bz := makeSignedTx(t, tc.signer, 0, tc.gas, fees, tc.memo, msg)
 		txb, err := tCdc.MarshalJSON(tx)
 		assert.NoError(t, err)
 		fmt.Printf("============\nBroadcasting %d tx (%s): %s\n", n+1, tc.desc, string(txb))
@@ -84,7 +85,9 @@ func TestTxs(t *testing.T) {
 		tc.hash = res.Hash.Bytes()
 
 		if !tc.checkFailed {
-			seqs[tc.signer] = seqs[tc.signer] + 1
+			signer := strings.Split(tc.signer, ":")[0]
+			seqs[signer] = seqs[signer] + 1
+
 			require.Zero(t, res.CheckTx.Code, "test case %v(%v) check should not fail: %v", n+1, tc.desc, res.CheckTx.Log)
 
 			if tc.deliverFailed {
@@ -150,7 +153,8 @@ func TestTxs(t *testing.T) {
 
 	// check account sequences to be increased properly
 	for name, seq1 := range seqs {
-		seq2 := AccSequence(tKeys[name].addrStr)
+		signer := strings.Split(name, ":")[0]
+		seq2 := AccSequence(tKeys[signer].addrStr)
 		assert.Equal(t, seq1, seq2)
 	}
 
@@ -317,11 +321,24 @@ func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) s
 	return msg
 }
 
+// Signer format:
+// alias_1:alias_2,alias3,...
+// alais_1 for getting account_num and sequence
+// alias_2,... for signing the message.
+//
 // for most of transactions, sender is same as signer.
 // only for multi-sig transactions sender and signer are different.
-func makeSignedTx(t *testing.T, sender, signer string, seq, gas uint64, fees sdkTypes.Coins, memo string, msg sdkTypes.Msg) (sdkAuth.StdTx, []byte) {
-	acc := Account(tKeys[sender].addrStr)
-	require.NotNil(t, acc, "alias:%s", sender)
+func makeSignedTx(t *testing.T, signer string, seq, gas uint64, fees sdkTypes.Coins, memo string, msg sdkTypes.Msg) (sdkAuth.StdTx, []byte) {
+	signing_account := signer
+	signers := []string{signer}
+	if strings.Contains(signer, ":") {
+		tokens := strings.Split(signer, ":")
+		signing_account = tokens[0]
+		signers = strings.Split(tokens[1], ",")
+	}
+
+	acc := Account(tKeys[signing_account].addrStr)
+	require.NotNil(t, acc, "alias:%s", signing_account)
 
 	if !acc.IsMultiSig() {
 		seq = acc.GetSequence()
@@ -337,22 +354,22 @@ func makeSignedTx(t *testing.T, sender, signer string, seq, gas uint64, fees sdk
 	}
 
 	signBz, signBzErr := tCdc.MarshalJSON(signMsg)
-	if signBzErr != nil {
-		panic(signBzErr)
+	require.NoError(t, signBzErr)
+
+	var stdSigs []authTypes.StdSignature
+	for _, signer := range signers {
+		sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
+		require.NoError(t, err)
+
+		pub := tKeys[signer].priv.PubKey()
+		stdSigs = append(stdSigs, sdkAuth.StdSignature{
+			PubKey:    pub,
+			Signature: sig,
+		},
+		)
 	}
 
-	sig, err := tKeys[signer].priv.Sign(sdkTypes.MustSortJSON(signBz))
-	if err != nil {
-		panic(err)
-	}
-
-	pub := tKeys[signer].priv.PubKey()
-	stdSig := sdkAuth.StdSignature{
-		PubKey:    pub,
-		Signature: sig,
-	}
-
-	sdtTx := authTypes.NewStdTx(signMsg.Msgs, signMsg.Fee, []authTypes.StdSignature{stdSig}, signMsg.Memo)
+	sdtTx := authTypes.NewStdTx(signMsg.Msgs, signMsg.Fee, stdSigs, signMsg.Memo)
 	bz, err := tCdc.MarshalBinaryLengthPrefixed(sdtTx)
 	if err != nil {
 		panic(err)

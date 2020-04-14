@@ -232,7 +232,7 @@ func TestMultisig_1(t *testing.T) {
 	//bz, _ := app.cdc.MarshalJSON(&tx)
 	//fmt.Println(string(bz))
 
-	_, err := utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
+	_, _, err := utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
 	assert.NoError(t, err)
 }
 
@@ -242,21 +242,21 @@ func TestMultisig_2(t *testing.T) {
 	// Signer is acc-1, sender is acc-2
 	itx := signInternalTx(t, app, "acc-1", 5, 0)
 	tx := signMultisigTx(t, app, gaddr, addr2, itx, "acc-1", 0)
-	_, err := utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
+	_, _, err := utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
 	assert.Error(t, err) // sender is different than signer
 
 	// Signer is acc-4, sender is acc-4, no kyc
 	itx = signInternalTx(t, app, "acc-1", 5, 0)
 	tx = signMultisigTx(t, app, gaddr, addr4, itx, "acc-4", 0)
 
-	_, err = utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
+	_, _, err = utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
 	assert.Error(t, err)
 
 	// Signer is acc-2, sender is acc-2
 	itx = signInternalTx(t, app, "acc-1", 5, 0)
 	tx = signMultisigTx(t, app, gaddr, addr2, itx, "acc-2", 0)
 
-	_, err = utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
+	_, _, err = utils.CheckTxSig(ctx, tx, app.accountKeeper, app.kycKeeper)
 	assert.NoError(t, err)
 }
 
@@ -287,32 +287,32 @@ func TestMultisig_3(t *testing.T) {
 	{
 		// itx signed by acc-4
 		itx := signInternalTx(t, app, "acc-4", 5, 0)
-		_, err := utils.CheckTxSig(ctx, itx, app.accountKeeper, app.kycKeeper)
+		_, _, err := utils.CheckTxSig(ctx, itx, app.accountKeeper, app.kycKeeper)
 		assert.Error(t, err)
 	}
 
 	{
 		itx1 := signInternalTx(t, app, "acc-1", 5, 0)
-		_, err := utils.CheckTxSig(ctx, itx1, app.accountKeeper, app.kycKeeper)
+		_, _, err := utils.CheckTxSig(ctx, itx1, app.accountKeeper, app.kycKeeper)
 		assert.NoError(t, err)
 
 		// Remove Public Key
 		itx1.Signatures[0].PubKey = nil
-		_, err = utils.CheckTxSig(ctx, itx1, app.accountKeeper, app.kycKeeper)
+		_, _, err = utils.CheckTxSig(ctx, itx1, app.accountKeeper, app.kycKeeper)
 		assert.NoError(t, err)
 
 		itx2 := signInternalTx(t, app, "acc-2", 5, 0)
-		_, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
+		_, _, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
 		assert.NoError(t, err)
 
 		// Remove Public Keys
 		itx2.Signatures[0].PubKey = nil
-		_, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
+		_, _, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
 		assert.NoError(t, err)
 
 		itx2.Signatures = append(itx2.Signatures, itx1.Signatures...)
 
-		_, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
+		_, _, err = utils.CheckTxSig(ctx, itx2, app.accountKeeper, app.kycKeeper)
 		assert.NoError(t, err)
 	}
 }

@@ -624,6 +624,18 @@
         "public_key": null,
         "account_number": "0",
         "sequence": "0"
+      },
+      {
+        "address": "mxw1zvgat76jxp3fasgqk7dcwzkyj0f0wz5edxg7ke",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": "0",
+        "sequence": "0"
       }
     ],
     "bank": {
@@ -710,6 +722,7 @@
         "mxw163gpxlqtgcexpal0wuth9zx789mq0qfsctjnyx",
         "mxw1we5y4ckamtdrhuf43phmg0x7z93qhh0qkfmk9p",
         "mxw1rjgjjkkjqtd676ydahysmnfsg0v4yvwfe9vmh0",
+        "mxw1zvgat76jxp3fasgqk7dcwzkyj0f0wz5edxg7ke",
         "mxw127sn3dxpr6880tjlwfk7u007cway5my4lpjl4z",
         "mxw14se693s36wrfakqtr4lvxnrpzy6qas9xzc2ck2",
         "mxw193cra94tl3uj9zcmx2x2j7vrc3y38z39469dqy",

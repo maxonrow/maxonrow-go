@@ -72,28 +72,27 @@ func (app *mxwApp) NewAnteHandler() sdkTypes.AnteHandler {
 		// -------------------------------------------------------------------------
 		// Check signatures and updat sequence and public_keys (if it hasn't set yet)
 		// It may update account's PublicKey
-		acc, err := utils.CheckTxSig(ctx, stdTx, app.accountKeeper, app.kycKeeper)
+		acc, isMetric, err := utils.CheckTxSig(ctx, stdTx, app.accountKeeper, app.kycKeeper)
 		if err != nil {
 			return ctx, err
 		}
 
 		// Try to delete it from pending list
 		if acc.IsMultiSig() {
-			multisig := acc.GetMultiSig()
-			txID, exist := multisig.CheckTx(stdTx)
-			if !exist {
-				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not found.")
-			}
-			isMetric := multisig.IsMetric(txID)
 			if !isMetric {
 				return ctx, sdkTypes.ErrUnknownRequest("Multisig Transaction is not valid.")
 			}
-			// after validating everything, delete the pendingTx
-			isDeleted := multisig.RemoveTx(txID)
-			if !isDeleted {
-				return ctx, sdkTypes.ErrUnknownRequest("Delete failed.")
+
+			multisig := acc.GetMultiSig()
+			txID, exist := multisig.CheckTx(stdTx)
+			if exist {
+				// after validating everything, delete the pendingTx
+				isDeleted := multisig.RemoveTx(txID)
+				if !isDeleted {
+					return ctx, sdkTypes.ErrUnknownRequest("Delete failed.")
+				}
+				acc.SetMultiSig(multisig)
 			}
-			acc.SetMultiSig(multisig)
 		}
 
 		if err := acc.SetSequence(acc.GetSequence() + 1); err != nil {
