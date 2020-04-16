@@ -39,15 +39,16 @@ func TestTxs(t *testing.T) {
 
 	var tcs []*testCase
 
-	tcs = append(tcs, makeBankTxs()...)
-	tcs = append(tcs, makeKycTxs()...)
-	tcs = append(tcs, makeMaintenaceTxs()...)
-	tcs = append(tcs, makeFeeTxs()...)
-	tcs = append(tcs, makeNonFungibleTokenTxs()...)
-	tcs = append(tcs, makeFungibleTokenTxs()...)
-	tcs = append(tcs, makeNameservicesTxs()...)
-	tcs = append(tcs, makeMultisigTxs()...)
+	// tcs = append(tcs, makeBankTxs()...)
+	// tcs = append(tcs, makeKycTxs()...)
+	// tcs = append(tcs, makeMaintenaceTxs()...)
+	// tcs = append(tcs, makeFeeTxs()...)
+	// tcs = append(tcs, makeNonFungibleTokenTxs()...)
+	// tcs = append(tcs, makeFungibleTokenTxs()...)
+	// tcs = append(tcs, makeNameservicesTxs()...)
+	// tcs = append(tcs, makeMultisigTxs()...)
 	tcs = append(tcs, makeMultisigTxsNFTs()...)
+	// tcs = append(tcs, makeMultisigTxsFTs()...)
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
@@ -100,8 +101,8 @@ func TestTxs(t *testing.T) {
 
 		if strings.Contains(tc.desc, "commit") {
 			WaitForNextHeightTM(tPort)
-		} else if strings.Contains(tc.desc, "wait-15-seconds") {
-			time.Sleep(15 * time.Second) // need wait for 15 seconds, due to Blockchain consensus concern
+		} else if strings.Contains(tc.desc, "wait-5-seconds") {
+			time.Sleep(5 * time.Second) // need wait for 5 seconds, due to Blockchain consensus concern
 		}
 	}
 
