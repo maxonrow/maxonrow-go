@@ -39,14 +39,14 @@ func TestTxs(t *testing.T) {
 
 	var tcs []*testCase
 
-	// tcs = append(tcs, makeBankTxs()...)
-	// tcs = append(tcs, makeKycTxs()...)
-	// tcs = append(tcs, makeMaintenaceTxs()...)
-	// tcs = append(tcs, makeFeeTxs()...)
-	// tcs = append(tcs, makeNonFungibleTokenTxs()...)
-	// tcs = append(tcs, makeFungibleTokenTxs()...)
-	// tcs = append(tcs, makeNameservicesTxs()...)
-	// tcs = append(tcs, makeMultisigTxs()...)
+	tcs = append(tcs, makeBankTxs()...)
+	tcs = append(tcs, makeKycTxs()...)
+	tcs = append(tcs, makeMaintenaceTxs()...)
+	tcs = append(tcs, makeFeeTxs()...)
+	tcs = append(tcs, makeNonFungibleTokenTxs()...)
+	tcs = append(tcs, makeFungibleTokenTxs()...)
+	tcs = append(tcs, makeNameservicesTxs()...)
+	tcs = append(tcs, makeMultisigTxs()...)
 	tcs = append(tcs, makeMultisigTxsNFTs()...)
 	// tcs = append(tcs, makeMultisigTxsFTs()...)
 

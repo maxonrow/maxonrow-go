@@ -77,32 +77,17 @@ func makeMultisigTxsNFTs() []*testCase {
 		{"bank", false, false, "top-up Multisig Group-address3 - commit", "multisig-acc-nft-3", "800400000cin", 0, bankInfo{"multisig-acc-nft-3", "nft-grp-addr-3", "10000000000cin"}, "MEMO : top-up account", nil},
 		{"bank", false, false, "top-up Multisig Group-address4 - commit", "multisig-acc-nft-4", "800400000cin", 0, bankInfo{"multisig-acc-nft-4", "nft-grp-addr-4", "10000000000cin"}, "MEMO : top-up account", nil},
 
-		//2. module : kyc_test
-		{"kyc", false, false, "Doing kyc - nft-mostafa - commit", "nft-kyc-auth-1", "0cin", 0, kycInfo{"nft-kyc-auth-1", "nft-kyc-issuer-1", "nft-kyc-prov-1", "whitelist", "nft-mostafa", "nft-mostafa", "testKyc123452222", "0"}, "", nil},
+		//2. refer module : kyc_test
+		//case : whitelisted this address 'nft-mostafa'
 
-		//3. module : maintenance_test
-		//add nft-mostafa as nonfungible authorised address
-		{"maintenance", false, false, "1. Proposal, add nonfungible authorised address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add non fungible authorised address", "Add mostafa as non fungible authorised address", "nonFungible", "nft-mostafa", "", "", FeeCollector{}, "nft-maintainer-2", ""}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as non fungible token authorised address, Happy path. commit", "nft-maintainer-1", "0cin", 0, CastAction{"nft-maintainer-1", "approve", 1}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as non fungible token authorised address, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 1}, "", nil},
+		//3. refer module : maintenance_test
+		//case-1 : add nft-mostafa as nonfungible authorised address (add, CastAction)
+		//case-2 : add nft-carlo as nonfungible issuer address (add, CastAction)
+		//case-3 : add nft-jeansoon as nonfungible provider address (add, CastAction)
+		//case-4 : (NFTs) add nameservice fee collector with maintenance. (nft-mostafa is whitelisted.)
 
-		//add nft-carlo as nonfungible issuer address
-		{"maintenance", false, false, "2. Proposal, add nonfungible issuer address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add non fungible fee issuer address", "Add carlo as non fungible issuer address", "nonFungible", "", "nft-carlo", "", FeeCollector{}, "nft-maintainer-2", ""}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve carlo as non fungible token issuer address, Happy path. commit", "nft-maintainer-1", "0cin", 0, CastAction{"nft-maintainer-1", "approve", 2}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve carlo as non fungible token issuer address, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 2}, "", nil},
-
-		//add nft-jeansoon as nonfungible provider address
-		{"maintenance", false, false, "3. Proposal, add nonfungible provider address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add non fungible fee provider address", "Add jeansoon as non fungible provider address", "nonFungible", "", "", "nft-jeansoon", FeeCollector{}, "nft-maintainer-2", ""}, "", nil},
-		{"maintenance-cast-action", false, false, "Cast action to approve jeansoon as non fungible token provider address, Happy path. commit", "nft-maintainer-1", "0cin", 0, CastAction{"nft-maintainer-1", "approve", 3}, "", nil},
-		{"maintenance-cast-action", false, false, "Cast action to approve jeansoon as non fungible token provider address, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 3}, "", nil},
-
-		//add NFTs fee collector with maintenance. (nft-mostafa is whitelisted.)
-		{"maintenance", false, false, "4. Proposal, add NFTs fee collector address, Happy path. commit", "nft-maintainer-2", "0cin", 0, MaintenanceInfo{"add", "Add token fee collector", "Add mostafa as NFTs fee collector", "fee", "", "", "", FeeCollector{Module: "nonFungible", Address: "nft-mostafa"}, "nft-maintainer-2", ""}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as NFTs fee collector, Happy path. commit", "nft-maintainer-1", "0cin", 0, CastAction{"nft-maintainer-1", "approve", 4}, "", nil},
-		{"maintenance-cast-action", false, false, "(Approve)-Cast action to approve mostafa as NFTs fee collector, Happy path. commit", "nft-maintainer-3", "0cin", 0, CastAction{"nft-maintainer-3", "approve", 4}, "", nil},
-
-		//4. module : fee_test
-		{"fee", false, false, "assign zero-fee to mostafa-commit", "nft-fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "nft-mostafa", "", "", "", "", "nft-fee-auth"}, "", nil},
+		//4. refer module : fee_test
+		//case : assign zero-fee to nft-mostafa commit
 
 		// ============================================case-1.0 :  with ONE signer - HAPPY-PATH
 		//create-token
@@ -185,7 +170,7 @@ func makeMultisigTxsNFTs() []*testCase {
 		{"multiSig", true, true, "[case-2.0] Re-transfer MultiSig Owner - Error, due to Owner of group address invalid [MultiSig-account already been transfer to others].", "multisig-acc-nft-1", "100000000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-nft-1", "multisig-acc-nft-4", 0, nil, "nft-grp-addr-3", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil},
 
 		// signer without through KYC
-		{"multiSig", true, true, "Create MultiSig Account - Error, due to without KYC            ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"create", "multisig-nokyc", "", 2, []string{"multisig-acc-nft-1", "multisig-nokyc"}, "", 0, nil}, "", nil},
+		{"multiSig", true, true, "Create MultiSig Account for NFTs using nonkyc as signer - Error, due to without KYC            ", "multisig-nokyc", "800400000cin", 0, MultisigInfo{"create", "multisig-nokyc", "", 2, []string{"multisig-acc-nft-1", "multisig-nokyc"}, "", 0, nil}, "", nil},
 	}
 
 	return tcs
