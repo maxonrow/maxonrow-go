@@ -31,6 +31,9 @@ func makeNestedMultisigTxs() []*testCase {
 		{"bank", false, false, "grp-addr-n to mostafa2", "grp-addr-n:multisig-acc-1,multisig-acc-2,multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "2cin"}, "Nested multisig bank", nil},
 		{"bank", false, false, "grp-addr-n to mostafa3", "grp-addr-n:nested-acc-4,multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "2cin"}, "Nested multisig bank", nil},
 		{"bank", true, true, "grp-addr-n to mostafa4  ", "grp-addr-n:multisig-acc-1,multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "1cin"}, "Nested multisig bank", nil},
+		{"bank", true, true, "grp-addr-n to mostafa5  ", "grp-addr-n:multisig-acc-1,multisig-acc-2,multisig-acc-3,mostafa", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "1cin"}, "Nested multisig bank", nil},
+		{"bank", true, true, "grp-addr-n to mostafa6  ", "grp-addr-n:multisig-acc-1,multisig-acc-2,mostafa", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "1cin"}, "Nested multisig bank", nil},
+		{"bank", true, true, "grp-addr-n to mostafa6  ", "grp-addr-a:multisig-acc-1,multisig-acc-2,multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-n", "mostafa", "1cin"}, "Nested multisig bank", nil},
 	}
 
 	return tcs
