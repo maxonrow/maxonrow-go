@@ -65,6 +65,18 @@
         "sequence": "0"
       },
       {
+        "address": "mxw1ydvzacxj0ws9jadxkmdzamc897jmln5dd90fzh",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "100000000000000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": "0",
+        "sequence": "0"
+      },
+      {
         "address": "mxw1fd6659xn28vrtt6a60hlfcqkfmf2asu4vy4sd6",
         "coins": [
           {
@@ -90,6 +102,18 @@
       },
       {
         "address": "mxw1cntgdz7z8lm26xmzxkn2jcr9djx8rnhdf3dl7c",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "100000000000000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": "0",
+        "sequence": "0"
+      },
+      {
+        "address": "mxw12a25yu06j4dm4y64anu4jnxgg86xu03fupsv0d",
         "coins": [
           {
             "denom": "cin",
@@ -162,6 +186,18 @@
         "sequence": "0"
       },
       {
+        "address": "mxw1k0czpc8qkk0f2et2m45cajhplazdfnnyz2kp8f",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "100000000000000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": "0",
+        "sequence": "0"
+      },
+      {
         "address": "mxw1cjfaadhr0fypvs0ujuw87q0cxsq87496q92fxj",
         "coins": [
           {
@@ -212,6 +248,18 @@
       },
       {
         "address": "mxw14se693s36wrfakqtr4lvxnrpzy6qas9xzc2ck2",
+        "coins": [
+          {
+            "denom": "cin",
+            "amount": "1000000000000000000000"
+          }
+        ],
+        "public_key": null,
+        "account_number": "0",
+        "sequence": "0"
+      },
+      {
+        "address": "mxw1cnrsfxyp684mq8cuxa9gedls70796s5u2qarhp",
         "coins": [
           {
             "denom": "cin",
@@ -712,6 +760,7 @@
         "mxw1rjgjjkkjqtd676ydahysmnfsg0v4yvwfe9vmh0",
         "mxw127sn3dxpr6880tjlwfk7u007cway5my4lpjl4z",
         "mxw14se693s36wrfakqtr4lvxnrpzy6qas9xzc2ck2",
+        "mxw1cnrsfxyp684mq8cuxa9gedls70796s5u2qarhp",
         "mxw193cra94tl3uj9zcmx2x2j7vrc3y38z39469dqy",
         "mxw1f7j8n4dp6y3qxr4zcgth89elnerldj0jvlfn0w",
         "mxw1w0m8xqy0fpgkf6luwu666f5hhl3tm0sq53snw5",
@@ -1739,8 +1788,11 @@
         "mxw17yy9sn9lt8w5hfs60hs6nrzy47e3k32w5cs9cn",
         "mxw1n7x309jdpx7y0m0kq99agjjlart2zg4psrkuk6",
         "mxw1ld3stcsk5l8xjngw2ucuazux895rk2hxve69gr",
+        "mxw1ydvzacxj0ws9jadxkmdzamc897jmln5dd90fzh",
         "mxw1cntgdz7z8lm26xmzxkn2jcr9djx8rnhdf3dl7c",
-        "mxw1gh9hlcdevh94rrxj7gd3wtngjrhj50gkt9txvk"
+        "mxw12a25yu06j4dm4y64anu4jnxgg86xu03fupsv0d",
+        "mxw1gh9hlcdevh94rrxj7gd3wtngjrhj50gkt9txvk",
+        "mxw1k0czpc8qkk0f2et2m45cajhplazdfnnyz2kp8f"
       ]
     },
     "token": {

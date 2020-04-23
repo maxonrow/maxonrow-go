@@ -54,7 +54,11 @@ func makeMultisigTxs() []*testCase {
 	internalTx6 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "1cin"}, "tx6", nil}
 	internalTx7 := &testCase{"bank", false, false, "sending 1 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "yk", "1cin"}, "tx7", nil}
 
+	// Case-1. Broadcasting internal transaction failed : due to 'Insufficient fee amount' (Please ignore this error if found, as will resposibled by block-Scanner)
 	internalTx8 := &testCase{"bank", true, true, "sending 9990000000000 cin", "multisig-acc-2", "800400000cin", 0, bankInfo{"grp-addr-2", "gohck", "9990000000000cin"}, "tx6", nil} // 20200409
+
+	// testing 20200415:
+	internalTx9 := &testCase{"bank", false, false, "sending 3 cin", "multisig-acc-3", "800400000cin", 0, bankInfo{"grp-addr-2", "mostafa", "1cin"}, "tx9", nil}
 
 	tcs := []*testCase{
 
@@ -166,6 +170,34 @@ func makeMultisigTxs() []*testCase {
 		{"multiSig", false, false, "case-2.2-Create MultiSig Tx-2 - submit - Happy Path commit.                        ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 6, internalTx8}, "MEMO : Create MultiSig Tx", nil},
 		{"multiSig", false, false, "case-2.2-Sign MultiSig Tx-2 - submit which signed by multisig-acc-3 - commit.      ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 6, internalTx8}, "MEMO : Sign MultiSig Tx", nil},
 
+		// ====================start : case-2.1.1
+		//-- Using : 'MultiSig Account2' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3"}
+		// step-1. Create a Fund-transfer Tx [internalTx6] which signed (with captured signature) by 'multisig-acc-2'
+		// step-2. Create-multisig-Tx which requested (without captured this signature) by 'multisig-acc-3'
+		// step-3. Sign-multisig-Tx which signed (with captured signature) by 'multisig-acc-2', with Error on this.
+		// step-4. Sign-multisig-Tx which signed (with captured signature) by 'multisig-acc-3', Success on this.
+		{"multiSig", false, false, "case-2.1.1-Create MultiSig Tx-1 - submit request by multisig-acc-3 - Happy Path commit.												 ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 7, internalTx6}, "MEMO : Create MultiSig Tx", nil},
+		{"multiSig", true, true, "case-2.1.1-Sign MultiSig Tx-1 - signed by multisig-acc-2 - Error, due to Signer already signed this tx.      		 ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 7, internalTx6}, "MEMO : Sign MultiSig Tx", nil},
+		{"multiSig", false, false, "case-2.1.1-Sign MultiSig Tx-1	- signed by multisig-acc-3 - commit.      																			 ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 7, internalTx6}, "MEMO : Sign MultiSig Tx", nil},
+
+		// ====================start : case-2.1.2
+		//-- Using : 'MultiSig Account2' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3"}
+		// step-1. Create a Fund-transfer Tx [internalTx9] which signed (with captured signature) by 'multisig-acc-3'
+		// step-2. Create-multisig-Tx which requested (without captured this signature) by 'multisig-acc-2'
+		// step-3. Sign-multisig-Tx which signed (with captured signature) by 'multisig-acc-3', with Error on this.
+		// step-4. Sign-multisig-Tx which signed (with captured signature) by 'multisig-acc-2', Success on this.
+		{"multiSig", false, false, "case-2.1.2-Create MultiSig Tx-1 - submit request by multisig-acc-2 - Happy Path commit.												 ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 8, internalTx9}, "MEMO : Create MultiSig Tx", nil},
+		{"multiSig", true, true, "case-2.1.2-Sign MultiSig Tx-1 - signed by multisig-acc-3 - Error, due to Signer already signed this tx.      		 ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 8, internalTx9}, "MEMO : Sign MultiSig Tx", nil},
+		{"multiSig", false, false, "case-2.1.2-Sign MultiSig Tx-1	- signed by multisig-acc-2 - commit.      																			 ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 8, internalTx9}, "MEMO : Sign MultiSig Tx", nil},
+
+		// ====================start : case-2.1.3
+		//-- Using : 'MultiSig Account2' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3"}
+		// step-1. Create a Fund-transfer Tx [internalTx9] which signed (with captured signature) by 'multisig-acc-3'
+		// step-2. Create-multisig-Tx which requested (without captured this signature) by 'multisig-acc-3'
+		// step-4. Sign-multisig-Tx which signed (with captured signature) by 'multisig-acc-2', Success on this.
+		{"multiSig", false, false, "case-2.1.3-Create MultiSig Tx-1 - submit request by multisig-acc-3 - Happy Path commit.												 ", "multisig-acc-3", "800400000cin", 0, MultisigInfo{"create-internal-tx", "", "", 0, nil, "grp-addr-2", 9, internalTx9}, "MEMO : Create MultiSig Tx", nil},
+		{"multiSig", false, false, "case-2.1.3-Sign MultiSig Tx-1	- signed by multisig-acc-2 - commit.      																			 ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-sign-tx", "", "", 0, nil, "grp-addr-2", 9, internalTx9}, "MEMO : Sign MultiSig Tx", nil},
+
 		//Topic : transfer ownership
 		{"multiSig", true, true, "case-2-Transfer MultiSig Owner - Error, due to Group address invalid.                                                               ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-4", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 		{"multiSig", true, true, "case-2-Transfer MultiSig Owner - Error, due to Owner of group address invalid.                                                      ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-2", "multisig-acc-1", 0, nil, "grp-addr-2", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
@@ -174,9 +206,9 @@ func makeMultisigTxs() []*testCase {
 		{"multiSig", true, true, "case-2-Re-transfer MultiSig Owner - Error, due to Owner of group address invalid [MultiSig-account already been transfer to others].", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"transfer-ownership", "multisig-acc-1", "multisig-acc-2", 0, nil, "grp-addr-2", 0, nil}, "MEMO : Transfer MultiSig Owner.", nil}, // ok-20200317
 
 		//Topic : delete tx - after 'Sign MultiSig Tx'
-		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Group address invalid.                         ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-4", 3, internalTx5}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
-		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Only group account owner can remove pending tx.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-2", 3, internalTx5}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
-		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 9.        ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-2", 9, internalTx5}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
+		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Group address invalid.                         ", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-4", 3, internalTx5}, "MEMO : Delete MultiSig Tx", nil},   // ok-20200317
+		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to Only group account owner can remove pending tx.", "multisig-acc-1", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-1", "", 0, nil, "grp-addr-2", 3, internalTx5}, "MEMO : Delete MultiSig Tx", nil},   // ok-20200317
+		{"multiSig", true, true, "case-2-Delete MultiSig Tx - Error, due to 'Pending tx is not found' which ID : 91.        ", "multisig-acc-2", "800400000cin", 0, MultisigInfo{"multiSig-delete-tx", "multisig-acc-2", "", 0, nil, "grp-addr-2", 91, internalTx5}, "MEMO : Delete MultiSig Tx", nil}, // ok-20200317
 
 		//====================start : case-3
 		//-- Using : 'MultiSig Account3' which owner=="multisig-acc-1", signer-list == {"multisig-acc-2", "multisig-acc-3", "multisig-acc-4"}
