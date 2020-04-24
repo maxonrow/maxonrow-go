@@ -1,4 +1,49 @@
+# Version 1.2.1
+- Adding non fungible token module
+- Adding fungible token module
+- Multi-signature account
+- NFT endorsment and endorsment list
+- NFT transfer limit
+- MltiSig: Removing pending Tx after broadcasting
+- NFT: Item owner only can transffer item
+- NFT: Public token (if it is public, user only can mint to themselves for nft item)
+- NFT: adding metadata and properties to the item
+- NFT: Check mutibility for metadata and properties
+- NFT: transfer limit and mint limit checks
+- NFT: REJECT-TOKEN and REJECT-TRANSFER-OWNERSHIP
+- Multisig: Broadcasting Internal transaction after approval
+- MultiSig: check group account is it exist, validate internal transaction message.
+- MultiSig: Delete pending Tx
+- MultiSig: Signer without KYC
+- Checking NFT-item metadata and properties length. Bug #31
+- Signature verification without public key
+- Multisig account with one signer. Bug #35
+- Non-fungible token item can be retransffered. Bug #59
+- re-mint nft token Bug #60
+- Multisig re-submission a Tx. Bug #77
+- Created unique address for multisig account upon creation
+- Broadcasting internal transaction when rpc is disabled
+- Craeting two multisig txs at the same time, Approve the second before the first
+- Check token validity before processing tx.
+- Fee for message types.
+- Application fee should be deducted at ante handler.
+- Fee multiplier.
+- Alias letters and characters issue.
+- Kyc bind/unbind
+- RPC methods for debugging and query fees
+- RPC methods for getting accont status
+- mxwcli new features
+- mxwcli keyring
+- mxwcli enable to add key from mnemonic
+- mxwcli generating multisig account address from sequence and owner address
+- Updating tests
+
 # Version 1.0.0
+- Launching Mainnet
+- Updating version
+
+# Version 1.0.0
+- Launching mainnet
 - Updating version
 
 # Version 0.7.4
