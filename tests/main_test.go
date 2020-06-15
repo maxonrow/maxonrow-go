@@ -123,7 +123,7 @@ func TestMain(m *testing.M) {
 
 	proc.Stop(true)
 
-	// waiting for gallactic to exit
+	// waiting for maxonrow to exit
 	proc.Wait()
 	<-done
 
