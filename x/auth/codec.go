@@ -30,7 +30,7 @@ func init() {
 	codec.RegisterCrypto(msgCdc)
 
 	bank.RegisterCodec(msgCdc)
-	fungible.RegisterCodec(cdc)
+	fungible.RegisterCodec(msgCdc)
 	nonFungible.RegisterCodec(msgCdc)
 	//fee.RegisterCodec(cdc)
 	//maintenance.RegisterCodec(cdc)
