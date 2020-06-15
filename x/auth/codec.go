@@ -5,6 +5,7 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 	bank "github.com/maxonrow/maxonrow-go/x/bank"
+	"github.com/maxonrow/maxonrow-go/x/token/fungible"
 	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 )
 
@@ -29,7 +30,7 @@ func init() {
 	codec.RegisterCrypto(msgCdc)
 
 	bank.RegisterCodec(msgCdc)
-	//fungible.RegisterCodec(cdc)
+	fungible.RegisterCodec(msgCdc)
 	nonFungible.RegisterCodec(msgCdc)
 	//fee.RegisterCodec(cdc)
 	//maintenance.RegisterCodec(cdc)
