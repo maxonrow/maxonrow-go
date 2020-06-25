@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
@@ -174,6 +175,20 @@ func (app *mxwApp) Account(ctx *rpctypes.Context, str string) (string, error) {
 	out, err := app.cdc.MarshalJSON(acc)
 	if err != nil {
 		return "", err
+	}
+
+	// Fixing bug #103
+	if acc.GetPubKey() != nil {
+		old, err := sdkTypes.Bech32ifyAccPub(acc.GetPubKey())
+		if err != nil {
+			return "", err
+		}
+		bz, _ := app.cdc.MarshalJSON(acc.GetPubKey())
+		new := string(bz)
+
+		json := string(out)
+
+		out = []byte(strings.Replace(json, "\""+old+"\"", new, 1))
 	}
 
 	return string(out), nil
