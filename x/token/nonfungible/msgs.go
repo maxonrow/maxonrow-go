@@ -81,7 +81,7 @@ func (msg MsgCreateNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
-
+	
 	return nil
 }
 

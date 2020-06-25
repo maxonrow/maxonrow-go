@@ -10,9 +10,9 @@ import (
 
 const (
 	// TODO TODO - calculate exactly
-	MetadataMaxLength    = 60
+	MetadataMaxLength    = 256
 	TokenNameMaxLength   = 100
-	TokenSymbolMaxLength = 100
+	TokenSymbolMaxLength = 40
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {
@@ -57,5 +57,12 @@ func validateAmount(amount string) sdkTypes.Error {
 		return sdkTypes.ErrInvalidCoins(fmt.Sprintf("Invalid amount string: %s", err))
 	}
 
+	return nil
+}
+
+func validateDecimal(decimal int) sdkTypes.Error {
+	if decimal < 0 || decimal > 18 {
+		return sdkTypes.ErrInternal("Invalid decimal")
+	}
 	return nil
 }
