@@ -46,9 +46,9 @@ func TestTxs(t *testing.T) {
 	tcs = append(tcs, makeNonFungibleTokenTxs()...)
 	tcs = append(tcs, makeFungibleTokenTxs()...)
 	tcs = append(tcs, makeNameservicesTxs()...)
-	tcs = append(tcs, makeMultisigTxs()...)
-	tcs = append(tcs, makeMultisigTxsNFTs()...)
-	// tcs = append(tcs, makeMultisigTxsFTs()...)
+	//tcs = append(tcs, makeMultisigTxs()...)
+	//tcs = append(tcs, makeMultisigTxsNFTs()...)
+	//tcs = append(tcs, makeMultisigTxsFTs()...)
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
 	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
