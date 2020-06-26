@@ -164,7 +164,7 @@ func (app *mxwApp) EncodeAndBroadcastTxCommit(ctx *rpctypes.Context, js string) 
 	return rpc.BroadcastTxCommit(ctx, txByte)
 }
 
-func (app *mxwApp) Account(ctx *rpctypes.Context, str string) (string, error) {
+func (app *mxwApp) Account(ctx *rpctypes.Context, str string, cdc bool) (string, error) {
 	addr, err := sdkTypes.AccAddressFromBech32(str)
 	if err != nil {
 		return "", err
@@ -178,7 +178,7 @@ func (app *mxwApp) Account(ctx *rpctypes.Context, str string) (string, error) {
 	}
 
 	// Fixing bug #103
-	if acc.GetPubKey() != nil {
+	if acc != nil && acc.GetPubKey() != nil && cdc == false {
 		old, err := sdkTypes.Bech32ifyAccPub(acc.GetPubKey())
 		if err != nil {
 			return "", err
