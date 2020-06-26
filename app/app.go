@@ -241,7 +241,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	)
 
 	app.Router().
-		AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
+		//AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
@@ -262,8 +262,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("token", fungible.NewQuerier(app.cdc, &app.tokenKeeper, &app.feeKeeper)).
 		AddRoute("nonFungible", nonFungible.NewQuerier(app.cdc, &app.nonFungibleTokenKeeper, &app.feeKeeper)).
 		AddRoute("fee", fee.NewQuerier(app.cdc, &app.feeKeeper)).
-		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper)).
-		AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
+		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper))
+		//AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
 
 	app.router = app.Router()
 	app.MountStores(
@@ -304,8 +304,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	// We need to customized it
 	rpccore.Routes["debug/fee_info"] = rpc.NewRPCFunc(app.FeeInfo, "")
 	rpccore.Routes["debug/kyc_info"] = rpc.NewRPCFunc(app.KYCInfo, "")
-	rpccore.Routes["debug/fungible_token_list"] = rpc.NewRPCFunc(app.FungibleTokenList, "")
-	rpccore.Routes["debug/non_fungible_token_list"] = rpc.NewRPCFunc(app.NonFungibleTokenList, "")
+	//rpccore.Routes["debug/fungible_token_list"] = rpc.NewRPCFunc(app.FungibleTokenList, "")
+	//rpccore.Routes["debug/non_fungible_token_list"] = rpc.NewRPCFunc(app.NonFungibleTokenList, "")
 
 	delete(rpccore.Routes, "genesis")
 

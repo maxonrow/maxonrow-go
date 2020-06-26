@@ -91,6 +91,10 @@ func (msg MsgCreateFungibleToken) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrUnknownRequest("Cannot have max supply 0 for fixed supply token")
 	}
 
+	if err := validateDecimal(msg.Decimals); err != nil {
+		return err
+	}
+
 	return nil
 }
 

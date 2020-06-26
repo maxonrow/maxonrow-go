@@ -12,7 +12,7 @@ const (
 	// TODO TODO - calculate exactly
 	MaxLength            = 256
 	TokenNameMaxLength   = 100
-	TokenSymbolMaxLength = 100
+	TokenSymbolMaxLength = 40
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {

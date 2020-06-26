@@ -1,3 +1,12 @@
+# Version 1.3.0
+- Disable multisig module
+- Account query fix #103
+- nft multisig test done
+- enable codec for fungible and nonfungible token in multisig.
+- symbol length change to 40
+- added validation for decimal in ft (token decimal not allow to be 0 or greater than 18)
+- disable rpc end point for listing token and nonfungible token 
+
 # Version 1.2.1
 - Adding non fungible token module
 - Adding fungible token module
