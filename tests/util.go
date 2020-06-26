@@ -243,7 +243,7 @@ func AccSequence(addr string) uint64 {
 
 func Account(addr string) *sdkAuth.BaseAccount {
 	var bz string
-	_, err := tClient.Call("account", map[string]interface{}{"address": addr, "cdc": true}, &bz)
+	_, err := tClient.Call("account_cdc", map[string]interface{}{"address": addr}, &bz)
 	if err == nil {
 		acc := new(sdkAuth.BaseAccount)
 		cdc := app.MakeDefaultCodec()
