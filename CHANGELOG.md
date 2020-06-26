@@ -6,6 +6,8 @@
 - symbol length change to 40
 - added validation for decimal in ft (token decimal not allow to be 0 or greater than 18)
 - disable rpc end point for listing token and nonfungible token 
+- added another rpc for test (AccountCdc)
+- remove cdc from querry account end point (Account)
 
 # Version 1.2.1
 - Adding non fungible token module

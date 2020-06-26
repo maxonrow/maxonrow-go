@@ -164,7 +164,7 @@ func (app *mxwApp) EncodeAndBroadcastTxCommit(ctx *rpctypes.Context, js string) 
 	return rpc.BroadcastTxCommit(ctx, txByte)
 }
 
-func (app *mxwApp) Account(ctx *rpctypes.Context, str string, cdc bool) (string, error) {
+func (app *mxwApp) Account(ctx *rpctypes.Context, str string) (string, error) {
 	addr, err := sdkTypes.AccAddressFromBech32(str)
 	if err != nil {
 		return "", err
@@ -178,7 +178,7 @@ func (app *mxwApp) Account(ctx *rpctypes.Context, str string, cdc bool) (string,
 	}
 
 	// Fixing bug #103
-	if acc != nil && acc.GetPubKey() != nil && cdc == false {
+	if acc != nil && acc.GetPubKey() != nil {
 		old, err := sdkTypes.Bech32ifyAccPub(acc.GetPubKey())
 		if err != nil {
 			return "", err
@@ -191,6 +191,21 @@ func (app *mxwApp) Account(ctx *rpctypes.Context, str string, cdc bool) (string,
 		out = []byte(strings.Replace(json, "\""+old+"\"", new, 1))
 	}
 
+	return string(out), nil
+}
+
+func (app *mxwApp) AccountCdc(ctx *rpctypes.Context, str string) (string, error) {
+	addr, err := sdkTypes.AccAddressFromBech32(str)
+	if err != nil {
+		return "", err
+	}
+	appCtx := app.NewContext(true, abci.Header{})
+	acc := utils.GetAccount(appCtx, app.accountKeeper, addr)
+
+	out, err := app.cdc.MarshalJSON(acc)
+	if err != nil {
+		return "", err
+	}
 	return string(out), nil
 }
 
