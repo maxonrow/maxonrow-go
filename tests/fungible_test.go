@@ -38,6 +38,13 @@ func makeFungibleTokenTxs() []*testCase {
 
 		// Create Fungible Token
 		{"token", false, false, "Create token - Happy Path", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "TT", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Create token - Empty Symbol", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Create token - Empty Name", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "", "TT", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Create token - Negative application fee", "acc-40", "100000000cin", 0, TokenInfo{"create", "-0.000000000008", "mostafa", "TestToken", "TTTTTT1", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Create token - Negative application fee", "acc-40", "100000000cin", 0, TokenInfo{"create", "-123.4567", "mostafa", "TestToken", "TTTTTT1", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", false, false, "Creat e token - Existed Token Name", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "TTV2", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Create token - 19 decimal places", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "TTV3", 19, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", false, false, "Create token - 0 decimal places", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "TTV3", 0, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Create token - Not fee collector", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "acc-20", "TestToken", "TT", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Create token - Creating symbol that has been created", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "TT", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Create token - Generous person pay for system fees", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken", "ToT", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
@@ -130,7 +137,6 @@ func makeFungibleTokenTxs() []*testCase {
 		{"token", false, false, "Create token - Use fixed supply with memo", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-2", "TT-2", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "1234567890", nil},
 		{"token", false, false, "Approve token - Happy path for TT-2", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "", "TT-2", 0, "", "", "", true, "", true, false, true, "100000", "token-prov-1", "0", "token-issuer-1", "zero", ""}, "", nil},
 		{"token", false, true, "Mint token - Not allow to mint if was Fixed Supply", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-2", 8, "acc-40", "carlo", "", true, "100", true, false, true, "100000", "", "", "", "", ""}, "", nil},
-
 		{"token", false, false, "Transfer fixed supply token - Happy path", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-2", 8, "acc-40", "eve", "", false, "", true, false, false, "0", "", "", "", "", ""}, "", nil},
 
 		{"token", true, true, "Burn token - Token not existed", "acc-40", "100000000cin", 0, TokenInfo{"burn", "", "", "", "TT-3", 0, "acc-40", "carlo", "", true, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
