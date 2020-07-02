@@ -890,3 +890,32 @@ func (k *Keeper) IsVerifyableTransferTokenOwnership(ctx sdkTypes.Context, symbol
 
 	return false
 }
+
+func (k *Keeper) GetFungibleTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
+	store := ctx.KVStore(k.key)
+	key := getTokenKey(symbol)
+
+	tokenData := store.Get(key)
+	if tokenData == nil {
+		return false
+	}
+
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(tokenData, target)
+
+	return true
+}
+
+func (k *Keeper) GetFungibleAccountData(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress) *FungibleTokenAccount {
+	key := getFungibleAccountKey(symbol, owner)
+
+	store := ctx.KVStore(k.key)
+	value := store.Get(key)
+	if len(value) == 0 {
+		return nil
+	}
+
+	var account = new(FungibleTokenAccount)
+	k.cdc.MustUnmarshalBinaryLengthPrefixed(value, account)
+
+	return account
+}
