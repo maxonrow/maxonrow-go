@@ -69,7 +69,7 @@
 * 0xa22424dec59cde1b4447efe16fccb342cc244411 - `FrozenFungibleTokenAccount(string,string)`  
 `(symbol: string, owner: string)`  
 
-* 0x9e9401fefbbf3e293218d8222fdfedb23cc7f476 - `UnfreezeFungibleTokenAccount(string,string)`
+* 0x9e9401fefbbf3e293218d8222fdfedb23cc7f476 - `UnfreezeFungibleTokenAccount(string,string)`  
 `(symbol: string, owner: string)`  
 
 # NonFungible Token
