@@ -181,12 +181,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		var fungibleToken = new(fungible.Token)
-		if app.tokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken) {
-			fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
-			if !fungibleToken.MaxSupply.IsZero() {
-				if fungibleToken.TotalSupply.GT(fungibleToken.MaxSupply) {
-					return types.ErrInvalidTokenSupply()
-				}
+		app.tokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
+		if !fungibleToken.MaxSupply.IsZero() {
+			if fungibleToken.TotalSupply.GT(fungibleToken.MaxSupply) {
+				return types.ErrInvalidTokenSupply()
 			}
 		}
 
@@ -204,7 +203,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		var account = new(fungible.FungibleTokenAccount)
-		account = app.tokenKeeper.GetFungibleAccountData(ctx, msg.Symbol, msg.From)
+		account = app.tokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
 		if account.Balance.LT(msg.Value) {
 			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
 		}
