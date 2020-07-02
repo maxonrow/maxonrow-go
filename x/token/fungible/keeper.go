@@ -379,6 +379,9 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 
 	k.storeToken(ctx, symbol, token)
 
+	// Get the token account again.
+	account = k.getFungibleAccount(ctx, symbol, token.Owner)
+
 	var transferEvents sdkTypes.Events
 	if !account.Balance.IsZero() {
 		// Event: After approve, added total supply into token owner account.
