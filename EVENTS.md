@@ -23,7 +23,7 @@
 `(from: string, to: string, kycAddress: string)`  
 
 # Nameservice(alias)
-* 0x3e39f456518778478674f842ddd7d2c0f8523466 - `RejectedAlias(string,string)` 
+* 0x3e39f456518778478674f842ddd7d2c0f8523466 - `RejectedAlias(string,string)`  
 `(alias: string, owner: string)`  
   
 * 0x83E489EF72309ACC291D6DA10864E73EFD0F486E - `RevokedAlias(string,string)`  
@@ -32,7 +32,7 @@
 * 0xdc152a0041a73ffbee055be6a7f477275604277b - `CreatedAlias(string,string,string,bignumber)`  
 `(alias: string, from: string, feeTo: string, value: bignumber)`  
 
-* 0x19563da5167518d666cc48872e6465787f4bdc36 - `ApprovedAlias(string,string)`
+* 0x19563da5167518d666cc48872e6465787f4bdc36 - `ApprovedAlias(string,string)`  
 `(alias: string, owner: string)`  
 
 # Fungible Token
