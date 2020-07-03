@@ -10,7 +10,7 @@ import (
 func (k *Keeper) MintFungibleToken(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, to sdkTypes.AccAddress, value sdkTypes.Uint) sdkTypes.Result {
 
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -88,7 +88,7 @@ func (k *Keeper) MintFungibleToken(ctx sdkTypes.Context, symbol string, from sdk
 //* TransferFungibleToken
 func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from, to sdkTypes.AccAddress, value sdkTypes.Uint) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
 	}
 
@@ -149,7 +149,7 @@ func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from
 // BurnFungibleToken
 func (k *Keeper) BurnFungibleToken(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, value sdkTypes.Uint) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 

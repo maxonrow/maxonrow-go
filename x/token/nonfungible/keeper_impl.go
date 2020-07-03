@@ -9,7 +9,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 
 	nonFungibleToken := new(Token)
 
-	if exists := k.GetTokenDataInfo(ctx, symbol, nonFungibleToken); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, nonFungibleToken); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 
@@ -81,7 +81,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 	}
 
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrTokenInvalid().Result()
 	}
 
@@ -148,7 +148,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 // BurnFungibleToken
 func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return types.ErrInvalidTokenSymbol(symbol).Result()
 	}
 

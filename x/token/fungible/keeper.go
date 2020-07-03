@@ -538,7 +538,7 @@ func (k *Keeper) unfreezeFungibleToken(ctx sdkTypes.Context, symbol string, sign
 // FreezeFungibleTokenAccount
 func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, tokenAccount sdkTypes.AccAddress, metadata string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such fungible token.").Result()
 	}
 
@@ -588,7 +588,7 @@ func (k *Keeper) UnfreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol strin
 	}
 
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such fungible token.").Result()
 	}
 
@@ -695,7 +695,7 @@ func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol strin
 	}
 }
 
-func (k *Keeper) GetTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
+func (k *Keeper) GetFungibleTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
 
@@ -758,7 +758,7 @@ func (k *Keeper) getAnyAccount(ctx sdkTypes.Context, symbol string, owner sdkTyp
 }
 
 func (k *Keeper) mustGetTokenData(ctx sdkTypes.Context, symbol string, target interface{}) sdkTypes.Error {
-	if exists := k.GetTokenDataInfo(ctx, symbol, target); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, target); !exists {
 		return types.ErrInvalidTokenSymbol(symbol)
 	}
 	return nil

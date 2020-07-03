@@ -181,7 +181,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		var fungibleToken = new(fungible.Token)
-		app.tokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		app.tokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
 		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
 		if !fungibleToken.MaxSupply.IsZero() {
 			if fungibleToken.TotalSupply.GT(fungibleToken.MaxSupply) {
@@ -370,7 +370,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		//1. checking: (flag of Public equals to TRUE)
 		var token = new(nonFungible.Token)
-		app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if token.Flags.HasFlag(0x0080) {
 			ownerAcc := msg.Owner
 			newOwnerAcc := msg.To
