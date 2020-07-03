@@ -18,9 +18,9 @@ import (
 	tmtypes "github.com/tendermint/tendermint/types"
 
 	multiStore "github.com/cosmos/cosmos-sdk/store/types"
-	dbm "github.com/tendermint/tm-db"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/fee"
+	dbm "github.com/tendermint/tm-db"
 )
 
 // Due to how the framework is set, most of the basic input validation is in the Validate() methods
@@ -605,7 +605,7 @@ func TestApproveToken(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -1201,7 +1201,7 @@ func TestTransferFungibleToken(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -1419,7 +1419,7 @@ func TestMintFungibleToken(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -1632,7 +1632,7 @@ func TestBurnFungibleToken(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -1848,7 +1848,7 @@ func TestTransferTokenOwnership(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -2066,7 +2066,7 @@ func TestAcceptTokenOwnership(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -2288,7 +2288,7 @@ func TestFreezeFungibleTokenAccount(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
@@ -2495,7 +2495,7 @@ func TestUnfreezeFungibleTokenAccount(t *testing.T) {
 					t.Fatalf("Expected approval metada %s. Got %s", testCase.Metadata, fungibleToken.Metadata)
 				}
 
-				account := keeper.getFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
+				account := keeper.GetFungibleAccount(ctx, testCase.Symbol, testCase.Owner)
 				if account == nil {
 					t.Fatal("After approval issuer account does not exist")
 				}
