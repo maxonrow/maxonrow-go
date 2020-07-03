@@ -385,9 +385,9 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 	var transferEvents sdkTypes.Events
 	if !account.Balance.IsZero() {
 		// Event: After approve, added total supply into token owner account.
-		transferEventParam := []string{symbol, "mxw000000000000000000000000000000000000000", ownerWalletAccount.GetAddress().String(), token.TotalSupply.String()}
+		transferEventParam := []string{symbol, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", ownerWalletAccount.GetAddress().String(), token.TotalSupply.String()}
 		transferEventSignature := "TransferredFungibleToken(string,string,string,bignumber)"
-		transferEvents = types.MakeMxwEvents(transferEventSignature, "mxw000000000000000000000000000000000000000", transferEventParam)
+		transferEvents = types.MakeMxwEvents(transferEventSignature, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", transferEventParam)
 	}
 	// Event: Approved fungible token
 	eventParam := []string{symbol, token.Owner.String()}

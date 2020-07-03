@@ -73,7 +73,7 @@ func (k *Keeper) MintFungibleToken(ctx sdkTypes.Context, symbol string, from sdk
 
 	k.storeToken(ctx, symbol, token)
 
-	eventParam := []string{symbol, "mxw000000000000000000000000000000000000000", to.String(), value.String()}
+	eventParam := []string{symbol, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", to.String(), value.String()}
 	eventSignature := "MintedFungibleToken(string,string,string,bignumber)"
 
 	accountSequence := minterAccount.GetSequence()
@@ -191,7 +191,7 @@ func (k *Keeper) BurnFungibleToken(ctx sdkTypes.Context, symbol string, owner sd
 		return subFungibleTokenErr.Result()
 	}
 
-	eventParam := []string{symbol, owner.String(), "mxw000000000000000000000000000000000000000", value.String()}
+	eventParam := []string{symbol, owner.String(), "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", value.String()}
 	eventSignature := "BurnedFungibleToken(string,string,string,bignumber)"
 
 	accountSequence := ownerAccount.GetSequence()
