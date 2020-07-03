@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	"github.com/maxonrow/maxonrow-go/types"
@@ -177,12 +179,33 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
+
+		var fungibleToken = new(fungible.Token)
+		app.tokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
+		if !fungibleToken.MaxSupply.IsZero() {
+			if fungibleToken.TotalSupply.GT(fungibleToken.MaxSupply) {
+				return types.ErrInvalidTokenSupply()
+			}
+		}
+
+		// (FixedSupply-FungibleToken) MintFlag - types.Bitmask = 0x0002
+		if !fungibleToken.Flags.HasFlag(0x0002) {
+			return types.ErrInvalidTokenAction()
+		}
+
 	case fungible.MsgBurnFungibleToken:
 		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 		if app.tokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
+		}
+
+		var account = new(fungible.FungibleTokenAccount)
+		account = app.tokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
+		if account.Balance.LT(msg.Value) {
+			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
@@ -347,7 +370,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		//1. checking: (flag of Public equals to TRUE)
 		var token = new(nonFungible.Token)
-		app.nonFungibleTokenKeeper.GetTokenDataInfo(ctx, msg.Symbol, token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if token.Flags.HasFlag(0x0080) {
 			ownerAcc := msg.Owner
 			newOwnerAcc := msg.To

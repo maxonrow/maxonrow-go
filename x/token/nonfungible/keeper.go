@@ -503,7 +503,7 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 // FreezeNonFungibleItem
 func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner, itemOwner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
 	}
 
@@ -557,7 +557,7 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 	}
 
 	var token = new(Token)
-	if exists := k.GetTokenDataInfo(ctx, symbol, token); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
 	}
 
@@ -668,7 +668,7 @@ func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol strin
 	}
 }
 
-func (k *Keeper) GetTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
+func (k *Keeper) GetNonfungibleTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
 
@@ -758,7 +758,7 @@ func (k *Keeper) getAnyItem(ctx sdkTypes.Context, symbol string, itemID string) 
 }
 
 func (k *Keeper) mustGetTokenData(ctx sdkTypes.Context, symbol string, target interface{}) sdkTypes.Error {
-	if exists := k.GetTokenDataInfo(ctx, symbol, target); !exists {
+	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, target); !exists {
 		return types.ErrInvalidTokenSymbol(symbol)
 	}
 	return nil
@@ -906,7 +906,7 @@ func (k *Keeper) IsItemIDUnique(ctx sdkTypes.Context, symbol string, itemID stri
 
 func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser sdkTypes.AccAddress) bool {
 	token := new(Token)
-	k.GetTokenDataInfo(ctx, symbol, token)
+	k.GetNonfungibleTokenDataInfo(ctx, symbol, token)
 
 	var endorsers types.AddressHolder
 
