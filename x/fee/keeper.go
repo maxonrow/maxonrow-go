@@ -22,9 +22,9 @@ type FeeSetting struct {
 }
 
 const (
-	TransferFungibleToken  = "transfer"
-	MintFungibleToken      = "mint"
-	BurnFungibleToken      = "burn"
+	TransferToken          = "transfer"
+	MintToken              = "mint"
+	BurnToken              = "burn"
 	TransferTokenOwnership = "transferOwnership"
 	AcceptTokenOwnership   = "acceptOwnership"
 )
@@ -39,7 +39,7 @@ var prefixMultiplier = []byte("0x50")
 var prefixTokenMultiplier = []byte("0x51")
 
 // Token Actions
-var tokenActions = []string{TransferFungibleToken, MintFungibleToken, BurnFungibleToken, TransferTokenOwnership, AcceptTokenOwnership}
+var tokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership}
 
 // keys
 func getAuthorisedKey() []byte {
