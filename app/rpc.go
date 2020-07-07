@@ -318,7 +318,7 @@ func parseJSON(in string) []byte {
 
 func (app *mxwApp) FungibleTokenList(ctx *rpctypes.Context) (FungibleTokenListInfo, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-	lst := app.tokenKeeper.ListTokens(appCtx)
+	lst := app.fungibleTokenKeeper.ListTokens(appCtx)
 	var i FungibleTokenListInfo
 	i.Count = len(lst)
 	i.Tokens = lst
