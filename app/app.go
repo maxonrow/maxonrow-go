@@ -81,7 +81,7 @@ type mxwApp struct {
 	paramsKeeper           sdkParams.Keeper
 	nsKeeper               nameservice.Keeper
 	kycKeeper              kyc.Keeper
-	tokenKeeper            fungible.Keeper
+	fungibleTokenKeeper    fungible.Keeper
 	nonFungibleTokenKeeper nonFungible.Keeper
 	feeKeeper              fee.Keeper
 	maintenanceKeeper      maintenance.Keeper
@@ -213,7 +213,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		app.ModuleAccountAddrs(maccPerms),
 	)
 
-	app.tokenKeeper = fungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
+	app.fungibleTokenKeeper = fungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
 	app.nonFungibleTokenKeeper = nonFungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
 	app.feeKeeper = fee.NewKeeper(cdc, app.keyFee)
 	app.kycKeeper = kyc.NewKeeper(cdc, &app.accountKeeper, app.KeyKyc, app.KeyKycData)
@@ -247,7 +247,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
 		AddRoute("nameservice", nameservice.NewHandler(app.nsKeeper)).
 		AddRoute("kyc", kyc.NewHandler(&app.kycKeeper)).
-		AddRoute("token", fungible.NewHandler(&app.tokenKeeper)).
+		AddRoute("token", fungible.NewHandler(&app.fungibleTokenKeeper)).
 		AddRoute("nonFungible", nonFungible.NewHandler(&app.nonFungibleTokenKeeper)).
 		AddRoute("fee", fee.NewHandler(&app.feeKeeper)).
 		AddRoute("maintenance", maintenance.NewHandler(&app.maintenanceKeeper, &app.accountKeeper))
@@ -259,7 +259,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("distribution", sdkDist.NewQuerier(app.distrKeeper)).
 		AddRoute("nameservice", nameservice.NewQuerier(app.cdc, app.nsKeeper, app.feeKeeper)).
 		AddRoute("kyc", kyc.NewQuerier(&app.kycKeeper, &app.feeKeeper)).
-		AddRoute("token", fungible.NewQuerier(app.cdc, &app.tokenKeeper, &app.feeKeeper)).
+		AddRoute("token", fungible.NewQuerier(app.cdc, &app.fungibleTokenKeeper, &app.feeKeeper)).
 		AddRoute("nonFungible", nonFungible.NewQuerier(app.cdc, &app.nonFungibleTokenKeeper, &app.feeKeeper)).
 		AddRoute("fee", fee.NewQuerier(app.cdc, &app.feeKeeper)).
 		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper))
@@ -345,7 +345,7 @@ func (app *mxwApp) initChainer(ctx sdkTypes.Context, req abci.RequestInitChain) 
 
 	sdkDist.InitGenesis(ctx, app.distrKeeper, app.supplyKeeper, genesisState.DistrState)
 	kyc.InitGenesis(ctx, &app.kycKeeper, genesisState.KycState)
-	fungible.InitGenesis(ctx, &app.tokenKeeper, genesisState.TokenState)
+	fungible.InitGenesis(ctx, &app.fungibleTokenKeeper, genesisState.TokenState)
 	nameservice.InitGenesis(ctx, app.nsKeeper, genesisState.NameServiceState)
 	fee.InitGenesis(ctx, &app.feeKeeper, genesisState.FeeState)
 	maintenance.InitGenesis(ctx, &app.maintenanceKeeper, genesisState.MaintenanceState)
@@ -416,7 +416,7 @@ func (app *mxwApp) ExportStateAndValidators() (json.RawMessage, []tm.GenesisVali
 	StakingState := sdkStaking.ExportGenesis(ctx, app.stakingKeeper)
 	distrState := sdkDist.ExportGenesis(ctx, app.distrKeeper)
 	kycState := kyc.ExportGenesis(&app.kycKeeper)
-	tokenState := fungible.ExportGenesis(&app.tokenKeeper)
+	tokenState := fungible.ExportGenesis(&app.fungibleTokenKeeper)
 	feeState := fee.ExportGenesis(&app.feeKeeper)
 	nameServiceState := nameservice.ExportGenesis(&app.nsKeeper)
 	maintenanceState := maintenance.ExportGenesis(ctx, &app.maintenanceKeeper)

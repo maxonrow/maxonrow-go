@@ -261,7 +261,7 @@ func (app *mxwApp) executeTokenProposal(ctx sdkTypes.Context, tokenMaintainer ma
 					return sdkTypes.ErrInternal("Address has to be whitelisted.")
 				}
 			}
-			app.tokenKeeper.SetAuthorisedAddresses(ctx, tokenMaintainer.AuthorisedAddresses)
+			app.fungibleTokenKeeper.SetAuthorisedAddresses(ctx, tokenMaintainer.AuthorisedAddresses)
 		}
 		if tokenMaintainer.IssuerAddresses[0] != nil {
 			for _, issuerAddress := range tokenMaintainer.IssuerAddresses {
@@ -269,7 +269,7 @@ func (app *mxwApp) executeTokenProposal(ctx sdkTypes.Context, tokenMaintainer ma
 					return sdkTypes.ErrInternal("Address has to be whitelisted.")
 				}
 			}
-			app.tokenKeeper.SetIssuerAddresses(ctx, tokenMaintainer.IssuerAddresses)
+			app.fungibleTokenKeeper.SetIssuerAddresses(ctx, tokenMaintainer.IssuerAddresses)
 
 		}
 		if tokenMaintainer.ProviderAddresses[0] != nil {
@@ -278,34 +278,34 @@ func (app *mxwApp) executeTokenProposal(ctx sdkTypes.Context, tokenMaintainer ma
 					return sdkTypes.ErrInternal("Address has to be whitelisted.")
 				}
 			}
-			app.tokenKeeper.SetProviderAddresses(ctx, tokenMaintainer.ProviderAddresses)
+			app.fungibleTokenKeeper.SetProviderAddresses(ctx, tokenMaintainer.ProviderAddresses)
 
 		}
 	case maintenance.REMOVE:
 
 		if tokenMaintainer.AuthorisedAddresses[0] != nil {
 			for _, authorisedAddress := range tokenMaintainer.AuthorisedAddresses {
-				if !app.tokenKeeper.IsAuthorised(ctx, authorisedAddress) {
+				if !app.fungibleTokenKeeper.IsAuthorised(ctx, authorisedAddress) {
 					return sdkTypes.ErrInternal("Address is not an authorised address.")
 				}
 			}
-			app.tokenKeeper.RemoveAuthorisedAddresses(ctx, tokenMaintainer.AuthorisedAddresses)
+			app.fungibleTokenKeeper.RemoveAuthorisedAddresses(ctx, tokenMaintainer.AuthorisedAddresses)
 		}
 		if tokenMaintainer.IssuerAddresses[0] != nil {
 			for _, issuerAddress := range tokenMaintainer.IssuerAddresses {
-				if !app.tokenKeeper.IsIssuer(ctx, issuerAddress) {
+				if !app.fungibleTokenKeeper.IsIssuer(ctx, issuerAddress) {
 					return sdkTypes.ErrInternal("Address is not an issuer.")
 				}
 			}
-			app.tokenKeeper.RemoveIssuerAddresses(ctx, tokenMaintainer.IssuerAddresses)
+			app.fungibleTokenKeeper.RemoveIssuerAddresses(ctx, tokenMaintainer.IssuerAddresses)
 
 		}
 		if tokenMaintainer.ProviderAddresses[0] != nil {
 			for _, providerAddress := range tokenMaintainer.ProviderAddresses {
-				if !app.tokenKeeper.IsProvider(ctx, providerAddress) {
+				if !app.fungibleTokenKeeper.IsProvider(ctx, providerAddress) {
 					return sdkTypes.ErrInternal("Address is not a provider.")
 				}
-				app.tokenKeeper.RemoveProviderAddresses(ctx, tokenMaintainer.ProviderAddresses)
+				app.fungibleTokenKeeper.RemoveProviderAddresses(ctx, tokenMaintainer.ProviderAddresses)
 			}
 
 		}
