@@ -43,6 +43,8 @@ func NewHandler(keeper *Keeper) sdkTypes.Handler {
 			return handleMsgUpdateItemMetadata(ctx, keeper, msg)
 		case MsgUpdateNFTMetadata:
 			return handleMsgUpdateNFTMetadata(ctx, keeper, msg)
+		case MsgUpdateEndorserList:
+			return handleMsgUpdateEndorserList(ctx, keeper, msg)
 		default:
 			errMsg := fmt.Sprintf("Unrecognized fungible token Msg type: %v", msg.Type())
 			return sdkTypes.ErrUnknownRequest(errMsg).Result()
@@ -139,4 +141,8 @@ func handleMsgUpdateItemMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUp
 
 func handleMsgUpdateNFTMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateNFTMetadata) sdkTypes.Result {
 	return keeper.UpdateNFTMetadata(ctx, msg.Symbol, msg.From, msg.Metadata)
+}
+
+func handleMsgUpdateEndorserList(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateEndorserList) sdkTypes.Result {
+	return keeper.UpdateNFTEndorserList(ctx, msg.Symbol, msg.From, msg.Endorsers)
 }

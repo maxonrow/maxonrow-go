@@ -18,6 +18,7 @@ const (
 	MsgTypeEndorsement                       = "endorsement"
 	MsgTypeUpdateItemMetadata                = "updateItemMetadata"
 	MsgTypeUpdateNFTMetadata                 = "updateNFTMetadata"
+	MsgTypeUpdateEndorserList                = "updateEndorserList"
 )
 
 // MsgCreateNonFungibleToken
@@ -81,7 +82,7 @@ func (msg MsgCreateNonFungibleToken) ValidateBasic() sdkTypes.Error {
 	if err := ValidateSymbol(msg.Symbol); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -674,6 +675,52 @@ func (msg MsgUpdateNFTMetadata) GetSignBytes() []byte {
 }
 
 func (msg MsgUpdateNFTMetadata) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.From}
+}
+
+type MsgUpdateEndorserList struct {
+	Symbol    string                `json:"symbol"`
+	From      sdkTypes.AccAddress   `json:"from"`
+	Endorsers []sdkTypes.AccAddress `json:"endorsers"`
+}
+
+func NewMsgUpdateEndorserList(symbol string, from sdkTypes.AccAddress, endorsers []sdkTypes.AccAddress) *MsgUpdateEndorserList {
+	return &MsgUpdateEndorserList{
+		Symbol:    symbol,
+		From:      from,
+		Endorsers: endorsers,
+	}
+}
+
+func (msg MsgUpdateEndorserList) Route() string {
+	return MsgRoute
+}
+
+func (msg MsgUpdateEndorserList) Type() string {
+	return MsgTypeUpdateEndorserList
+}
+
+func (msg MsgUpdateEndorserList) ValidateBasic() sdkTypes.Error {
+	if msg.From.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.From.String())
+	}
+
+	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if len(msg.Endorsers) <= 0 {
+		return sdkTypes.ErrInternal("Endorsers cannot be empty.")
+	}
+
+	return nil
+}
+
+func (msg MsgUpdateEndorserList) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgUpdateEndorserList) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.From}
 }
 

@@ -22,11 +22,12 @@ type FeeSetting struct {
 }
 
 const (
-	TransferFungibleToken  = "transfer"
-	MintFungibleToken      = "mint"
-	BurnFungibleToken      = "burn"
+	TransferToken          = "transfer"
+	MintToken              = "mint"
+	BurnToken              = "burn"
 	TransferTokenOwnership = "transferOwnership"
 	AcceptTokenOwnership   = "acceptOwnership"
+	Endorse                = "endorse"
 )
 
 var prefixAuthorised = []byte("0x01")
@@ -36,10 +37,12 @@ var prefixMsgFeeSetting = []byte("0x04")
 var prefixAccFeeSetting = []byte("0x05")
 var prefixTokenFeeSetting = []byte("0x06")
 var prefixMultiplier = []byte("0x50")
-var prefixTokenMultiplier = []byte("0x51")
+var prefixFungibleTokenMultiplier = []byte("0x51")
+var prefixNonFungibleTokenMultiplier = []byte("0x52")
 
 // Token Actions
-var tokenActions = []string{TransferFungibleToken, MintFungibleToken, BurnFungibleToken, TransferTokenOwnership, AcceptTokenOwnership}
+var fungibleTokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership}
+var nonFungibleTokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership, Endorse}
 
 // keys
 func getAuthorisedKey() []byte {
@@ -62,8 +65,13 @@ func getAccFeeSettingKey(acc sdkTypes.AccAddress) []byte {
 	return append(prefixAccFeeSetting, acc.Bytes()...)
 }
 
-func getTokenFeeSettingKey(symbol, action string) []byte {
-	tokenAction := symbol + ":" + action
+func getFungibleTokenFeeSettingKey(symbol, action string) []byte {
+	tokenAction := "ft:" + symbol + ":" + action
+	return append(prefixTokenFeeSetting, []byte(tokenAction)...)
+}
+
+func getNonFungibleTokenFeeSettingKey(symbol, action string) []byte {
+	tokenAction := "nft:" + symbol + ":" + action
 	return append(prefixTokenFeeSetting, []byte(tokenAction)...)
 }
 
@@ -71,8 +79,12 @@ func getFeeMultiplierKey() []byte {
 	return prefixMultiplier
 }
 
-func getTokenFeeMultiplierKey() []byte {
-	return prefixTokenMultiplier
+func getFungibleTokenFeeMultiplierKey() []byte {
+	return prefixFungibleTokenMultiplier
+}
+
+func getNonFungibleTokenFeeMultiplierKey() []byte {
+	return prefixNonFungibleTokenMultiplier
 }
 
 func NewKeeper(cdc *codec.Codec, key sdkTypes.StoreKey) Keeper {
@@ -297,25 +309,47 @@ func (k *Keeper) AssignFeeToAcc(
 	}
 }
 
-func (k *Keeper) AssignFeeToToken(
+func (k *Keeper) AssignFeeToFungibleToken(
 	ctx sdkTypes.Context,
-	msgAssignFeeToToken MsgAssignFeeToToken,
+	msgAssignFeeToFungibleToken MsgAssignFeeToFungibleToken,
 ) sdkTypes.Result {
 
-	if !k.IsAuthorised(ctx, msgAssignFeeToToken.Issuer) {
+	if !k.IsAuthorised(ctx, msgAssignFeeToFungibleToken.Issuer) {
 		return sdkTypes.ErrUnknownRequest("Not authorised to create msg fee setting.").Result()
 	}
 
-	err := k.AssignFeeToTokenAction(ctx, msgAssignFeeToToken.FeeName, msgAssignFeeToToken.Symbol, msgAssignFeeToToken.Action)
+	err := k.AssignFeeToFungibleTokenAction(ctx, msgAssignFeeToFungibleToken.FeeName, msgAssignFeeToFungibleToken.Symbol, msgAssignFeeToFungibleToken.Action)
 	if err != nil {
 		return err.Result()
 	}
 
-	eventParam := []string{msgAssignFeeToToken.GetSigners()[0].String(), msgAssignFeeToToken.Symbol}
-	eventSignature := "CreatedTokenFeeSetting(string,string)"
+	eventParam := []string{msgAssignFeeToFungibleToken.GetSigners()[0].String(), msgAssignFeeToFungibleToken.Symbol}
+	eventSignature := "CreatedFungibleTokenFeeSetting(string,string)"
 
 	return sdkTypes.Result{
-		Events: types.MakeMxwEvents(eventSignature, msgAssignFeeToToken.GetSigners()[0].String(), eventParam),
+		Events: types.MakeMxwEvents(eventSignature, msgAssignFeeToFungibleToken.GetSigners()[0].String(), eventParam),
+	}
+}
+
+func (k *Keeper) AssignFeeToNonFungibleToken(
+	ctx sdkTypes.Context,
+	msgAssignFeeToNonFungibleToken MsgAssignFeeToNonFungibleToken,
+) sdkTypes.Result {
+
+	if !k.IsAuthorised(ctx, msgAssignFeeToNonFungibleToken.Issuer) {
+		return sdkTypes.ErrUnknownRequest("Not authorised to create msg fee setting.").Result()
+	}
+
+	err := k.AssignFeeToNonFungibleTokenAction(ctx, msgAssignFeeToNonFungibleToken.FeeName, msgAssignFeeToNonFungibleToken.Symbol, msgAssignFeeToNonFungibleToken.Action)
+	if err != nil {
+		return err.Result()
+	}
+
+	eventParam := []string{msgAssignFeeToNonFungibleToken.GetSigners()[0].String(), msgAssignFeeToNonFungibleToken.Symbol}
+	eventSignature := "CreatedFungibleTokenFeeSetting(string,string)"
+
+	return sdkTypes.Result{
+		Events: types.MakeMxwEvents(eventSignature, msgAssignFeeToNonFungibleToken.GetSigners()[0].String(), eventParam),
 	}
 }
 
@@ -338,22 +372,41 @@ func (k *Keeper) CreateMultiplier(
 	}
 }
 
-func (k *Keeper) CreateTokenMultiplier(
+func (k *Keeper) CreateFungibleTokenMultiplier(
 	ctx sdkTypes.Context,
-	msgTokenMultiplier MsgTokenMultiplier,
+	msgTokenMultiplier MsgFungibleTokenMultiplier,
 ) sdkTypes.Result {
 
 	if !k.IsAuthorised(ctx, msgTokenMultiplier.Issuer) {
 		return sdkTypes.ErrUnknownRequest("Not authorised to create msg fee setting.").Result()
 	}
 
-	k.storeTokenFeeMultiplier(ctx, msgTokenMultiplier.Multiplier)
+	k.storeFungibleTokenFeeMultiplier(ctx, msgTokenMultiplier.FtMultiplier)
 
 	eventParam := []string{msgTokenMultiplier.GetSigners()[0].String()}
-	eventSignature := "CreatedTokenFeeMultiplier(string)"
+	eventSignature := "CreatedFungibleTokenFeeMultiplier(string)"
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, msgTokenMultiplier.GetSigners()[0].String(), eventParam),
+	}
+}
+
+func (k *Keeper) CreateNonFungibleTokenMultiplier(
+	ctx sdkTypes.Context,
+	msgNonFungibleTokenMultiplier MsgNonFungibleTokenMultiplier,
+) sdkTypes.Result {
+
+	if !k.IsAuthorised(ctx, msgNonFungibleTokenMultiplier.Issuer) {
+		return sdkTypes.ErrUnknownRequest("Not authorised to create msg fee setting.").Result()
+	}
+
+	k.storeNonFungibleTokenFeeMultiplier(ctx, msgNonFungibleTokenMultiplier.NftMultiplier)
+
+	eventParam := []string{msgNonFungibleTokenMultiplier.GetSigners()[0].String()}
+	eventSignature := "CreatedNonFungibleTokenFeeMultiplier(string)"
+
+	return sdkTypes.Result{
+		Events: types.MakeMxwEvents(eventSignature, msgNonFungibleTokenMultiplier.GetSigners()[0].String(), eventParam),
 	}
 }
 
@@ -371,18 +424,36 @@ func (k *Keeper) assignFeeToAcc(ctx sdkTypes.Context, msg MsgAssignFeeToAcc) {
 	store.Set(key, []byte(msg.FeeName))
 }
 
-func (k *Keeper) AssignFeeToTokenAction(ctx sdkTypes.Context, feeName, symbol, action string) sdkTypes.Error {
+func (k *Keeper) AssignFeeToFungibleTokenAction(ctx sdkTypes.Context, feeName, symbol, action string) sdkTypes.Error {
 	if !k.FeeSettingExists(ctx, feeName) {
 		return types.ErrFeeSettingNotExists(feeName)
 	}
 
-	ok := ContainAction(action)
+	ok := ContainFungibleAction(action)
 	if !ok {
 		return sdkTypes.ErrUnknownRequest("Token action is not recognize.")
 	}
 
 	store := ctx.KVStore(k.key)
-	key := getTokenFeeSettingKey(symbol, action)
+	key := getFungibleTokenFeeSettingKey(symbol, action)
+
+	store.Set(key, []byte(feeName))
+
+	return nil
+}
+
+func (k *Keeper) AssignFeeToNonFungibleTokenAction(ctx sdkTypes.Context, feeName, symbol, action string) sdkTypes.Error {
+	if !k.FeeSettingExists(ctx, feeName) {
+		return types.ErrFeeSettingNotExists(feeName)
+	}
+
+	ok := ContainNonFungibleAction(action)
+	if !ok {
+		return sdkTypes.ErrUnknownRequest("Token action is not recognize.")
+	}
+
+	store := ctx.KVStore(k.key)
+	key := getNonFungibleTokenFeeSettingKey(symbol, action)
 
 	store.Set(key, []byte(feeName))
 
@@ -397,10 +468,18 @@ func (k *Keeper) storeFeeMultiplier(ctx sdkTypes.Context, multiplier string) {
 	store.Set(keyMsgMultiplier, []byte(multiplier))
 }
 
-// Token Fee multiplier
-func (k *Keeper) storeTokenFeeMultiplier(ctx sdkTypes.Context, multiplier string) {
+//Fungible Token Fee multiplier
+func (k *Keeper) storeFungibleTokenFeeMultiplier(ctx sdkTypes.Context, multiplier string) {
 	store := ctx.KVStore(k.key)
-	keyMsgTokenMultiplier := getTokenFeeMultiplierKey()
+	keyMsgTokenMultiplier := getFungibleTokenFeeMultiplierKey()
+
+	store.Set(keyMsgTokenMultiplier, []byte(multiplier))
+}
+
+//NonFungible Token Fee multiplier
+func (k *Keeper) storeNonFungibleTokenFeeMultiplier(ctx sdkTypes.Context, multiplier string) {
+	store := ctx.KVStore(k.key)
+	keyMsgTokenMultiplier := getNonFungibleTokenFeeMultiplierKey()
 
 	store.Set(keyMsgTokenMultiplier, []byte(multiplier))
 }
@@ -439,10 +518,27 @@ func (k *Keeper) GetAccFeeSetting(ctx sdkTypes.Context, acc sdkTypes.AccAddress)
 	return nil, nil
 }
 
-func (k *Keeper) GetTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol, action string) (*FeeSetting, sdkTypes.Error) {
+func (k *Keeper) GetFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol, action string) (*FeeSetting, sdkTypes.Error) {
 	store := ctx.KVStore(k.key)
 
-	keyTokenFeeSetting := getTokenFeeSettingKey(tokenSymbol, action)
+	keyTokenFeeSetting := getFungibleTokenFeeSettingKey(tokenSymbol, action)
+	feeName := store.Get(keyTokenFeeSetting)
+	if feeName == nil {
+		return nil, types.ErrTokenFeeSettingNotExists(tokenSymbol)
+	}
+
+	feeSetting, err := k.GetFeeSettingByName(ctx, string(feeName))
+	if err != nil {
+		return nil, err
+	}
+
+	return feeSetting, nil
+}
+
+func (k *Keeper) GetNonFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol, action string) (*FeeSetting, sdkTypes.Error) {
+	store := ctx.KVStore(k.key)
+
+	keyTokenFeeSetting := getNonFungibleTokenFeeSettingKey(tokenSymbol, action)
 	feeName := store.Get(keyTokenFeeSetting)
 	if feeName == nil {
 		return nil, types.ErrTokenFeeSettingNotExists(tokenSymbol)
@@ -469,10 +565,23 @@ func (k *Keeper) GetFeeMultiplier(ctx sdkTypes.Context) (string, sdkTypes.Error)
 	return string(multiplier), nil
 }
 
-func (k *Keeper) GetTokenFeeMultiplier(ctx sdkTypes.Context) (string, sdkTypes.Error) {
+func (k *Keeper) GetFungibleTokenFeeMultiplier(ctx sdkTypes.Context) (string, sdkTypes.Error) {
 
 	store := ctx.KVStore(k.key)
-	key := getTokenFeeMultiplierKey()
+	key := getFungibleTokenFeeMultiplierKey()
+	multiplier := store.Get(key)
+
+	if multiplier == nil {
+		return string(multiplier), sdkTypes.ErrUnknownRequest(fmt.Sprintf("No token fee multiplier found"))
+	}
+
+	return string(multiplier), nil
+}
+
+func (k *Keeper) GetNonFungibleTokenFeeMultiplier(ctx sdkTypes.Context) (string, sdkTypes.Error) {
+
+	store := ctx.KVStore(k.key)
+	key := getNonFungibleTokenFeeMultiplierKey()
 	multiplier := store.Get(key)
 
 	if multiplier == nil {
@@ -635,8 +744,17 @@ func (k *Keeper) IsFeeSettingUsed(ctx sdkTypes.Context, feeName string) bool {
 	return false
 }
 
-func ContainAction(tokenAction string) bool {
-	for _, action := range tokenActions {
+func ContainFungibleAction(tokenAction string) bool {
+	for _, action := range fungibleTokenActions {
+		if tokenAction == action {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainNonFungibleAction(tokenAction string) bool {
+	for _, action := range nonFungibleTokenActions {
 		if tokenAction == action {
 			return true
 		}

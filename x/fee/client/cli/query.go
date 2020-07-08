@@ -61,10 +61,10 @@ func GetMsgFeeSetting(cdc *codec.Codec) *cobra.Command {
 
 }
 
-func GetTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
+func GetFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "token [token-symbol] [action]",
-		Short: "get fee setting by token symbol and action",
+		Use:   "fungible-token [token-symbol] [action]",
+		Short: "get fee setting by fungible-token symbol and action",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -72,7 +72,33 @@ func GetTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 			symbol := args[0]
 			action := args[1]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s/%s", "fee", fee.QueryTokenFeeSetting, symbol, action), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s/%s", "fee", fee.QueryFungibleTokenFeeSetting, symbol, action), nil)
+			if err != nil {
+				fmt.Printf("Could not get token fee setting: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func GetNonFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nonFungible-token [token-symbol] [action]",
+		Short: "get fee setting by nonFungible-token symbol and action",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			symbol := args[0]
+			action := args[1]
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s/%s", "fee", fee.QueryNonFungibleTokenFeeSetting, symbol, action), nil)
 			if err != nil {
 				fmt.Printf("Could not get token fee setting: %s\n", err)
 				return nil
@@ -135,17 +161,40 @@ func GetFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func GetTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
+func GetFungibleTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "token-fee-multiplier",
-		Short: "get token fee multiplier",
+		Use:   "fungible-token-fee-multiplier",
+		Short: "get fungible token fee multiplier",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", "fee", fee.QueryTokenFeeMultiplier), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", "fee", fee.QueryFungibleTokenFeeMultiplier), nil)
 			if err != nil {
-				fmt.Printf("Could not get token fee multiplier: %s\n", err)
+				fmt.Printf("Could not get fungible-token fee multiplier: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
+
+func GetNonFungibleTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nonFungible-token-fee-multiplier",
+		Short: "get nonFungible token fee multiplier",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", "fee", fee.QueryNonFungibleTokenFeeMultiplier), nil)
+			if err != nil {
+				fmt.Printf("Could not get nonFungible-token fee multiplier: %s\n", err)
 				return nil
 			}
 
