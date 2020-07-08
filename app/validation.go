@@ -108,7 +108,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 					return types.ErrFeeSettingNotExists(val.FeeName)
 				}
 
-				if !fee.ContainAction(val.Action) {
+				if !fee.ContainFungibleAction(val.Action) {
 					return types.ErrInvalidTokenAction()
 				}
 			}
@@ -266,7 +266,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 					return types.ErrFeeSettingNotExists(val.FeeName)
 				}
 
-				if !fee.ContainAction(val.Action) {
+				if !fee.ContainNonFungibleAction(val.Action) {
 					return types.ErrInvalidTokenAction()
 				}
 			}
@@ -460,6 +460,22 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
 			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
 		}
+	case nonFungible.MsgUpdateEndorserList:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+			return types.ErrTokenInvalid()
+		}
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+		if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
+			return types.ErrInvalidTokenOwner()
+		}
+		for _, v := range msg.Endorsers {
+			if !app.kycKeeper.IsWhitelisted(ctx, v) {
+				return types.ErrUnauthorisedEndorser()
+			}
+		}
+
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {
 			return sdkTypes.ErrUnauthorized("Not authorised to submit proposal.")

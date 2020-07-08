@@ -49,15 +49,16 @@ type NonFungibleTokenListInfo struct {
 }
 
 type FeeInfo struct {
-	Authorizers        []sdkTypes.AccAddress
-	Multiplier         string
-	TokenMultiplier    string
-	TokenFeeCollectors []sdkTypes.AccAddress
-	AliasFeeCollectors []sdkTypes.AccAddress
-	FeeSettings        []fee.FeeSetting
-	AccountFeeSettings map[string]string
-	MsgFeeSettings     map[string]string
-	TokenFeeSetting    map[string]string
+	Authorizers                []sdkTypes.AccAddress
+	Multiplier                 string
+	FungibleTokenMultiplier    string
+	NonFungibleTokenMultiplier string
+	TokenFeeCollectors         []sdkTypes.AccAddress
+	AliasFeeCollectors         []sdkTypes.AccAddress
+	FeeSettings                []fee.FeeSetting
+	AccountFeeSettings         map[string]string
+	MsgFeeSettings             map[string]string
+	TokenFeeSetting            map[string]string
 }
 
 type KYCInfo struct {
@@ -245,7 +246,8 @@ func (app *mxwApp) FeeInfo(ctx *rpctypes.Context) (FeeInfo, error) {
 	var i FeeInfo
 	i.Authorizers = app.feeKeeper.GetAuthorisedAddresses(appCtx)
 	i.Multiplier, _ = app.feeKeeper.GetFeeMultiplier(appCtx)
-	i.TokenMultiplier, _ = app.feeKeeper.GetTokenFeeMultiplier(appCtx)
+	i.FungibleTokenMultiplier, _ = app.feeKeeper.GetFungibleTokenFeeMultiplier(appCtx)
+	i.NonFungibleTokenMultiplier, _ = app.feeKeeper.GetNonFungibleTokenFeeMultiplier(appCtx)
 	i.TokenFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "token")
 	i.AliasFeeCollectors = app.feeKeeper.GetFeeCollectorAddresses(appCtx, "alias")
 	i.FeeSettings = app.feeKeeper.ListAllSysFeeSetting(appCtx)

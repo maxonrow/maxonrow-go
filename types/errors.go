@@ -26,6 +26,7 @@ const (
 	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2108
 	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2109
 	CodeTokenItemNotFound                  sdkTypes.CodeType = 2110
+	CodeUnauthorisedEndorser               sdkTypes.CodeType = 2111
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -148,4 +149,8 @@ func ErrTokenItemNotModifiable() sdkTypes.Error {
 
 func ErrTokenItemNotFound() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemNotFound, "Token item not found.")
+}
+
+func ErrUnauthorisedEndorser() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeUnauthorisedEndorser, "Endorser is not whitelisted.")
 }

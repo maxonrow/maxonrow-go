@@ -216,10 +216,10 @@ func CreateMsgAssignFeeToMsg(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func SetTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
+func SetFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "token [token-symbol] [action]",
-		Short: "Assign a fee setting to a token(fungible/ nonfungible)",
+		Use:   "fungible-token [token-symbol] [action]",
+		Short: "Assign a fee setting to a fungible token",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -255,7 +255,60 @@ func SetTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("Token action is not valid.")
 			}
 
-			msg := fee.NewMsgAssignFeeToToken(name, tokenSymbol, tokenAction, issuer)
+			msg := fee.NewMsgAssignFeeToFungibleToken(name, tokenSymbol, tokenAction, issuer)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdkTypes.Msg{msg})
+		},
+	}
+
+	cmd.Flags().String("name", "default", "Fee setting name")
+
+	return cmd
+}
+
+func SetNonFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nonFungible-token [token-symbol] [action]",
+		Short: "Assign a fee setting to a nonFungible token",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			tokenSymbol := args[0]
+			tokenAction := args[1]
+
+			issuer := cliCtx.GetFromAddress()
+			name := viper.GetString("name")
+
+			bz, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_fee_setting_exist/%s", name), nil)
+			if err != nil {
+				return err
+			}
+			if string(bz) == "false" {
+				return fmt.Errorf("Fee setting name is not exist.")
+			}
+
+			tokenData, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nonFungible/token_data/%s", tokenSymbol), nil)
+			if tokenData == nil {
+				return fmt.Errorf("No such token symbol.")
+			}
+
+			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_token_action_valid/%s", tokenAction), nil)
+			if err != nil {
+				return err
+			}
+
+			if string(isValid) == "false" {
+				return fmt.Errorf("Token action is not valid.")
+			}
+
+			msg := fee.NewMsgAssignFeeToNonFungibleToken(name, tokenSymbol, tokenAction, issuer)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}
@@ -370,10 +423,10 @@ func CreateFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 	return cmd
 }
 
-func CreateTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
+func CreateFungibleTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "token-fee-multiplier [multiplier]",
-		Short: "Set/update token fee multiplier",
+		Use:   "fungible-token-fee-multiplier [multiplier]",
+		Short: "Set/update fungible-token fee multiplier",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
@@ -385,7 +438,34 @@ func CreateTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 
 			issuer := cliCtx.GetFromAddress()
 
-			msg := fee.NewMsgTokenMultiplier(multiplier, issuer)
+			msg := fee.NewMsgFungibleTokenMultiplier(multiplier, issuer)
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return utils.CompleteAndBroadcastTxCLI(txBldr, cliCtx, []sdkTypes.Msg{msg})
+		},
+	}
+
+	return cmd
+}
+
+func CreateNonFungibleTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nonFungible-token-fee-multiplier [multiplier]",
+		Short: "Set/update nonFungible-token fee multiplier",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
+
+			multiplier := args[0]
+
+			issuer := cliCtx.GetFromAddress()
+
+			msg := fee.NewMsgNonFungibleTokenMultiplier(multiplier, issuer)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
 			}

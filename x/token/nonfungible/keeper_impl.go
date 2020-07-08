@@ -434,6 +434,48 @@ func (k *Keeper) UpdateNFTMetadata(ctx sdkTypes.Context, symbol string, from sdk
 	}
 }
 
+func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, endorsers []sdkTypes.AccAddress) sdkTypes.Result {
+
+	// validation of exisisting owner account
+	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
+	if ownerWalletAccount == nil {
+		return types.ErrInvalidTokenOwner().Result()
+	}
+
+	var token = new(Token)
+
+	err := k.mustGetTokenData(ctx, symbol, token)
+	if err != nil {
+		return err.Result()
+	}
+
+	if token.Flags.HasFlag(FrozenFlag) {
+		return types.ErrTokenFrozen().Result()
+	}
+
+	if !token.Owner.Equals(from) {
+		return types.ErrInvalidTokenOwner().Result()
+	}
+
+	if !token.Flags.HasFlag(ApprovedFlag) {
+		return types.ErrTokenInvalid().Result()
+	}
+
+	token.EndorserList = endorsers
+	k.storeToken(ctx, symbol, token)
+
+	accountSequence := ownerWalletAccount.GetSequence()
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
+
+	eventParam := []string{symbol, from.String()}
+	eventSignature := "UpdatedNonFungibleTokenEndorserList(string,string)"
+
+	return sdkTypes.Result{
+		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
+		Log:    resultLog.String(),
+	}
+}
+
 func (k *Keeper) IsTokenOwnershipAcceptable(ctx sdkTypes.Context, symbol string) bool {
 
 	var token = new(Token)

@@ -330,7 +330,7 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 		if !k.feeKeeper.FeeSettingExists(ctx, tokenFee.FeeName) {
 			return types.ErrFeeSettingNotExists(tokenFee.FeeName).Result()
 		}
-		err := k.feeKeeper.AssignFeeToTokenAction(ctx, tokenFee.FeeName, token.Symbol, tokenFee.Action)
+		err := k.feeKeeper.AssignFeeToNonFungibleTokenAction(ctx, tokenFee.FeeName, token.Symbol, tokenFee.Action)
 		if err != nil {
 			return err.Result()
 		}

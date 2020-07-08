@@ -69,11 +69,13 @@ func makeFeeTxs() []*testCase {
 		{"fee", false, false, "assign zero-fee to mostafa-commit", "nft-fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "nft-mostafa", "", "", "", "", "nft-fee-auth"}, "", nil},
 
 		//=============================================start : used by fungible token modules
-		//set fee fore msgTokenMultiplier to fee 0cin
-		{"fee", false, false, "assign msgTokenMultiplier to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "fee-updateTokenMultiplier", "", "", "", "", "fee-auth"}, "", nil},
+		//set fee fore msgFungibleTokenMultiplier to fee 0cin
+		{"fee", false, false, "assign msgFungibleTokenMultiplier to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "fee-updateFungibleTokenMultiplier", "", "", "", "", "fee-auth"}, "", nil},
+		{"fee", false, false, "assign msgNonFungibleTokenMultiplier to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "fee-updateNonFungibleTokenMultiplier", "", "", "", "", "fee-auth"}, "", nil},
 
 		//add token fee multiplier
-		{"fee", false, false, "create token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},
+		{"fee", false, false, "create fungible token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"fungible-token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},
+		{"fee", false, false, "create nonFungible token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"nonFungible-token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},
 	}
 
 	return tcs
@@ -95,8 +97,11 @@ func makeFeeMsg(t *testing.T, function, name, assignee, multiplier, _min, _max, 
 		msg = fee.NewMsgAssignFeeToAcc(name, tKeys[assignee].addr, tKeys[issuer].addr)
 	case "multiplier":
 		msg = fee.NewMsgMultiplier(multiplier, tKeys[issuer].addr)
-	case "token-fee-multiplier":
-		msg = fee.NewMsgTokenMultiplier(multiplier, tKeys[issuer].addr)
+	case "fungible-token-fee-multiplier":
+		msg = fee.NewMsgFungibleTokenMultiplier(multiplier, tKeys[issuer].addr)
+	case "nonFungible-token-fee-multiplier":
+		msg = fee.NewMsgNonFungibleTokenMultiplier(multiplier, tKeys[issuer].addr)
 	}
+
 	return msg
 }
