@@ -14,6 +14,8 @@
 - added function for updating nft endorser list
 - update rpc endpoint for debug/fee_info to display nft and ft multiplier
 - fee with token action (nft/ft) will return default fee if not found
+- added query nonfungible fee collectors
+- added test case to create default action fees for token(ft nft) actions
 
 # Version 1.2.1
 - Adding non fungible token module
