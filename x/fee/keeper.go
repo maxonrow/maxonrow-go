@@ -524,7 +524,8 @@ func (k *Keeper) GetFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol, a
 	keyTokenFeeSetting := getFungibleTokenFeeSettingKey(tokenSymbol, action)
 	feeName := store.Get(keyTokenFeeSetting)
 	if feeName == nil {
-		return nil, types.ErrTokenFeeSettingNotExists(tokenSymbol)
+		ctx.Logger().Debug("No such tx fee setting. Try to get default fee setting.", "ft:symbol: ", "action: ", tokenSymbol, action)
+		feeName = []byte("default")
 	}
 
 	feeSetting, err := k.GetFeeSettingByName(ctx, string(feeName))
@@ -541,7 +542,8 @@ func (k *Keeper) GetNonFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol
 	keyTokenFeeSetting := getNonFungibleTokenFeeSettingKey(tokenSymbol, action)
 	feeName := store.Get(keyTokenFeeSetting)
 	if feeName == nil {
-		return nil, types.ErrTokenFeeSettingNotExists(tokenSymbol)
+		ctx.Logger().Debug("No such tx fee setting. Try to get default fee setting.", "nft:symbol: ", "action: ", tokenSymbol, action)
+		feeName = []byte("default")
 	}
 
 	feeSetting, err := k.GetFeeSettingByName(ctx, string(feeName))
