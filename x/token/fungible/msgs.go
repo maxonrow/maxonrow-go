@@ -87,8 +87,15 @@ func (msg MsgCreateFungibleToken) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
-	if msg.FixedSupply && msg.MaxSupply.IsZero() {
-		return sdkTypes.ErrUnknownRequest("Cannot have max supply 0 for fixed supply token")
+	zero := sdkTypes.NewUintFromString("0")
+	if msg.FixedSupply {
+		if msg.MaxSupply.IsZero() || msg.MaxSupply.LTE(zero) {
+			return sdkTypes.ErrUnknownRequest("Cannot have max supply 0 or less than 0 for fixed supply token")
+		}
+	} else {
+		if msg.MaxSupply.LT(zero) {
+			return sdkTypes.ErrUnknownRequest("Cannot have max supply less than 0 for dynamic supply token")
+		}
 	}
 
 	if err := validateDecimal(msg.Decimals); err != nil {
