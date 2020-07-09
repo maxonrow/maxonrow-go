@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	// TODO TODO - calculate exactly
 	MetadataMaxLength    = 256
 	TokenNameMaxLength   = 100
 	TokenSymbolMaxLength = 40
@@ -17,7 +16,6 @@ const (
 
 func validateTokenName(tokenName string) sdkTypes.Error {
 	if len(tokenName) == 0 || len(tokenName) > TokenNameMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token name field length: %d", len(tokenName)))
 	}
@@ -31,7 +29,6 @@ func validateTokenName(tokenName string) sdkTypes.Error {
 
 func validateSymbol(symbol string) sdkTypes.Error {
 	if len(symbol) == 0 || len(symbol) > TokenSymbolMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token symbol field length: %d", len(symbol)))
 	}

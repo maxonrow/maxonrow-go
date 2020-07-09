@@ -519,6 +519,10 @@ func makeApproveNonFungibleTokenMsg(t *testing.T, signer string, provider string
 			Action:  "acceptOwnership",
 			FeeName: feeSettingName,
 		},
+		{
+			Action:  "endorse",
+			FeeName: feeSettingName,
+		},
 	}
 
 	mintL := sdkTypes.NewUintFromString(mintLimit)

@@ -86,18 +86,18 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInvalidAddress("Fee collector invalid.")
 		}
 
-		if app.tokenKeeper.TokenExists(ctx, msg.Symbol) {
+		if app.fungibleTokenKeeper.TokenExists(ctx, msg.Symbol) {
 			return types.ErrTokenExists(msg.Symbol)
 		}
 	case fungible.MsgSetFungibleTokenStatus:
 		// TO-DO: revisit
-		if !app.tokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
+		if !app.fungibleTokenKeeper.IsAuthorised(ctx, msg.GetSigners()[0]) {
 			return sdkTypes.ErrUnauthorized("Not authorised to approve.")
 		}
-		if !app.tokenKeeper.TokenExists(ctx, msg.Payload.Token.Symbol) {
+		if !app.fungibleTokenKeeper.TokenExists(ctx, msg.Payload.Token.Symbol) {
 			return types.ErrInvalidTokenSymbol(msg.Payload.Token.Symbol)
 		}
-		err := app.tokenKeeper.ValidateSignatures(ctx, msg)
+		err := app.fungibleTokenKeeper.ValidateSignatures(ctx, msg)
 		if err != nil {
 			return err
 		}
@@ -108,80 +108,80 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 					return types.ErrFeeSettingNotExists(val.FeeName)
 				}
 
-				if !fee.ContainAction(val.Action) {
+				if !fee.ContainFungibleAction(val.Action) {
 					return types.ErrInvalidTokenAction()
 				}
 			}
 
-			if app.tokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
+			if app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenAlreadyApproved(msg.Payload.Token.Symbol)
 			}
 		}
 		if msg.Payload.Token.Status == fungible.FreezeToken {
-			if app.tokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
+			if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenFrozen()
 			}
-			if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
+			if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenInvalid()
 			}
 		}
 		if msg.Payload.Token.Status == fungible.UnfreezeToken {
-			if !app.tokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
+			if !app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenUnFrozen()
 			}
 		}
 
 		if msg.Payload.Token.Status == fungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == fungible.RejectTransferTokenOwnership {
-			if !app.tokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
+			if !app.fungibleTokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenTransferTokenOwnershipInvalid()
 			}
 		}
 	case fungible.MsgSetFungibleTokenAccountStatus:
 		if msg.TokenAccountPayload.TokenAccount.Status == fungible.FreezeTokenAccount {
-			if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.TokenAccountPayload.TokenAccount.Account, msg.TokenAccountPayload.TokenAccount.Symbol) {
+			if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.TokenAccountPayload.TokenAccount.Account, msg.TokenAccountPayload.TokenAccount.Symbol) {
 				return types.ErrTokenAccountFrozen()
 			}
 		}
 		if msg.TokenAccountPayload.TokenAccount.Status == fungible.UnfreezeTokenAccount {
-			if !app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.TokenAccountPayload.TokenAccount.Account, msg.TokenAccountPayload.TokenAccount.Symbol) {
+			if !app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.TokenAccountPayload.TokenAccount.Account, msg.TokenAccountPayload.TokenAccount.Symbol) {
 				return types.ErrTokenAccountUnFrozen()
 			}
 		}
 	case fungible.MsgTransferFungibleToken:
-		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
-		if app.tokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
-		if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.From, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.From, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
 		//check receiver
-		if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
 	case fungible.MsgMintFungibleToken:
-		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 
-		if app.tokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
 
 		// check sender
-		if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.Owner, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.Owner, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
 
 		//check receiver
-		if app.tokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
 
 		var fungibleToken = new(fungible.Token)
-		app.tokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		app.fungibleTokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
 		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
 		if !fungibleToken.MaxSupply.IsZero() {
 			if fungibleToken.TotalSupply.GT(fungibleToken.MaxSupply) {
@@ -195,39 +195,39 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case fungible.MsgBurnFungibleToken:
-		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
-		if app.tokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
 
 		var account = new(fungible.FungibleTokenAccount)
-		account = app.tokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
+		account = app.fungibleTokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
 		if account.Balance.LT(msg.Value) {
 			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
-		if !app.tokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
-		if !app.tokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
+		if !app.fungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
 			return types.ErrInvalidTokenOwner()
 		}
-		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 	case fungible.MsgAcceptFungibleTokenOwnership:
-		if !app.tokenKeeper.IsTokenOwnershipAcceptable(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.IsTokenOwnershipAcceptable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
 
-		if !app.tokenKeeper.IsTokenNewOwner(ctx, msg.Symbol, msg.From) {
+		if !app.fungibleTokenKeeper.IsTokenNewOwner(ctx, msg.Symbol, msg.From) {
 			return types.ErrInvalidTokenNewOwner()
 		}
 
-		if !app.tokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
 	case nonFungible.MsgCreateNonFungibleToken:
@@ -266,7 +266,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 					return types.ErrFeeSettingNotExists(val.FeeName)
 				}
 
-				if !fee.ContainAction(val.Action) {
+				if !fee.ContainNonFungibleAction(val.Action) {
 					return types.ErrInvalidTokenAction()
 				}
 			}
@@ -460,6 +460,22 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
 			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
 		}
+	case nonFungible.MsgUpdateEndorserList:
+		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
+			return types.ErrTokenInvalid()
+		}
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+		if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.From) {
+			return types.ErrInvalidTokenOwner()
+		}
+		for _, v := range msg.Endorsers {
+			if !app.kycKeeper.IsWhitelisted(ctx, v) {
+				return types.ErrUnauthorisedEndorser()
+			}
+		}
+
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {
 			return sdkTypes.ErrUnauthorized("Not authorised to submit proposal.")

@@ -8,6 +8,12 @@
 - disable rpc end point for listing token and nonfungible token 
 - added another rpc for test (AccountCdc)
 - remove cdc from querry account end point (Account)
+- split fee calculation between token (ft and nft)
+- added fee cli for setting ft/ nft multiplier, ft/ nft token fee by token action
+- added error code for checking update endorser(endorser has to be whitelisted)
+- added function for updating nft endorser list
+- update rpc endpoint for debug/fee_info to display nft and ft multiplier
+- fee with token action (nft/ft) will return default fee if not found
 
 # Version 1.2.1
 - Adding non fungible token module
