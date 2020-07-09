@@ -22,6 +22,22 @@ type Process struct {
 	StderrPipe io.ReadCloser    `json:"-"`
 }
 
+func RunProcess(dir string, name string, args []string) (stdout, stderr string, err error) {
+	proc, err := CreateProcess(dir, name, args)
+	if err != nil {
+		panic(err)
+	}
+
+	err = proc.Cmd.Start()
+	if err != nil {
+		panic(err)
+	}
+
+	stdOut, stdErr, err := proc.ReadAll()
+	proc.Cmd.Wait()
+	return string(stdOut), string(stdErr), err
+}
+
 // dir: The working directory. If "", os.Getwd() is used.
 // name: Command name
 // args: Args to command. (should not include name)

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/utils"
 
 	"github.com/maxonrow/maxonrow-go/x/bank"
 
@@ -51,7 +52,8 @@ func TestTxs(t *testing.T) {
 	//tcs = append(tcs, makeMultisigTxsFTs()...)
 
 	var totalFee = sdkTypes.NewInt64Coin("cin", 0)
-	var totalAmt = sdkTypes.NewInt64Coin("cin", 0)
+	var totalFeeAlice = sdkTypes.NewInt64Coin("cin", 0)
+	var totalAmtAlice = sdkTypes.NewInt64Coin("cin", 0)
 
 	seqs := make(map[string]uint64)
 
@@ -70,8 +72,8 @@ func TestTxs(t *testing.T) {
 
 				if !tc.deliverFailed {
 					if i.from == "alice" {
-						totalFee = totalFee.Add(fees[0])
-						totalAmt = totalAmt.Add(amt[0])
+						totalFeeAlice = totalFeeAlice.Add(fees[0])
+						totalAmtAlice = totalAmtAlice.Add(amt[0])
 					}
 				}
 			}
@@ -95,6 +97,7 @@ func TestTxs(t *testing.T) {
 				require.Zero(t, res.DeliverTx.Code, "test case %v(%v) deliver should not fail: %v", n+1, tc.desc, res.DeliverTx.Log)
 			}
 
+			totalFee = totalFee.Add(fees[0])
 		} else {
 			require.NotZero(t, res.CheckTx.Code, "test case %v(%v) check failed: %v", n+1, tc.desc, res.CheckTx.Log)
 		}
@@ -162,11 +165,17 @@ func TestTxs(t *testing.T) {
 	bal2 := acc2.GetCoins()[0]
 	diff := bal1.Sub(bal2)
 
-	total := totalAmt.Add(totalFee)
+	total := totalAmtAlice.Add(totalFeeAlice)
 	require.True(t, diff.IsEqual(total))
 
-	fmt.Println(totalFee)
-	//mxwcli query distribution validator-outstanding-rewards mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965
+	// Check all the fees are distributed to the validator
+	stdOut, _, err := utils.RunProcess("", "mxwcli", []string{"query", "distribution", "validator-outstanding-rewards", "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"})
+	assert.NoError(t, err)
+	//fmt.Println(stdOut[24:])
+	s := strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
+	dec, _ := sdkTypes.NewDecFromStr(s)
+	distributedFee := sdkTypes.NewCoin("cin", dec.RoundInt())
+	require.True(t, totalFee.IsEqual(distributedFee))
 }
 
 func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) sdkTypes.Msg {

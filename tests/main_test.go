@@ -13,8 +13,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/maxonrow/maxonrow-go/app"
-	cp "github.com/otiai10/copy"
 	"github.com/maxonrow/maxonrow-go/utils"
+	cp "github.com/otiai10/copy"
 	tmCrypto "github.com/tendermint/tendermint/crypto"
 	"github.com/tendermint/tendermint/crypto/secp256k1"
 	rpcclient "github.com/tendermint/tendermint/rpc/lib/client"
@@ -97,18 +97,10 @@ func TestMain(m *testing.M) {
 			k.Address,
 		}
 
-		proc, err := utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
+		_, _, err := utils.RunProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
 		if err != nil {
 			panic(err)
 		}
-
-		err = proc.Cmd.Start()
-		if err != nil {
-			panic(err)
-		}
-		//out, err1, _ := proc.ReadAll()
-		//fmt.Printf("%s%s", string(out), string(err1))
-		proc.Cmd.Wait()
 	}
 
 	tKeys["nope"] = &keyInfo{
