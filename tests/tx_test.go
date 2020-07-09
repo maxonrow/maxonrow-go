@@ -283,6 +283,8 @@ func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) s
 				msg = makeUpdateItemMetadataMsg(t, i.Symbol, i.Owner, i.ItemID, i.Metadata)
 			case "update-nft-metadata":
 				msg = makeUpdateNFTMetadataMsg(t, i.Symbol, i.Owner, i.TokenMetadata)
+			case "update-nft-endorserlist":
+				msg = makeUpdateNFTEndorserListMsg(t, signer, i.Owner, i.Symbol, i.EndorserList)
 			}
 		}
 	case "maintenance":
