@@ -73,6 +73,22 @@ func makeFeeTxs() []*testCase {
 		{"fee", false, false, "assign msgFungibleTokenMultiplier to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "fee-updateFungibleTokenMultiplier", "", "", "", "", "fee-auth"}, "", nil},
 		{"fee", false, false, "assign msgNonFungibleTokenMultiplier to fee 0cin. commit", "fee-auth", "0cin", 0, feeInfo{"assign-msg", "zero", "fee-updateNonFungibleTokenMultiplier", "", "", "", "", "fee-auth"}, "", nil},
 
+		//create token action fee setting
+		// ft
+		{"fee", false, false, "Create ft transfer action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "ft_transfer_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create ft mint action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "ft_mint_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create ft burn action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "ft_burn_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create ft transferOwnership action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "ft_transferOwnership_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create ft acceptOwnership action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "ft_acceptOwnership_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+
+		// nft
+		{"fee", false, false, "Create nft transfer action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_transfer_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft mint action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_mint_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft burn action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_burn_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft transferOwnership action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_transferOwnership_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft acceptOwnership action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_acceptOwnership_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft endorse action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_endorse_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+
 		//add token fee multiplier
 		{"fee", false, false, "create fungible token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"fungible-token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},
 		{"fee", false, false, "create nonFungible token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"nonFungible-token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},
