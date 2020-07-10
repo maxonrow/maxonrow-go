@@ -28,6 +28,7 @@ const (
 	TransferTokenOwnership = "transferOwnership"
 	AcceptTokenOwnership   = "acceptOwnership"
 	Endorse                = "endorse"
+	UpdateNFTEndorserList  = "updateNFTEndorserList"
 )
 
 var prefixAuthorised = []byte("0x01")
@@ -42,7 +43,7 @@ var prefixNonFungibleTokenMultiplier = []byte("0x52")
 
 // Token Actions
 var fungibleTokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership}
-var nonFungibleTokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership, Endorse}
+var nonFungibleTokenActions = []string{TransferToken, MintToken, BurnToken, TransferTokenOwnership, AcceptTokenOwnership, Endorse, UpdateNFTEndorserList}
 
 // keys
 func getAuthorisedKey() []byte {
