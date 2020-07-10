@@ -50,7 +50,8 @@ func (app *mxwApp) CalculateFee(ctx sdkTypes.Context, tx sdkTypes.Tx) (sdkTypes.
 				msg == nft.MsgTypeBurnNonFungibleItem ||
 				msg == nft.MsgTypeTransferNonFungibleTokenOwnership ||
 				msg == nft.MsgTypeAcceptNonFungibleTokenOwnership ||
-				msg == nft.MsgTypeEndorsement
+				msg == nft.MsgTypeEndorsement ||
+				msg == nft.MsgTypeUpdateEndorserList
 		}
 		r := msg.Route()
 		t := msg.Type()
@@ -244,6 +245,11 @@ func (app *mxwApp) getTokenFeeSetting(msg sdkTypes.Msg, ctx sdkTypes.Context) (*
 
 	case nft.MsgEndorsement:
 		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.Endorse)
+		if feeSettingErr != nil {
+			return nil, nil, feeSettingErr
+		}
+	case nft.MsgUpdateEndorserList:
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.UpdateNFTEndorserList)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}

@@ -7,6 +7,7 @@
 - fee with token action (nft/ft) will return default fee if not found
 - added query nonfungible fee collectors
 - added test case to create default action fees for token(ft nft) actions
+- added updateEndorserList as token action
 
 # Version 1.3.0
 - Disable multisig module
