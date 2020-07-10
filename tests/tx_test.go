@@ -35,6 +35,11 @@ func TestTxs(t *testing.T) {
 
 	val1 := Validator(tValidator)
 	assert.Equal(t, val1.OperatorAddress.String(), tValidator)
+
+	stdOut, _, _ := utils.RunProcess("", "mxwcli", []string{"query", "distribution", "validator-outstanding-rewards", "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"})
+	s := strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
+	initialRewards, _ := sdkTypes.NewDecFromStr(s)
+
 	acc1 := Account(tKeys["alice"].addrStr)
 	bal1 := acc1.GetCoins()[0]
 
@@ -169,13 +174,12 @@ func TestTxs(t *testing.T) {
 	require.True(t, diff.IsEqual(total))
 
 	// Check all the fees are distributed to the validator
-	stdOut, _, err := utils.RunProcess("", "mxwcli", []string{"query", "distribution", "validator-outstanding-rewards", "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"})
-	assert.NoError(t, err)
-	//fmt.Println(stdOut[24:])
-	s := strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
+	stdOut, _, _ = utils.RunProcess("", "mxwcli", []string{"query", "distribution", "validator-outstanding-rewards", "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"})
+	s = strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
 	dec, _ := sdkTypes.NewDecFromStr(s)
+	dec = dec.Sub(initialRewards)
 	distributedFee := sdkTypes.NewCoin("cin", dec.RoundInt())
-	require.True(t, totalFee.IsEqual(distributedFee))
+	require.True(t, totalFee.IsEqual(distributedFee), "The validator rewards is not matched with accumulated fee, It should be %v but got %v", totalFee.Amount, distributedFee.Amount)
 }
 
 func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) sdkTypes.Msg {
