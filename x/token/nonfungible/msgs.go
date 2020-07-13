@@ -18,7 +18,7 @@ const (
 	MsgTypeEndorsement                       = "endorsement"
 	MsgTypeUpdateItemMetadata                = "updateItemMetadata"
 	MsgTypeUpdateNFTMetadata                 = "updateNFTMetadata"
-	MsgTypeUpdateEndorserList                = "updateEndorserList"
+	MsgTypeUpdateEndorserList                = "updateNFTEndorserList"
 )
 
 // MsgCreateNonFungibleToken
