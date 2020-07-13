@@ -109,13 +109,13 @@ func BurnFungibleTokenCmd(cdc *codec.Codec) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "token-burn [symbol] [value]",
 		Short: "Request for burning the preowned token",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 			inBuf := bufio.NewReader(cmd.InOrStdin())
 			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			tokenSymbol := args[0]
-			totalToken := args[2]
+			totalToken := args[1]
 			totalval := sdkTypes.NewUintFromString(totalToken)
 			owner := cliCtx.GetFromAddress()
 			msg := token.NewMsgBurnFungibleToken(tokenSymbol, totalval, owner)
