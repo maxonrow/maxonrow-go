@@ -132,7 +132,7 @@ func handleMsgEndorsement(ctx sdkTypes.Context, keeper *Keeper, msg MsgEndorseme
 		return sdkTypes.ErrInternal("Invalid endorser.").Result()
 	}
 
-	return keeper.MakeEndorsement(ctx, msg.Symbol, msg.From, msg.ItemID)
+	return keeper.MakeEndorsement(ctx, msg.Symbol, msg.From, msg.ItemID, msg.Metadata)
 }
 
 func handleMsgUpdateItemMetadata(ctx sdkTypes.Context, keeper *Keeper, msg MsgUpdateItemMetadata) sdkTypes.Result {

@@ -319,7 +319,7 @@ func (k *Keeper) acceptNonFungibleTokenOwnership(ctx sdkTypes.Context, from sdkT
 
 }
 
-func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID string) sdkTypes.Result {
+func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress, itemID, metadata string) sdkTypes.Result {
 
 	// validation of exisisting owner account
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -332,8 +332,8 @@ func (k *Keeper) MakeEndorsement(ctx sdkTypes.Context, symbol string, from sdkTy
 		return types.ErrTokenInvalid().Result()
 	}
 
-	eventParam := []string{symbol, string(itemID), from.String()}
-	eventSignature := "EndorsedNonFungibleItem(string,string,string)"
+	eventParam := []string{symbol, string(itemID), from.String(), metadata}
+	eventSignature := "EndorsedNonFungibleItem(string,string,string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
