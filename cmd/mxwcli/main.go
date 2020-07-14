@@ -38,6 +38,7 @@ import (
 	maintenanceClient "github.com/maxonrow/maxonrow-go/x/maintenance/client"
 	nsClient "github.com/maxonrow/maxonrow-go/x/nameservice/client"
 	tokenClient "github.com/maxonrow/maxonrow-go/x/token/fungible/client"
+	nftClient "github.com/maxonrow/maxonrow-go/x/token/nonfungible/client"
 	"gopkg.in/cheggaaa/pb.v1"
 )
 
@@ -143,6 +144,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 	nsModuleClient := nsClient.NewModuleClient(storeNS, cdc)
 	//kycModuleClient := kycClient.NewModuleClient(storeKyc, cdc)
 	tokenModuleClient := tokenClient.NewModuleClient(storeToken, cdc)
+	nftmoduleClient := nftClient.NewModuleClient(storeToken, cdc)
 	feeModuleClient := feeClient.NewModuleClient(storeFee, cdc)
 	authModuleClient := authClient.NewModuleClient(storeAuth, cdc)
 
@@ -167,6 +169,7 @@ func txCmd(cdc *amino.Codec) *cobra.Command {
 		nsModuleClient.GetTxCmd(),
 		feeModuleClient.GetTxCmd(),
 		tokenModuleClient.GetTxCmd(),
+		nftmoduleClient.GetTxCmd(),
 		maintenanceModuleClient.GetTxCmd(),
 		authModuleClient.GetTxCmd(),
 	)
