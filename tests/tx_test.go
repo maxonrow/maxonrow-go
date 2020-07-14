@@ -291,7 +291,7 @@ func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) s
 			case "unfreeze":
 				msg = makeUnfreezeNonFungibleTokenMsg(t, signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.Burnable, i.Modifiable, i.Public)
 			case "endorsement-item":
-				msg = makeEndorsementMsg(t, signer, i.Owner, i.Symbol, i.ItemID)
+				msg = makeEndorsementMsg(t, signer, i.Owner, i.Symbol, i.ItemID, i.Metadata)
 			case "update-item-metadata":
 				msg = makeUpdateItemMetadataMsg(t, i.Symbol, i.Owner, i.ItemID, i.Metadata)
 			case "update-nft-metadata":

@@ -8,6 +8,8 @@
 - added query nonfungible fee collectors
 - added test case to create default action fees for token(ft nft) actions
 - added updateEndorserList as token action
+- MakeEndorsement added a field metadata
+- added test case for MakeEndorsement
 
 # Version 1.3.0
 - Disable multisig module

@@ -185,6 +185,10 @@ func makeNonFungibleTokenTxs() []*testCase {
 		{"nonFungibleToken", true, true, "endorse a nonfungible item - Invalid Token Symbol", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT-111", "nft-carlo", "", "token metadata", "334455", "properties", "metadata", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
 		{"nonFungibleToken", true, true, "endorse a nonfungible item - Invalid Item-ID", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "999111", "properties", "metadata", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
 		{"nonFungibleToken", false, false, "Re-endorse the same nonfungible item [TNFT] - Happy path", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "334455", "properties", "metadata", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil}, //[Re-action]
+		{"nonFungibleToken", false, false, "Endorse with 85(85*3 one chinese word = 3 length) chinese character", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "334455", "properties", "跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
+		{"nonFungibleToken", true, true, "Endorse with 86(86*3 one chinese word = 3 length) chinese character", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "334455", "properties", "跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳跳", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
+		{"nonFungibleToken", false, false, "Endorse with 256 character", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "334455", "properties", "aabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqq", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
+		{"nonFungibleToken", true, true, "Endorse with 257 character", "nft-carlo", "100000000cin", 0, NonFungibleTokenInfo{"endorsement-item", "", "", "", "TNFT", "nft-carlo", "", "token-metadata", "334455", "properties", "aabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqrrssttuuvvwwwxxyyzzaabbccddeeffggghhiijjkkllmmnnnooppqqA", true, false, false, false, false, "", "", "", "", "", "", "", []string{"nft-jeansoon", "nft-carlo"}}, "", nil},
 
 		// 5. transfer non fungible item - with ItemID
 		{"nonFungibleToken", true, true, "Transfer non fungible token item - invalid owner", "nft-mostafa", "100000000cin", 0, NonFungibleTokenInfo{"transfer-item", "", "", "", "TNFT", "nft-bob", "nft-mostafa", "token metadata", "112233", "properties", "metadata", true, false, false, true, false, "", "", "", "", "", "", "", []string{""}}, "", nil},
@@ -777,11 +781,11 @@ func makeVerifyTransferNonFungibleTokenOwnershipMsg(t *testing.T, signer, provid
 }
 
 //Endorsement ItemID
-func makeEndorsementMsg(t *testing.T, signer, to, symbol string, itemID string) sdkTypes.Msg {
+func makeEndorsementMsg(t *testing.T, signer, to, symbol string, itemID, metadata string) sdkTypes.Msg {
 
 	signerAddr := tKeys[signer].addr
 
-	return nonFungible.NewMsgEndorsement(symbol, signerAddr, itemID)
+	return nonFungible.NewMsgEndorsement(symbol, signerAddr, itemID, metadata)
 }
 
 //Freeze Item

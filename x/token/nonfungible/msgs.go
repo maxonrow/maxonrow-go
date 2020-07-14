@@ -536,16 +536,18 @@ func (msg MsgAcceptNonFungibleTokenOwnership) GetSigners() []sdkTypes.AccAddress
 }
 
 type MsgEndorsement struct {
-	Symbol string              `json:"symbol"`
-	From   sdkTypes.AccAddress `json:"from"`
-	ItemID string              `json:"itemID"`
+	Symbol   string              `json:"symbol"`
+	From     sdkTypes.AccAddress `json:"from"`
+	ItemID   string              `json:"itemID"`
+	Metadata string              `json:"metadata"`
 }
 
-func NewMsgEndorsement(symbol string, from sdkTypes.AccAddress, itemID string) *MsgEndorsement {
+func NewMsgEndorsement(symbol string, from sdkTypes.AccAddress, itemID string, metadata string) *MsgEndorsement {
 	return &MsgEndorsement{
-		Symbol: symbol,
-		From:   from,
-		ItemID: itemID,
+		Symbol:   symbol,
+		From:     from,
+		ItemID:   itemID,
+		Metadata: metadata,
 	}
 }
 
@@ -567,6 +569,10 @@ func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := validateMetadata(msg.Metadata); err != nil {
 		return err
 	}
 
