@@ -16,17 +16,17 @@
 * 0x645a6833044dc6a53b04e91633c49b303e5d0d85 - `RevokedWhitelist(string,string)`  
 `(to: string, kycAddress: string)`  
 
-*  0x3F6A6D6BEA44FC3B2ED6F23A19D7C22A9410969E - `KycBinded(string,string,string)`  
+*  0x3f6a6d6bea44fc3b2ed6f23a19d7c22a9410969e - `KycBinded(string,string,string)`  
 `(from: string, to: string, kycAddress: string)`    
 
-* 0x324B7EC81ACBC6D956E34B88DB1FD77ACDE375B7 - `KycUnbinded(string,string,string)`  
+* 0x324b7ec81acbc6d956e34b88db1fd77acde375b7 - `KycUnbinded(string,string,string)`  
 `(from: string, to: string, kycAddress: string)`  
 
 # Nameservice(alias)
 * 0x3e39f456518778478674f842ddd7d2c0f8523466 - `RejectedAlias(string,string)`  
 `(alias: string, owner: string)`  
   
-* 0x83E489EF72309ACC291D6DA10864E73EFD0F486E - `RevokedAlias(string,string)`  
+* 0x83e489ef72309acc291d6da10864e73efd0f486e - `RevokedAlias(string,string)`  
 `(alias: string, owner: string)`  
 
 * 0xdc152a0041a73ffbee055be6a7f477275604277b - `CreatedAlias(string,string,string,bignumber)`  
@@ -73,55 +73,56 @@
 `(symbol: string, owner: string)`  
 
 # NonFungible Token
-* 0x11F662E9D2DD1A7D0F582DF94954113560FD7D30 - `CreatedNonFungibleToken(string,string,string,bignumber)`  
+* 0x11f662e9d2dd1a7d0f582df94954113560fd7d30 - `CreatedNonFungibleToken(string,string,string,bignumber)`  
 `(symbol: string, owner: string, feeTo: string, value: bignumber)`  
 
-* 0x83138459F9BE8326F1A9C3BC4184554F5E5FBBE3 - `ApprovedNonFungibleToken(string,string)`  
+* 0x83138459f9be8326f1a9c3bc4184554f5e5fbbe3 - `ApprovedNonFungibleToken(string,string)`  
 `(symbol: string, owner: string)`  
 
-* 0x5E1828AC38C50A2E6F3AEBC769DA1B780349F9C1 - `RejectedNonFungibleToken(string,string)`  
+* 0x5e1828ac38c50a2e6f3aebc769da1b780349f9c1 - `RejectedNonFungibleToken(string,string)`  
 `(symbol: string, owner: string)`  
 
-* 0xDBC39FE2E24EB3560F81989AF3AC9260928D3750 - `FrozenNonFungibleToken(string,string)`  
+* 0xdbc39fe2e24eb3560f81989af3ac9260928d3750 - `FrozenNonFungibleToken(string,string)`  
 `(symbol: string, owner: string)`  
 
-* 0x158B516FB26CCF2031ABB7EF917F6FFCA45146BE - `UnfreezeNonFungibleToken(string,string)`  
+* 0x158b516fb26ccf2031abb7ef917f6ffca45146be - `UnfreezeNonFungibleToken(string,string)`  
 `(symbol: string, owner: string)`  
 
-* 0xD915A68B0824ADAE8500068F4791A15358B570BE - `FrozenNonFungibleItem(string,string,string)`  
+* 0xd915a68b0824adae8500068f4791a15358b570be - `FrozenNonFungibleItem(string,string,string)`  
 `(symbol: string, itemID: string, owner: string)`  
 
-* 0xF73AED41A76D330005EFF923B7C47365EA5E5451 - `UnfreezeNonFungibleItem(string,string,string)`  
+* 0xf73aed41a76d330005eff923b7c47365ea5e5451 - `UnfreezeNonFungibleItem(string,string,string)`  
 `(symbol: string, itemID: string, owner: string)`  
 
-* 0x6C38F2F21CA0CD532AB8E6BED6E64499F09D84D9 - `ApprovedTransferNonFungibleTokenOwnership(string,string,string)`  
+* 0x6c38f2f21ca0cd532ab8e6bed6e64499f09d84d9 - `ApprovedTransferNonFungibleTokenOwnership(string,string,string)`  
 `(symbol: string, owner: string, newOwner: string)`  
 
-* 0x96721282448437667A3F958212613F7BBFCC9F68 - `RejectedTransferNonFungibleTokenOwnership(string,string,string)`  
+* 0x96721282448437667a3f958212613f7bbfcc9f68 - `RejectedTransferNonFungibleTokenOwnership(string,string,string)`  
 `(symbol: string, owner: string, newOwner: string)`  
 
-* 0xEDAC52598009550E6BB58D3B9518BE7F0A3FD560 - `MintedNonFungibleItem(string,string,string,string)`  
+* 0xedac52598009550e6bb58d3b9518be7f0a3fd560 - `MintedNonFungibleItem(string,string,string,string)`  
 `(symbol: string, itemID: string, from: string, to: string)`  
 
-* 0x0602781615EB1BF8208DA7FECAB2AEDE96910073 - `TransferredNonFungibleItem(string,string,string,string)`  
+* 0x0602781615eb1bf8208da7fecab2aede96910073 - `TransferredNonFungibleItem(string,string,string,string)`  
 `(symbol: string, itemID: string, from: string, to: string)`  
 
-* 0xFA84EB62ED6BCA35A9B95FB171FA34E5FA83A956 - `BurnedNonFungibleItem(string,string,string)`  
+* 0xfa84eb62ed6bca35a9b95fb171fa34e5fa83a956 - `BurnedNonFungibleItem(string,string,string)`  
 `(symbol: string, itemID: string, from: string)`  
 
-* 0xA0867945ED69B7EF4B6B7DEB232C79946C68002D - `TransferredNonFungibleTokenOwnership(string,string,string)`  
+* 0xa0867945ed69b7ef4b6b7deb232c79946c68002d - `TransferredNonFungibleTokenOwnership(string,string,string)`  
 `(symbol: string, from: string, to: string)`  
 
-* 0xC906D530E1166A8B3477F78D8B1668D9C4B0C279 - `AcceptedNonFungibleTokenOwnership(string,string)`  
+* 0xc906d530e1166a8b3477f78d8b1668d9c4b0c279 - `AcceptedNonFungibleTokenOwnership(string,string)`  
 `(symbol: string, from: string)`  
 
-* 0xE4018B8FDADE0A9A89DD3A65A5A6ED4389DE4F10 - `EndorsedNonFungibleItem(string,string,string)`  
+  0x708401705567b885e3b8fa16b23271a8eea3d8f6
+* 0x708401705567b885e3b8fa16b23271a8eea3d8f6 - `EndorsedNonFungibleItem(string,string,string,string)`  
+`(symbol: string, itemID: string , from: string, metadata: string)`  
+
+* 0x50691a25191c8a1223c954ba0bf81566be0b2c34 - `UpdatedNonFungibleItemMetadata(string,string,string)`  
 `(symbol: string, itemID: string , from: string)`  
 
-* 0x50691A25191C8A1223C954BA0BF81566BE0B2C34 - `UpdatedNonFungibleItemMetadata(string,string,string)`  
-`(symbol: string, itemID: string , from: string)`  
-
-* 0xCDEFEF9A5959A9CA7863B3D92375A9C4CC24130F - `UpdatedNonFungibleTokenMetadata(string,string)`  
+* 0xcdefef9a5959a9ca7863b3d92375a9c4cc24130f - `UpdatedNonFungibleTokenMetadata(string,string)`  
 `(symbol: string, from: string)`  
 
 # Bank send
