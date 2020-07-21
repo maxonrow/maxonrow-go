@@ -137,7 +137,7 @@ func ErrTokenItemIDInUsed() sdkTypes.Error {
 }
 
 func ErrInvalidEndorser() sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeTokenInvalidEndorser, "Item endorser invalid.")
+	return newErrorWithMXWCodespace(CodeTokenInvalidEndorser, "Token item endorser invalid.")
 }
 
 func ErrTokenItemFronzen() sdkTypes.Error {

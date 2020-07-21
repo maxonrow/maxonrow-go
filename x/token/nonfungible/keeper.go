@@ -922,6 +922,17 @@ func (k *Keeper) IsTokenEndorser(ctx sdkTypes.Context, symbol string, endorser s
 	return false
 }
 
+func (k *Keeper) GetEndorserList(ctx sdkTypes.Context, symbol string) []sdkTypes.AccAddress {
+	token := new(Token)
+	k.GetNonfungibleTokenDataInfo(ctx, symbol, token)
+
+	if token != nil {
+
+		return token.EndorserList
+	}
+	return nil
+}
+
 // Querying
 func (k *Keeper) ListTokens(ctx sdkTypes.Context) []Token {
 	store := ctx.KVStore(k.key)
