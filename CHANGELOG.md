@@ -1,3 +1,6 @@
+# Version 1.3.2
+- disable delegation handlers
+
 # Version 1.3.1
 - split fee calculation between token (ft and nft)
 - added fee cli for setting ft/ nft multiplier, ft/ nft token fee by token action
