@@ -715,10 +715,6 @@ func (msg MsgUpdateEndorserList) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
-	if len(msg.Endorsers) <= 0 {
-		return sdkTypes.ErrInternal("Endorsers cannot be empty.")
-	}
-
 	return nil
 }
 
