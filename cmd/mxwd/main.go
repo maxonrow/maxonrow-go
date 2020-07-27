@@ -342,17 +342,14 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			if err = exportGenesisFile(genesisFilePath, chainID, nil, appStateJSON); err != nil {
 				return errors.Wrap(err, "Failed to populate genesis.json")
 			}
-
 			//copy the keys dir to all node dir
 			copyKeyNode(keyPath, nodepath)
 			for j := 0; j < node; j++ {
 				valAddress, _ := sdkTypes.Bech32ifyConsPub(pub_keys[j])
-				fmt.Println("validator-address", valAddress)
-				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0])
+				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0], "--pubkey", valAddress, "--node-id", node_ids[j])
 				stdin, err := cmd.StdinPipe()
 				if err != nil {
 					fmt.Println(fmt.Sprint(err))
