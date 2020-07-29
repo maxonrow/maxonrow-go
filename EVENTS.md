@@ -115,7 +115,6 @@
 * 0xc906d530e1166a8b3477f78d8b1668d9c4b0c279 - `AcceptedNonFungibleTokenOwnership(string,string)`  
 `(symbol: string, from: string)`  
 
-  0x708401705567b885e3b8fa16b23271a8eea3d8f6
 * 0x708401705567b885e3b8fa16b23271a8eea3d8f6 - `EndorsedNonFungibleItem(string,string,string,string)`  
 `(symbol: string, itemID: string , from: string, metadata: string)`  
 

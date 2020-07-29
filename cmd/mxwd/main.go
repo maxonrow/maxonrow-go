@@ -16,12 +16,17 @@ import (
 	"strings"
 
 	"github.com/cosmos/cosmos-sdk/client"
+	cliKeys "github.com/cosmos/cosmos-sdk/client/keys"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys"
 	"github.com/cosmos/cosmos-sdk/server"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/genutil"
+	app "github.com/maxonrow/maxonrow-go/app"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/x/fee"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,10 +37,6 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	tm "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	app "github.com/maxonrow/maxonrow-go/app"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
-	"github.com/maxonrow/maxonrow-go/x/fee"
 )
 
 const (
@@ -265,7 +266,12 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 
 			//create the dir for keys
 			keyPath := filepath.Join(viper.GetString(cli.HomeFlag), "keys")
-			keybase := keys.New("keys", keyPath)
+			// // keybase := keys.New("keys", keyPath)
+			keybase, kbErr := cliKeys.NewKeyringFromHomeFlag(cmd.InOrStdin())
+			if kbErr != nil {
+				return kbErr
+			}
+
 			fmt.Println("Creating account. (All Passwords set to `12345678`)")
 			//create the  list of accounts and append to genesis
 			for i := 0; i < 30; i++ {
@@ -336,17 +342,14 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 			if err != nil {
 				return err
 			}
-
 			if err = exportGenesisFile(genesisFilePath, chainID, nil, appStateJSON); err != nil {
 				return errors.Wrap(err, "Failed to populate genesis.json")
 			}
-
 			//copy the keys dir to all node dir
 			copyKeyNode(keyPath, nodepath)
 			for j := 0; j < node; j++ {
 				valAddress, _ := sdkTypes.Bech32ifyConsPub(pub_keys[j])
-				fmt.Println("validator-address", valAddress)
-				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0])
+				cmd := exec.Command("mxwd", "gentx", "--name", fmt.Sprintf("acc-%v", j+1), "--home", nodepath[0], "--pubkey", valAddress, "--node-id", node_ids[j])
 				stdin, err := cmd.StdinPipe()
 				if err != nil {
 					fmt.Println(fmt.Sprint(err))
@@ -389,6 +392,7 @@ func InitAuto(ctx *server.Context, cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String(cli.HomeFlag, DefaultNodeHome, "node's home directory")
 	cmd.Flags().String(client.FlagChainID, DefaultChainID, "genesis file chain-id")
 	cmd.Flags().BoolP(flagOverwrite, "o", false, "overwrite the genesis.json file")
+	cmd.Flags().String(client.FlagKeyringBackend, client.DefaultKeyringBackend, "Select keyring's backend (os|file|test)")
 	return cmd
 }
 

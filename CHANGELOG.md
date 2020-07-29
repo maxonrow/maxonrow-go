@@ -1,5 +1,6 @@
 # Version 1.3.2
 - disable delegation handlers
+- unregister codec for delegations
 
 # Version 1.3.1
 - split fee calculation between token (ft and nft)
