@@ -3,6 +3,12 @@ package types
 import sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
 const (
+
+	// Kyc
+	CodeNotKyc         sdkTypes.CodeType = 1000
+	CodeKycDuplicated  sdkTypes.CodeType = 1001
+	CodeReceicerNotKyc sdkTypes.CodeType = 1002
+
 	// Token
 	CodeTokenDuplicated                    sdkTypes.CodeType = 2001
 	CodeTokenInvalidSymbol                 sdkTypes.CodeType = 2002
@@ -43,6 +49,19 @@ const (
 
 func newErrorWithMXWCodespace(code sdkTypes.CodeType, format string, args ...interface{}) sdkTypes.Error {
 	return sdkTypes.NewError(CodespaceMXW, code, format, args...)
+}
+
+// --- Kyc errors
+func ErrNotKyc() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeNotKyc, "All signers must pass kyc.")
+}
+
+func ErrKycDuplicated() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeKycDuplicated, "Kyc Address duplicated.")
+}
+
+func ErrReceiverNotKyc() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeReceicerNotKyc, "Receiver kyc is required.")
 }
 
 /// --- Fee errors
@@ -140,7 +159,7 @@ func ErrInvalidEndorser() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenInvalidEndorser, "Token item endorser invalid.")
 }
 
-func ErrTokenItemFronzen() sdkTypes.Error {
+func ErrTokenItemFrozen() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item frozen.")
 }
 func ErrTokenItemNotModifiable() sdkTypes.Error {
