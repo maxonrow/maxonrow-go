@@ -132,6 +132,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if msg.Payload.Token.Status == fungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == fungible.RejectTransferTokenOwnership {
+			if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
+				return types.ErrTokenFrozen()
+			}
+
 			if !app.fungibleTokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenTransferTokenOwnershipInvalid()
 			}
@@ -214,6 +218,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
+		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+
 		if !app.fungibleTokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
@@ -224,6 +232,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenInvalid()
 		}
 	case fungible.MsgAcceptFungibleTokenOwnership:
+
+		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+
 		if !app.fungibleTokenKeeper.IsTokenOwnershipAcceptable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
@@ -302,6 +315,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if msg.Payload.Token.Status == nonFungible.ApproveTransferTokenOwnership || msg.Payload.Token.Status == nonFungible.RejectTransferTokenOwnership {
+			if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Payload.Token.Symbol) {
+				return types.ErrTokenFrozen()
+			}
+
 			if !app.nonFungibleTokenKeeper.IsVerifyableTransferTokenOwnership(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenTransferTokenOwnershipInvalid()
 			}
@@ -309,6 +326,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 	case nonFungible.MsgSetNonFungibleItemStatus:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.ItemPayload.Item.Symbol) {
 			return types.ErrTokenInvalid()
+		}
+
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.ItemPayload.Item.Symbol) {
+			return types.ErrTokenFrozen()
 		}
 
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID)
@@ -355,7 +376,6 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
 			return types.ErrTokenItemFrozen()
 		}
-		
 
 		// 1. [Transfer non fungible token item - Invalid Item-ID]
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
@@ -421,6 +441,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case nonFungible.MsgTransferNonFungibleTokenOwnership:
+
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+
 		if !app.nonFungibleTokenKeeper.IsTokenOwnershipTransferrable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
@@ -431,6 +456,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenInvalid()
 		}
 	case nonFungible.MsgAcceptNonFungibleTokenOwnership:
+
+		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
+			return types.ErrTokenFrozen()
+		}
+
 		if !app.nonFungibleTokenKeeper.IsTokenOwnershipAcceptable(ctx, msg.Symbol) {
 			return types.ErrInvalidTokenAction()
 		}
