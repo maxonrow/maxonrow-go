@@ -1,3 +1,6 @@
+# Version 1.3.3
+- enable endorser list to update to empty
+
 # Version 1.3.2
 - disable delegation handlers
 - unregister codec for delegations
