@@ -88,6 +88,17 @@ func makeFungibleTokenTxs() []*testCase {
 		{"token", false, false, "Freeze token - Happy path for TT-4-commit", "token-auth-1", "0cin", 0, TokenInfo{"freeze", "", "", "", "TT-4", 0, "", "", "", false, "", true, false, true, "1", "token-prov-1", "0", "token-issuer-1", "", ""}, "", nil},
 		{"token", true, true, "Freeze token - Not allow for TT-4 again", "token-auth-1", "0cin", 0, TokenInfo{"freeze", "", "", "", "TT-4", 0, "", "", "", false, "", true, false, true, "1", "token-prov-1", "0", "token-issuer-1", "", ""}, "", nil},
 
+		//[Once Frozen, Token Not allowed to : mint, burn, transfer-ownership, verify-ownership, accept-ownership] : OK
+		{"token", false, false, "Create token (FT-NEW01) - Happy Path", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "FT-NEW01", "FT-NEW01", 8, "acc-40", "", "", false, "10000", false, false, true, "", "", "", "", "", ""}, "", nil},
+		{"token", false, false, "Approve token (FT-NEW01) - for Dynamic-supply purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "FT-NEW01", "FT-NEW01", 0, "", "", "", false, "10000", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
+		{"token", false, false, "Freeze token (FT-NEW01) - Happy path. commit.", "token-auth-1", "0cin", 0, TokenInfo{"freeze", "", "", "", "FT-NEW01", 0, "", "", "", false, "", false, false, true, "1", "token-prov-1", "0", "token-issuer-1", "", ""}, "", nil},
+		{"token", true, true, "Mint token (FT-NEW01) - Error due to Token is frozen.", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "FT-NEW01", "FT-NEW01", 8, "acc-40", "carlo", "", false, "10000", false, false, true, "1", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Burn token (FT-NEW01) - Error due to Token is frozen.", "acc-40", "100000000cin", 0, TokenInfo{"burn", "", "", "", "FT-NEW01", 0, "acc-40", "", "", false, "", false, false, true, "200", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Transfer token ownership (FT-NEW01) - Error due to Token is frozen.", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "FT-NEW01", 8, "acc-40", "carlo", "", false, "", false, false, true, "1", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Approve transfer token ownership (FT-NEW01) - Error due to Invalid token action because of Token is frozen.", "token-auth-2", "0cin", 0, TokenInfo{"verify-transfer-tokenOwnership", "", "", "", "FT-NEW01", 0, "", "", "", false, "", false, false, true, "", "token-prov-2", "0", "token-issuer-2", "", "APPROVE_TRANFER_TOKEN_OWNERSHIP"}, "", nil},
+		{"token", true, true, "Accept token ownership (FT-NEW01) - Error due to Invalid token action because of Token is frozen.", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "FT-NEW01", 8, "acc-40", "carlo", "", false, "", false, false, true, "1", "", "", "", "", ""}, "", nil},
+		{"token", false, false, "Unfreeze token (FT-NEW01) - Happy path", "token-auth-1", "0cin", 0, TokenInfo{"unfreeze", "", "", "", "FT-NEW01", 0, "", "", "", false, "", false, false, true, "1", "token-prov-1", "0", "token-issuer-1", "", ""}, "", nil},
+
 		{"token", true, true, "Mint token - Not allow if was approved and frozen", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-4", 8, "acc-40", "carlo", "", false, "100000", true, true, false, "0", "", "", "", "", ""}, "", nil},
 
 		// Unfreeze Fungible Token - only if after the approved and already frozen
