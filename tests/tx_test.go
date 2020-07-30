@@ -37,7 +37,10 @@ func TestTxs(t *testing.T) {
 	assert.Equal(t, val1.OperatorAddress.String(), tValidator)
 
 	stdOut, _, _ := utils.RunProcess("", "mxwcli", []string{"query", "distribution", "validator-outstanding-rewards", "mxwvaloper1rjgjjkkjqtd676ydahysmnfsg0v4yvwfp2n965"})
-	s := strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
+	s := "0"
+	if len(stdOut) > 24 {
+		s = strings.TrimSpace(strings.Replace(stdOut[24:], "\"", "", -1))
+	}
 	initialRewards, _ := sdkTypes.NewDecFromStr(s)
 
 	acc1 := Account(tKeys["alice"].addrStr)
