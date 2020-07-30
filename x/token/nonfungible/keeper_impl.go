@@ -115,6 +115,11 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 
 	var item = new(Item)
 	k.cdc.MustUnmarshalBinaryLengthPrefixed(itemValue, item)
+
+	if item.Frozen {
+		return types.ErrTokenItemFrozen().Result()
+	}
+
 	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
@@ -172,6 +177,10 @@ func (k *Keeper) BurnNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	item := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if item == nil {
 		return types.ErrTokenItemNotFound().Result()
+	}
+
+	if item.Frozen {
+		return types.ErrTokenItemFrozen().Result()
 	}
 
 	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
@@ -374,11 +383,14 @@ func (k *Keeper) UpdateItemMetadata(ctx sdkTypes.Context, symbol string, from sd
 	}
 
 	if item.Frozen {
-		return types.ErrTokenItemFronzen().Result()
+		return types.ErrTokenItemFrozen().Result()
 	}
 
+	// Update Metadata need to retrieve the item owner to set back.
+	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 	item.Metadata = metadata
-	k.storeNonFungibleItem(ctx, symbol, from, item)
+
+	k.storeNonFungibleItem(ctx, symbol, itemOwner, item)
 
 	accountSequence := ownerWalletAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())

@@ -47,7 +47,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 	case kyc.MsgWhitelist:
 		if app.kycKeeper.IsKycAddressExist(ctx, msg.KycData.Payload.Kyc.KycAddress) {
-			return sdkTypes.NewError("mxw", 1001, "Kyc Address duplicated.")
+			return types.ErrKycDuplicated()
 		}
 
 		whitelistSignErr := app.kycKeeper.ValidateSignatures(ctx, msg)
@@ -204,6 +204,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		var account = new(fungible.FungibleTokenAccount)
 		account = app.fungibleTokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
+
+		if account.Frozen {
+			return types.ErrTokenAccountFrozen()
+		}
+
 		if account.Balance.LT(msg.Value) {
 			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
 		}
@@ -332,6 +337,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case nonFungible.MsgTransferNonFungibleItem:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -343,8 +353,9 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenItemNotFound()
 		}
 		if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.Symbol, msg.ItemID) {
-			return types.ErrTokenAccountFrozen()
+			return types.ErrTokenItemFrozen()
 		}
+		
 
 		// 1. [Transfer non fungible token item - Invalid Item-ID]
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
@@ -357,6 +368,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case nonFungible.MsgMintNonFungibleItem:
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -396,6 +411,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if item == nil {
 			return types.ErrTokenItemNotFound()
 		}
+
+		if item.Frozen {
+			return types.ErrTokenItemFrozen()
+		}
+
 		if !app.nonFungibleTokenKeeper.IsItemOwner(ctx, msg.Symbol, msg.ItemID, msg.From) {
 			return types.ErrInvalidItemOwner()
 		}
