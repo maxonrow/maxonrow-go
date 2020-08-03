@@ -69,7 +69,7 @@ func makeFeeTxs() []*testCase {
 		{"fee", false, false, "assign zero-fee to mostafa-commit", "nft-fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "nft-mostafa", "", "", "", "", "nft-fee-auth"}, "", nil},
 
 		// assign zero fee to sdk's airdrop address
-		{"fee", false, false, "assign zero-fee to sdk airdrop ddress", "nft-fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "airdrop", "", "", "", "", "nft-fee-auth"}, "", nil},
+		{"fee", false, false, "assign zero-fee to sdk airdrop address", "nft-fee-auth", "0cin", 0, feeInfo{"assign-acc", "zero", "airdrop", "", "", "", "", "nft-fee-auth"}, "", nil},
 
 		//=============================================start : used by fungible token modules
 		//set fee fore msgFungibleTokenMultiplier to fee 0cin
