@@ -1,3 +1,8 @@
+# Version 1.3.4
+- fix when burn and item is frozen, burn is not allowed
+- fix when ft/nft token if frozen there is no other action can be done until it is unfrozen. Except for nft
+  endorsement
+
 # Version 1.3.3
 - enable endorser list to update to empty
 
