@@ -29,7 +29,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			proposer := cliCtx.GetFromAddress()
-
+			fmt.Println(proposer)
 			proposalType := viper.GetString("proposal-type")
 			title := viper.GetString("title")
 			description := viper.GetString("description")
@@ -41,12 +41,15 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 			feeCollectorModule := viper.GetString("fee-collector-module")
 			action := viper.GetString("action")
 
+			fmt.Println("proposertype", proposalType)
 			proposalKind, proposalKindErr := maintenance.ProposalTypeFromString(proposalType)
 			if proposalKindErr != nil {
 				return proposalKindErr
 			}
 
+			fmt.Println("proposalKind", proposalKind)
 			fmt.Println(proposalKind)
+			fmt.Println(feeCollectorAddrStr)
 
 			var msg maintenance.MsgProposal
 			// TO-DO: better implementation
@@ -198,7 +201,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String("fee-collector", "", "Address to be added/removed as fee collector.")
 	cmd.Flags().String("fee-collector-module", "", "Fee collector has to assign to collect/removed fees for a module.")
 	cmd.Flags().String("action", "add", "Action can be remove or add.")
-	cmd.Flags().String("validator-address", "", "Validator address to be whitelisted or revoke.")
+	cmd.Flags().String("validator-pubkey", "", "Validator public key to be whitelisted or revoke.")
 	return cmd
 }
 
