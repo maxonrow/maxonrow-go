@@ -46,8 +46,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				return proposalKindErr
 			}
 
-			fmt.Println(proposalKind)
-
+	
 			var msg maintenance.MsgProposal
 			// TO-DO: better implementation
 			switch proposalKind {
@@ -198,7 +197,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String("fee-collector", "", "Address to be added/removed as fee collector.")
 	cmd.Flags().String("fee-collector-module", "", "Fee collector has to assign to collect/removed fees for a module.")
 	cmd.Flags().String("action", "add", "Action can be remove or add.")
-	cmd.Flags().String("validator-address", "", "Validator address to be whitelisted or revoke.")
+	cmd.Flags().String("validator-pubkey", "", "Validator public key to be whitelisted or revoke.")
 	return cmd
 }
 
