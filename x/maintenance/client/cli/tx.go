@@ -29,7 +29,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			proposer := cliCtx.GetFromAddress()
-			fmt.Println(proposer)
+
 			proposalType := viper.GetString("proposal-type")
 			title := viper.GetString("title")
 			description := viper.GetString("description")
@@ -41,16 +41,12 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 			feeCollectorModule := viper.GetString("fee-collector-module")
 			action := viper.GetString("action")
 
-			fmt.Println("proposertype", proposalType)
 			proposalKind, proposalKindErr := maintenance.ProposalTypeFromString(proposalType)
 			if proposalKindErr != nil {
 				return proposalKindErr
 			}
 
-			fmt.Println("proposalKind", proposalKind)
-			fmt.Println(proposalKind)
-			fmt.Println(feeCollectorAddrStr)
-
+	
 			var msg maintenance.MsgProposal
 			// TO-DO: better implementation
 			switch proposalKind {
