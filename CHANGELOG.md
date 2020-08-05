@@ -67,16 +67,11 @@
 - Alias letters and characters issue.
 - Kyc bind/unbind
 - RPC methods for debugging and query fees
-- RPC methods for getting accont status
-- mxwcli new features
-- mxwcli keyring
-- mxwcli enable to add key from mnemonic
+- RPC methods for getting accont status 
+- mxwcli enable to add key from mnemonic into keyring
+- Old keybase deprecated  
 - mxwcli generating multisig account address from sequence and owner address
 - Updating tests
-
-# Version 1.0.0
-- Launching Mainnet
-- Updating version
 
 # Version 1.0.0
 - Launching mainnet
