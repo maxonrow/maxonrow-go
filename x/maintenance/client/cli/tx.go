@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 	"strconv"
 
@@ -9,10 +10,10 @@ import (
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/maxonrow/maxonrow-go/x/maintenance"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/tendermint/tendermint/crypto"
-	"github.com/maxonrow/maxonrow-go/x/maintenance"
 )
 
 // GetCmdSubmitProposal is the CLI command for sending a BuyName transaction
@@ -24,7 +25,8 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 
 			proposer := cliCtx.GetFromAddress()
 
@@ -44,8 +46,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				return proposalKindErr
 			}
 
-			fmt.Println(proposalKind)
-
+	
 			var msg maintenance.MsgProposal
 			// TO-DO: better implementation
 			switch proposalKind {
@@ -141,6 +142,27 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 				tokenMaintainer := maintenance.NewTokenMaintainer(action, []sdkTypes.AccAddress{authorisedAddr}, []sdkTypes.AccAddress{issuerAddr}, []sdkTypes.AccAddress{providerAddr})
 
 				msg = maintenance.NewMsgSubmitProposal(title, description, proposalKind, &tokenMaintainer, proposer)
+			case maintenance.ProposalTypeModifyNonFungible:
+
+				if authorisedAddrStr == "" && issuerAddrStr == "" && providerAddrStr == "" {
+					return sdkTypes.ErrInternal(fmt.Sprintf("Proposal type error, please check: %s, --proposalType %s", proposalKind.String(), proposalType))
+				}
+
+				authorisedAddr, authorisedAddrErr := sdkTypes.AccAddressFromBech32(authorisedAddrStr)
+				if authorisedAddrErr != nil {
+					return authorisedAddrErr
+				}
+				providerAddr, providerAddrErr := sdkTypes.AccAddressFromBech32(providerAddrStr)
+				if providerAddrErr != nil {
+					return providerAddrErr
+				}
+				issuerAddr, issuerAddrErr := sdkTypes.AccAddressFromBech32(issuerAddrStr)
+				if issuerAddrErr != nil {
+					return issuerAddrErr
+				}
+				nonFungibleMaintainer := maintenance.NewNonFungibleMaintainer(action, []sdkTypes.AccAddress{authorisedAddr}, []sdkTypes.AccAddress{issuerAddr}, []sdkTypes.AccAddress{providerAddr})
+
+				msg = maintenance.NewMsgSubmitProposal(title, description, proposalKind, &nonFungibleMaintainer, proposer)
 			case maintenance.ProposalTypesModifyValidatorSet:
 
 				if validatorPubKeyStr == "" {
@@ -175,7 +197,7 @@ func GetCmdSubmitProposal(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String("fee-collector", "", "Address to be added/removed as fee collector.")
 	cmd.Flags().String("fee-collector-module", "", "Fee collector has to assign to collect/removed fees for a module.")
 	cmd.Flags().String("action", "add", "Action can be remove or add.")
-	cmd.Flags().String("validator-address", "", "Validator address to be whitelisted or revoke.")
+	cmd.Flags().String("validator-pubkey", "", "Validator public key to be whitelisted or revoke.")
 	return cmd
 }
 
@@ -187,7 +209,8 @@ func GetCmdCastAction(cdc *codec.Codec) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			caster := cliCtx.GetFromAddress()
 			proposalID := args[0]
 			proposalIDInt, err := strconv.ParseUint(proposalID, 10, 64)

@@ -297,16 +297,11 @@ func (k *Keeper) CreateFungibleToken(
 	event := types.MakeMxwEvents(eventSignature, owner.String(), eventParam)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: applicationFeeResult.Events.AppendEvents(event),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -341,7 +336,7 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 		if !k.feeKeeper.FeeSettingExists(ctx, tokenFee.FeeName) {
 			return types.ErrFeeSettingNotExists(tokenFee.FeeName).Result()
 		}
-		err := k.feeKeeper.AssignFeeToTokenAction(ctx, tokenFee.FeeName, token.Symbol, tokenFee.Action)
+		err := k.feeKeeper.AssignFeeToFungibleTokenAction(ctx, tokenFee.FeeName, token.Symbol, tokenFee.Action)
 		if err != nil {
 			return err.Result()
 		}
@@ -363,7 +358,7 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 	token.Flags = flags + ApprovedFlag
 	token.Metadata = metadata
 
-	account := k.getFungibleAccount(ctx, symbol, token.Owner)
+	account := k.GetFungibleAccount(ctx, symbol, token.Owner)
 	if account == nil {
 		account = k.createFungibleAccount(ctx, symbol, token.Owner)
 	}
@@ -384,12 +379,15 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 
 	k.storeToken(ctx, symbol, token)
 
+	// Get the token account again.
+	account = k.GetFungibleAccount(ctx, symbol, token.Owner)
+
 	var transferEvents sdkTypes.Events
 	if !account.Balance.IsZero() {
 		// Event: After approve, added total supply into token owner account.
-		transferEventParam := []string{symbol, "mxw000000000000000000000000000000000000000", ownerWalletAccount.GetAddress().String(), token.TotalSupply.String()}
+		transferEventParam := []string{symbol, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", ownerWalletAccount.GetAddress().String(), token.TotalSupply.String()}
 		transferEventSignature := "TransferredFungibleToken(string,string,string,bignumber)"
-		transferEvents = types.MakeMxwEvents(transferEventSignature, "mxw000000000000000000000000000000000000000", transferEventParam)
+		transferEvents = types.MakeMxwEvents(transferEventSignature, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", transferEventParam)
 	}
 	// Event: Approved fungible token
 	eventParam := []string{symbol, token.Owner.String()}
@@ -397,16 +395,11 @@ func (k *Keeper) approveFungibleToken(ctx sdkTypes.Context, symbol string, token
 	events := types.MakeMxwEvents(eventSignature, signer.String(), eventParam)
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: events.AppendEvents(transferEvents),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -443,16 +436,11 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 	eventSignature := "RejectedFungibleToken(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -493,16 +481,11 @@ func (k *Keeper) freezeFungibleToken(ctx sdkTypes.Context, symbol string, signer
 	eventSignature := "FrozenFungibleToken(string,string)"
 
 	accountSequence := signerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -543,16 +526,11 @@ func (k *Keeper) unfreezeFungibleToken(ctx sdkTypes.Context, symbol string, sign
 	eventSignature := "UnfreezeFungibleToken(string,string)"
 
 	accountSequence := signerAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, signer.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -560,7 +538,7 @@ func (k *Keeper) unfreezeFungibleToken(ctx sdkTypes.Context, symbol string, sign
 // FreezeFungibleTokenAccount
 func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, tokenAccount sdkTypes.AccAddress, metadata string) sdkTypes.Result {
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such fungible token.").Result()
 	}
 
@@ -573,7 +551,7 @@ func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string,
 		return sdkTypes.ErrInvalidSequence("Invalid signer.").Result()
 	}
 
-	fungibleAccount := k.getFungibleAccount(ctx, symbol, tokenAccount)
+	fungibleAccount := k.GetFungibleAccount(ctx, symbol, tokenAccount)
 	if fungibleAccount == nil {
 		return sdkTypes.ErrUnknownRequest("No such token account to freeze.").Result()
 	}
@@ -591,16 +569,11 @@ func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string,
 	eventSignature := "FrozenFungibleTokenAccount(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -615,11 +588,11 @@ func (k *Keeper) UnfreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol strin
 	}
 
 	var token = new(Token)
-	if exists := k.getTokenData(ctx, symbol, token); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, token); !exists {
 		return sdkTypes.ErrUnknownRequest("No such fungible token.").Result()
 	}
 
-	fungibleAccount := k.getFungibleAccount(ctx, symbol, tokenAccount)
+	fungibleAccount := k.GetFungibleAccount(ctx, symbol, tokenAccount)
 	if fungibleAccount == nil {
 		return sdkTypes.ErrUnknownRequest("No such fungible token account to unfreeze.").Result()
 	}
@@ -637,16 +610,11 @@ func (k *Keeper) UnfreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol strin
 	eventSignature := "UnfreezeFungibleTokenAccount(string,string)"
 
 	accountSequence := ownerWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, owner.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 
 }
@@ -680,16 +648,11 @@ func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol stri
 	eventSignature := "ApprovedTransferTokenOwnership(string,string,string)"
 
 	accountSequence := fromWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
@@ -724,20 +687,15 @@ func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol strin
 	eventSignature := "RejectedTransferTokenOwnership(string,string,string)"
 
 	accountSequence := fromWalletAccount.GetSequence()
-	var log string
-	if accountSequence == 0 {
-		log = types.MakeResultLog(accountSequence, ctx.TxBytes())
-	} else {
-		log = types.MakeResultLog(accountSequence-1, ctx.TxBytes())
-	}
+	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
 	return sdkTypes.Result{
 		Events: types.MakeMxwEvents(eventSignature, from.String(), eventParam),
-		Log:    log,
+		Log:    resultLog.String(),
 	}
 }
 
-func (k *Keeper) getTokenData(ctx sdkTypes.Context, symbol string, target interface{}) bool {
+func (k *Keeper) GetFungibleTokenDataInfo(ctx sdkTypes.Context, symbol string, target interface{}) bool {
 	store := ctx.KVStore(k.key)
 	key := getTokenKey(symbol)
 
@@ -760,7 +718,7 @@ func (k *Keeper) storeToken(ctx sdkTypes.Context, symbol string, token interface
 }
 
 // Accounts
-func (k *Keeper) getFungibleAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress) *FungibleTokenAccount {
+func (k *Keeper) GetFungibleAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress) *FungibleTokenAccount {
 	key := getFungibleAccountKey(symbol, owner)
 
 	store := ctx.KVStore(k.key)
@@ -796,11 +754,11 @@ func (k *Keeper) storeFungibleAccount(ctx sdkTypes.Context, symbol string, accou
 }
 
 func (k *Keeper) getAnyAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress) interface{} {
-	return k.getFungibleAccount(ctx, symbol, owner)
+	return k.GetFungibleAccount(ctx, symbol, owner)
 }
 
 func (k *Keeper) mustGetTokenData(ctx sdkTypes.Context, symbol string, target interface{}) sdkTypes.Error {
-	if exists := k.getTokenData(ctx, symbol, target); !exists {
+	if exists := k.GetFungibleTokenDataInfo(ctx, symbol, target); !exists {
 		return types.ErrInvalidTokenSymbol(symbol)
 	}
 	return nil
@@ -886,7 +844,7 @@ func (k *Keeper) IsTokenFrozen(ctx sdkTypes.Context, symbol string) bool {
 
 func (k *Keeper) IsFungibleTokenAccountFrozen(ctx sdkTypes.Context, account sdkTypes.AccAddress, symbol string) bool {
 
-	tokenAccount := k.getFungibleAccount(ctx, symbol, account)
+	tokenAccount := k.GetFungibleAccount(ctx, symbol, account)
 
 	if tokenAccount != nil {
 		if tokenAccount.Frozen {
@@ -898,7 +856,7 @@ func (k *Keeper) IsFungibleTokenAccountFrozen(ctx sdkTypes.Context, account sdkT
 }
 
 func (k *Keeper) subFungibleToken(ctx sdkTypes.Context, symbol string, address sdkTypes.AccAddress, value sdkTypes.Uint) sdkTypes.Error {
-	account := k.getFungibleAccount(ctx, symbol, address)
+	account := k.GetFungibleAccount(ctx, symbol, address)
 	if account != nil {
 		account.Balance = account.Balance.Sub(value)
 		k.storeFungibleAccount(ctx, symbol, account)
@@ -909,7 +867,7 @@ func (k *Keeper) subFungibleToken(ctx sdkTypes.Context, symbol string, address s
 }
 
 func (k *Keeper) addFungibleToken(ctx sdkTypes.Context, symbol string, address sdkTypes.AccAddress, value sdkTypes.Uint) sdkTypes.Error {
-	account := k.getFungibleAccount(ctx, symbol, address)
+	account := k.GetFungibleAccount(ctx, symbol, address)
 	if account != nil {
 		account.Balance = account.Balance.Add(value)
 		k.storeFungibleAccount(ctx, symbol, account)

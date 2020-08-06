@@ -3,24 +3,36 @@ package types
 import sdkTypes "github.com/cosmos/cosmos-sdk/types"
 
 const (
+
+	// Kyc
+	CodeNotKyc         sdkTypes.CodeType = 1000
+	CodeKycDuplicated  sdkTypes.CodeType = 1001
+	CodeReceicerNotKyc sdkTypes.CodeType = 1002
+
 	// Token
-	CodeTokenDuplicated                     sdkTypes.CodeType = 2001
-	CodeTokenInvalidSymbol                  sdkTypes.CodeType = 2002
-	CodeTokenApproved                       sdkTypes.CodeType = 2003
-	CodeTokenFrozen                         sdkTypes.CodeType = 2004
-	CodeTokenUnfrozen                       sdkTypes.CodeType = 2005
-	CodeTokenInvalid                        sdkTypes.CodeType = 2006
-	CodeTokenAccountFrozen                  sdkTypes.CodeType = 2007
-	CodeTokenAccountUnfrozen                sdkTypes.CodeType = 2008
-	CodeTokenInvalidMinter                  sdkTypes.CodeType = 2009
-	CodeTokenInvalidAccount                 sdkTypes.CodeType = 2010
-	CodeTokenInvalidSupply                  sdkTypes.CodeType = 2099
-	CodeTokenInvalidAccountBalance          sdkTypes.CodeType = 2100
-	CodeTokenInvalidAction                  sdkTypes.CodeType = 2101
-	CodeTokenInvalidNewOwner                sdkTypes.CodeType = 2102
-	CodeTokenInvalidOwner                   sdkTypes.CodeType = 2103
-	CodeTokenTransferTokenOwnershipApproved sdkTypes.CodeType = 2104
-	CodeTokenItemIDInUsed                   sdkTypes.CodeType = 2105
+	CodeTokenDuplicated                    sdkTypes.CodeType = 2001
+	CodeTokenInvalidSymbol                 sdkTypes.CodeType = 2002
+	CodeTokenApproved                      sdkTypes.CodeType = 2003
+	CodeTokenFrozen                        sdkTypes.CodeType = 2004
+	CodeTokenUnfrozen                      sdkTypes.CodeType = 2005
+	CodeTokenInvalid                       sdkTypes.CodeType = 2006
+	CodeTokenAccountFrozen                 sdkTypes.CodeType = 2007
+	CodeTokenAccountUnfrozen               sdkTypes.CodeType = 2008
+	CodeTokenInvalidMinter                 sdkTypes.CodeType = 2009
+	CodeTokenInvalidAccount                sdkTypes.CodeType = 2010
+	CodeTokenInvalidSupply                 sdkTypes.CodeType = 2099
+	CodeTokenInvalidAccountBalance         sdkTypes.CodeType = 2100
+	CodeTokenInvalidAction                 sdkTypes.CodeType = 2101
+	CodeTokenInvalidNewOwner               sdkTypes.CodeType = 2102
+	CodeTokenInvalidOwner                  sdkTypes.CodeType = 2103
+	CodeTokenTransferTokenOwnershipInvalid sdkTypes.CodeType = 2104
+	CodeTokenItemIDInUsed                  sdkTypes.CodeType = 2105
+	CodeTokenInvalidEndorser               sdkTypes.CodeType = 2106
+	CodeTokenItemFrozen                    sdkTypes.CodeType = 2107
+	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2108
+	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2109
+	CodeTokenItemNotFound                  sdkTypes.CodeType = 2110
+	CodeUnauthorisedEndorser               sdkTypes.CodeType = 2111
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -37,6 +49,19 @@ const (
 
 func newErrorWithMXWCodespace(code sdkTypes.CodeType, format string, args ...interface{}) sdkTypes.Error {
 	return sdkTypes.NewError(CodespaceMXW, code, format, args...)
+}
+
+// --- Kyc errors
+func ErrNotKyc() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeNotKyc, "All signers must pass kyc.")
+}
+
+func ErrKycDuplicated() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeKycDuplicated, "Kyc Address duplicated.")
+}
+
+func ErrReceiverNotKyc() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeReceicerNotKyc, "Receiver kyc is required.")
 }
 
 /// --- Fee errors
@@ -97,8 +122,12 @@ func ErrInvalidTokenOwner() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenInvalidOwner, "Invalid token owner.")
 }
 
-func ErrTokenTransferTokenOwnershipApproved() sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeTokenTransferTokenOwnershipApproved, "Transfer token ownership has been approved.")
+func ErrInvalidItemOwner() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenInvalidItemOwner, "Invalid item owner.")
+}
+
+func ErrTokenTransferTokenOwnershipInvalid() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenTransferTokenOwnershipInvalid, "Verify transfer token ownership invalid.")
 }
 
 // Alias
@@ -124,4 +153,23 @@ func ErrAliasCouldNotResolveAddress() sdkTypes.Error {
 
 func ErrTokenItemIDInUsed() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemIDInUsed, "Token item id is in used.")
+}
+
+func ErrInvalidEndorser() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenInvalidEndorser, "Token item endorser invalid.")
+}
+
+func ErrTokenItemFrozen() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item frozen.")
+}
+func ErrTokenItemNotModifiable() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemNotModifiable, "Token item not modifiable.")
+}
+
+func ErrTokenItemNotFound() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemNotFound, "Token item not found.")
+}
+
+func ErrUnauthorisedEndorser() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeUnauthorisedEndorser, "Endorser is not whitelisted.")
 }

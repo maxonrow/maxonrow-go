@@ -52,7 +52,7 @@ var (
 )
 
 // keysCmd represents the keys command
-func createAccount() *cobra.Command {
+func createKeyPairCommand() *cobra.Command {
 	keysCmd := &cobra.Command{
 		Use:   "create-keypair",
 		Short: "create the account with mnemonic, private key, public key and address",

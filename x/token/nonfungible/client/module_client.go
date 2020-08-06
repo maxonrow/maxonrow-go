@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
+	tokenCmd "github.com/maxonrow/maxonrow-go/x/token/nonfungible/client/cli"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
-	tokenCmd "github.com/maxonrow/maxonrow-go/x/token/fungible/client/cli"
 )
 
 type ModuleClient struct {
@@ -18,14 +18,14 @@ func NewModuleClient(storeKey string, cdc *amino.Codec) ModuleClient {
 
 func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 	queryCmd := &cobra.Command{
-		Use:   "token",
+		Use:   "non-fungible-token",
 		Short: "Querying commands for the token module",
 	}
 
 	queryCmd.AddCommand(client.GetCommands(
 		tokenCmd.ListTokenSymbolCmd(mc.storeKey, mc.cdc),
 		tokenCmd.GetTokenDataCmd(mc.storeKey, mc.cdc),
-		tokenCmd.GetAccountCmd(mc.storeKey, mc.cdc),
+		// tokenCmd.GetAccountCmd(mc.storeKey, mc.cdc),
 		//assetcmd.GetNonfungibleAssetCmd(mc.storeKey, mc.cdc),
 	)...)
 
@@ -34,16 +34,18 @@ func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 
 func (mc ModuleClient) GetTxCmd() *cobra.Command {
 	txCmd := &cobra.Command{
-		Use:   "token",
-		Short: "token transactions subcommands",
+		Use:   "non-fungible-token",
+		Short: "non fungible token transactions subcommands",
 	}
 
 	txCmd.AddCommand(client.PostCommands(
-		tokenCmd.CreateFungibleTokenCmd(mc.cdc),
-		tokenCmd.MintFungibleToken(mc.cdc),
-		tokenCmd.TransferFungibleTokenCmd(mc.cdc),
-		tokenCmd.TransferFungibleTokenOwnership(mc.cdc),
-		tokenCmd.BurnFungibleTokenCmd(mc.cdc),
+		tokenCmd.CreateNonFungibleTokenCmd(mc.cdc),
+		tokenCmd.TransferNonFungibleItem(mc.cdc),
+		tokenCmd.MintNonFungibleItem(mc.cdc),
+		tokenCmd.BurnNonFungibleItem(mc.cdc),
+		tokenCmd.TransferNonFungibleTokenOwnership(mc.cdc),
+		tokenCmd.Endorsement(mc.cdc),
+		// tokenCmd.BurnFungibleTokenCmd(mc.cdc),
 		// tokenCmd.ApproveTokenCmd(mc.cdc),
 		// tokenCmd.RejectAssetClassCmd(mc.cdc),
 		// tokenCmd.FreezeAssetClassCmd(mc.cdc),

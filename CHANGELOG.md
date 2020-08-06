@@ -1,3 +1,100 @@
+# Version 1.3.4
+- fix when burn and item is frozen, burn is not allowed
+- fix when ft/nft token if frozen there is no other action can be done until it is unfrozen. Except for nft
+  endorsement
+
+# Version 1.3.3
+- enable endorser list to update to empty
+
+# Version 1.3.2
+- disable delegation handlers
+- unregister codec for delegations
+
+# Version 1.3.1
+- split fee calculation between token (ft and nft)
+- added fee cli for setting ft/ nft multiplier, ft/ nft token fee by token action
+- added error code for checking update endorser(endorser has to be whitelisted)
+- added function for updating nft endorser list
+- update rpc endpoint for debug/fee_info to display nft and ft multiplier
+- fee with token action (nft/ft) will return default fee if not found
+- added query nonfungible fee collectors
+- added test case to create default action fees for token(ft nft) actions
+- added updateEndorserList as token action
+- MakeEndorsement added a field metadata
+- added test case for MakeEndorsement
+
+# Version 1.3.0
+- Disable multisig module
+- Account query fix #103
+- nft multisig test done
+- enable codec for fungible and nonfungible token in multisig.
+- symbol length change to 40
+- added validation for decimal in ft (token decimal not allow to be 0 or greater than 18)
+- disable rpc end point for listing token and nonfungible token 
+- added another rpc for test (AccountCdc)
+- remove cdc from querry account end point (Account)
+
+# Version 1.2.1
+- Adding non fungible token module
+- Adding fungible token module
+- Multi-signature account
+- NFT endorsment and endorsment list
+- NFT transfer limit
+- MltiSig: Removing pending Tx after broadcasting
+- NFT: Item owner only can transffer item
+- NFT: Public token (if it is public, user only can mint to themselves for nft item)
+- NFT: adding metadata and properties to the item
+- NFT: Check mutibility for metadata and properties
+- NFT: transfer limit and mint limit checks
+- NFT: REJECT-TOKEN and REJECT-TRANSFER-OWNERSHIP
+- Multisig: Broadcasting Internal transaction after approval
+- MultiSig: check group account is it exist, validate internal transaction message.
+- MultiSig: Delete pending Tx
+- MultiSig: Signer without KYC
+- Checking NFT-item metadata and properties length. Bug #31
+- Signature verification without public key
+- Multisig account with one signer. Bug #35
+- Non-fungible token item can be retransffered. Bug #59
+- re-mint nft token Bug #60
+- Multisig re-submission a Tx. Bug #77
+- Created unique address for multisig account upon creation
+- Broadcasting internal transaction when rpc is disabled
+- Craeting two multisig txs at the same time, Approve the second before the first
+- Check token validity before processing tx.
+- Fee for message types.
+- Application fee should be deducted at ante handler.
+- Fee multiplier.
+- Alias letters and characters issue.
+- Kyc bind/unbind
+- RPC methods for debugging and query fees
+- RPC methods for getting accont status 
+- mxwcli enable to add key from mnemonic into keyring
+- Old keybase deprecated  
+- mxwcli generating multisig account address from sequence and owner address
+- Updating tests
+
+# Version 1.0.0
+- Launching mainnet
+- Updating version
+
+# Version 0.7.4
+- Added fee cli enable deleting account fee setting
+
+# Version 0.7.3
+- Fix fee multiplier/ token multiplier for fee calculation
+
+# Version 0.7.2
+- Fix fee setting multiplier cli
+- Fix get account fee setting in fee calculation
+- Add fee setting cli to enable setting fee setting for token with token action
+
+# Version 0.7.1
+- Non Fungible token implementation. (disabled)
+- Added Fee setting cli, able to edit, delete existing system fee setting
+- Added token listing rpc
+- Remove genesis rpc
+- Cosmos-sdk & tendermint upgraded
+
 # Version 0.7.0
 - Nameservice module released
 - Token module released

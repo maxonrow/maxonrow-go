@@ -10,12 +10,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addImportKeyCommand(keyCmd *cobra.Command) *cobra.Command {
+func addImportMnemonicCommand(keyCmd *cobra.Command) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "import-mnemonic <name> <mnemonic>",
 		Short: "Import key from mnemonic phrase",
 		Args:  cobra.ExactArgs(2),
-		RunE:  runAddCmd,
+		RunE:  runImportMnemonicCmd,
 	}
 
 	keyCmd.AddCommand(cmd)
@@ -25,11 +25,11 @@ func addImportKeyCommand(keyCmd *cobra.Command) *cobra.Command {
 	return cmd
 }
 
-func runAddCmd(cmd *cobra.Command, args []string) error {
+func runImportMnemonicCmd(cmd *cobra.Command, args []string) error {
 
 	var kb keys.Keybase
 
-	kb, err := clientKeys.NewKeyBaseFromHomeFlag()
+	kb, err := clientKeys.NewKeyringFromHomeFlag(cmd.InOrStdin())
 	if err != nil {
 		return err
 	}

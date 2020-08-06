@@ -9,15 +9,13 @@ import (
 )
 
 const (
-	// TODO TODO - calculate exactly
-	MetadataMaxLength    = 60
+	MaxLength            = 256
 	TokenNameMaxLength   = 100
-	TokenSymbolMaxLength = 100
+	TokenSymbolMaxLength = 40
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {
 	if len(tokenName) == 0 || len(tokenName) > TokenNameMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token name field length: %d", len(tokenName)))
 	}
@@ -29,9 +27,8 @@ func validateTokenName(tokenName string) sdkTypes.Error {
 	return nil
 }
 
-func validateSymbol(symbol string) sdkTypes.Error {
+func ValidateSymbol(symbol string) sdkTypes.Error {
 	if len(symbol) == 0 || len(symbol) > TokenSymbolMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token symbol field length: %d", len(symbol)))
 	}
@@ -43,9 +40,17 @@ func validateSymbol(symbol string) sdkTypes.Error {
 	return nil
 }
 
-func validateMetadata(link string) sdkTypes.Error {
-	if len(link) > MetadataMaxLength {
-		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid metadata field length: %d", len(link)))
+func validateMetadata(metadata string) sdkTypes.Error {
+	if len(metadata) > MaxLength {
+		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid metadata field length: %d", len(metadata)))
+	}
+
+	return nil
+}
+
+func validateProperties(properties string) sdkTypes.Error {
+	if len(properties) > MaxLength {
+		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid properties field length: %d", len(properties)))
 	}
 
 	return nil

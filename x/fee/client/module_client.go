@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
+	feeCmd "github.com/maxonrow/maxonrow-go/x/fee/client/cli"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
-	feeCmd "github.com/maxonrow/maxonrow-go/x/fee/client/cli"
 )
 
 type ModuleClient struct {
@@ -25,9 +25,11 @@ func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 	queryCmd.AddCommand(client.GetCommands(
 		feeCmd.GetSysFeeSetting(mc.cdc),
 		feeCmd.GetMsgFeeSetting(mc.cdc),
-		feeCmd.GetTokenFeeSetting(mc.cdc),
+		feeCmd.GetFungibleTokenFeeSetting(mc.cdc),
+		feeCmd.GetNonFungibleTokenFeeSetting(mc.cdc),
 		feeCmd.GetFeeMultiplier(mc.cdc),
-		feeCmd.GetTokenFeeMultiplier(mc.cdc),
+		feeCmd.GetFungibleTokenFeeMultiplier(mc.cdc),
+		feeCmd.GetNonFungibleTokenFeeMultiplier(mc.cdc),
 		feeCmd.GetAccFeeSetting(mc.cdc),
 	)...)
 
@@ -47,8 +49,12 @@ func (mc ModuleClient) GetTxCmd() *cobra.Command {
 		feeCmd.CreateMsgAssignFeeToMsg(mc.cdc),
 		feeCmd.CreateMsgAssignFeeToAcc(mc.cdc),
 		feeCmd.CreateFeeMultiplier(mc.cdc),
-		feeCmd.CreateTokenFeeMultiplier(mc.cdc),
-		feeCmd.AddSysFeeSetting(mc.cdc),
+		feeCmd.CreateFungibleTokenFeeMultiplier(mc.cdc),
+		feeCmd.CreateNonFungibleTokenFeeMultiplier(mc.cdc),
+		feeCmd.SetFungibleTokenFeeSetting(mc.cdc),
+		feeCmd.SetNonFungibleTokenFeeSetting(mc.cdc),
+		feeCmd.CreateMsgDeleteAccountFeeSetting(mc.cdc),
+		//feeCmd.AddSysFeeSetting(mc.cdc),
 	)...)
 
 	return txCmd

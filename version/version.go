@@ -4,8 +4,8 @@ import "fmt"
 
 const (
 	Maj = "1"
-	Min = "0"
-	Fix = "0"
+	Min = "3"
+	Fix = "4"
 )
 
 var (

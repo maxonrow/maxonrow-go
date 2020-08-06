@@ -9,15 +9,13 @@ import (
 )
 
 const (
-	// TODO TODO - calculate exactly
-	MetadataMaxLength    = 60
+	MetadataMaxLength    = 256
 	TokenNameMaxLength   = 100
-	TokenSymbolMaxLength = 100
+	TokenSymbolMaxLength = 40
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {
 	if len(tokenName) == 0 || len(tokenName) > TokenNameMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token name field length: %d", len(tokenName)))
 	}
@@ -31,7 +29,6 @@ func validateTokenName(tokenName string) sdkTypes.Error {
 
 func validateSymbol(symbol string) sdkTypes.Error {
 	if len(symbol) == 0 || len(symbol) > TokenSymbolMaxLength {
-		// TODO - return appropriate error - need to have something like ErrInvalidRequest
 		return sdkTypes.ErrUnknownRequest(
 			fmt.Sprintf("Invalid token symbol field length: %d", len(symbol)))
 	}
@@ -57,5 +54,12 @@ func validateAmount(amount string) sdkTypes.Error {
 		return sdkTypes.ErrInvalidCoins(fmt.Sprintf("Invalid amount string: %s", err))
 	}
 
+	return nil
+}
+
+func validateDecimal(decimal int) sdkTypes.Error {
+	if decimal < 0 || decimal > 18 {
+		return sdkTypes.ErrInternal("Invalid decimal")
+	}
 	return nil
 }

@@ -12,23 +12,39 @@ import (
 
 func TestFeeCalc(t *testing.T) {
 	ctx := sdkTypes.Context{}
-	min, _ := sdkTypes.ParseCoins("1000000000000000cin,")
-	max, _ := sdkTypes.ParseCoins("1000000000000000000000000cin")
+	min1, _ := sdkTypes.ParseCoins("300000000000000000cin")
+	max1, _ := sdkTypes.ParseCoins("1598765330000000000cin")
 	feeSetting1 := &fee.FeeSetting{
-		Name: "test",
+		Name: "test1",
 
-		Min:        min,
-		Max:        max,
-		Percentage: "0.50",
+		Min:        min1,
+		Max:        max1,
+		Percentage: "0.5012345643",
 	}
 
-	amt1, _ := sdkTypes.ParseCoins("11111111111111111cin")
-	expectedFee1, _ := sdkTypes.ParseCoins("55555555555556cin")
-
-	fee1, err := calculateFee(ctx, feeSetting1, "1", amt1)
+	amt1, _ := sdkTypes.ParseCoins("88123455432100000000cin")
+	expectedFee1, _ := sdkTypes.ParseCoins("4369016736367332cin")
+	fee1, err := calculateFee(ctx, feeSetting1, "0.00989125", amt1)
 	fmt.Println(fee1)
 	assert.NoError(t, err)
 	assert.Equal(t, fee1, expectedFee1)
+
+	min2, _ := sdkTypes.ParseCoins("50cin")
+	max2, _ := sdkTypes.ParseCoins("100cin")
+	feeSetting2 := &fee.FeeSetting{
+		Name: "test2",
+
+		Min:        min2,
+		Max:        max2,
+		Percentage: "0.50",
+	}
+
+	amt2, _ := sdkTypes.ParseCoins("11111cin")
+	expectedFee2, _ := sdkTypes.ParseCoins("39cin")
+	fee2, err := calculateFee(ctx, feeSetting2, "0.69", amt2)
+	fmt.Println(fee2)
+	assert.NoError(t, err)
+	assert.Equal(t, fee2, expectedFee2)
 }
 
 func TestFeeCalcBadPercentage(t *testing.T) {

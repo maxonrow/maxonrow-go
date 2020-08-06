@@ -57,12 +57,12 @@ func WaitForHeightTM(height int64, port string) {
 
 func waitForHeightTM(height int64, url string) {
 	cl := tmclient.NewHTTP(url, "/websocket")
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 10; i++ {
 		// get url, try a few times
 		var resBlock *ctypes.ResultBlock
 		var err error
 	INNER:
-		for i := 0; i < 5; i++ {
+		for j := 0; j < 5; j++ {
 			resBlock, err = cl.Block(nil)
 			if err == nil {
 				break INNER
@@ -233,12 +233,21 @@ func Tx(hash []byte) *ctypes.ResultTx {
 	return nil
 }
 
+func AccSequence(addr string) uint64 {
+	acc := Account(addr)
+	if acc != nil {
+		return acc.GetSequence()
+	}
+	return uint64(0)
+}
+
 func Account(addr string) *sdkAuth.BaseAccount {
 	var bz string
-	_, err := tClient.Call("account", map[string]interface{}{"address": addr}, &bz)
+	_, err := tClient.Call("account_cdc", map[string]interface{}{"address": addr}, &bz)
 	if err == nil {
 		acc := new(sdkAuth.BaseAccount)
 		cdc := app.MakeDefaultCodec()
+
 		err := cdc.UnmarshalJSON([]byte(bz), acc)
 		if err != nil {
 			return nil

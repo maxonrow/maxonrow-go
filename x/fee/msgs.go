@@ -187,6 +187,46 @@ func (msg MsgAssignFeeToAcc) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Issuer}
 }
 
+type MsgDeleteAccFeeSetting struct {
+	Account sdkTypes.AccAddress `json:"account"`
+	Issuer  sdkTypes.AccAddress `json:"issuer"`
+}
+
+func NewMsgDeleteAccFeeSetting(account, issuer sdkTypes.AccAddress) MsgDeleteAccFeeSetting {
+	return MsgDeleteAccFeeSetting{
+		Account: account,
+		Issuer:  issuer,
+	}
+}
+
+func (msg MsgDeleteAccFeeSetting) Route() string {
+	return routeName
+}
+
+func (msg MsgDeleteAccFeeSetting) Type() string {
+	return "deleteAccFeeSetting"
+}
+
+func (msg MsgDeleteAccFeeSetting) ValidateBasic() sdkTypes.Error {
+	if msg.Issuer.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
+	}
+
+	if msg.Account.Empty() {
+		return sdkTypes.ErrInvalidCoins("Account cant be empty.")
+	}
+
+	return nil
+}
+
+func (msg MsgDeleteAccFeeSetting) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgDeleteAccFeeSetting) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.Issuer}
+}
+
 // MsgMultiplier create/update fee multiplier
 type MsgMultiplier struct {
 	Multiplier string              `json:"multiplier"`
@@ -239,31 +279,31 @@ func (msg MsgMultiplier) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Issuer}
 }
 
-// MsgTokenMultiplier create/update token fee multiplier
-type MsgTokenMultiplier struct {
-	Multiplier string              `json:"multiplier"`
-	Issuer     sdkTypes.AccAddress `json:"issuer"`
+// MsgFungibleTokenMultiplier create/update fungible token fee multiplier
+type MsgFungibleTokenMultiplier struct {
+	FtMultiplier string              `json:"ftMultiplier"`
+	Issuer       sdkTypes.AccAddress `json:"issuer"`
 }
 
-func NewMsgTokenMultiplier(multiplier string, issuer sdkTypes.AccAddress) MsgTokenMultiplier {
-	return MsgTokenMultiplier{
-		Multiplier: multiplier,
-		Issuer:     issuer,
+func NewMsgFungibleTokenMultiplier(multiplier string, issuer sdkTypes.AccAddress) MsgFungibleTokenMultiplier {
+	return MsgFungibleTokenMultiplier{
+		FtMultiplier: multiplier,
+		Issuer:       issuer,
 	}
 }
 
-func (msg MsgTokenMultiplier) Route() string {
+func (msg MsgFungibleTokenMultiplier) Route() string {
 	return routeName
 }
 
-func (msg MsgTokenMultiplier) Type() string {
-	return "updateTokenMultiplier"
+func (msg MsgFungibleTokenMultiplier) Type() string {
+	return "updateFungibleTokenMultiplier"
 }
 
-func (msg MsgTokenMultiplier) ValidateBasic() sdkTypes.Error {
+func (msg MsgFungibleTokenMultiplier) ValidateBasic() sdkTypes.Error {
 
 	minMultiplier, _ := sdkTypes.NewDecFromStr("0")
-	multiplier, err := sdkTypes.NewDecFromStr(msg.Multiplier)
+	multiplier, err := sdkTypes.NewDecFromStr(msg.FtMultiplier)
 	if err != nil {
 		return err
 	}
@@ -272,7 +312,7 @@ func (msg MsgTokenMultiplier) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
 	}
 
-	if len(msg.Multiplier) <= 0 {
+	if len(msg.FtMultiplier) <= 0 {
 		return sdkTypes.ErrInvalidCoins("Multiplier cant be empty.")
 	}
 
@@ -283,23 +323,75 @@ func (msg MsgTokenMultiplier) ValidateBasic() sdkTypes.Error {
 	return nil
 }
 
-func (msg MsgTokenMultiplier) GetSignBytes() []byte {
+func (msg MsgFungibleTokenMultiplier) GetSignBytes() []byte {
 	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgTokenMultiplier) GetSigners() []sdkTypes.AccAddress {
+func (msg MsgFungibleTokenMultiplier) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Issuer}
 }
 
-type MsgAssignFeeToToken struct {
+// MsgNonFungibleTokenMultiplier create/update nonFungible token fee multiplier
+type MsgNonFungibleTokenMultiplier struct {
+	NftMultiplier string              `json:"nftMultiplier"`
+	Issuer        sdkTypes.AccAddress `json:"issuer"`
+}
+
+func NewMsgNonFungibleTokenMultiplier(multiplier string, issuer sdkTypes.AccAddress) MsgNonFungibleTokenMultiplier {
+	return MsgNonFungibleTokenMultiplier{
+		NftMultiplier: multiplier,
+		Issuer:        issuer,
+	}
+}
+
+func (msg MsgNonFungibleTokenMultiplier) Route() string {
+	return routeName
+}
+
+func (msg MsgNonFungibleTokenMultiplier) Type() string {
+	return "updateNonFungibleTokenMultiplier"
+}
+
+func (msg MsgNonFungibleTokenMultiplier) ValidateBasic() sdkTypes.Error {
+
+	minMultiplier, _ := sdkTypes.NewDecFromStr("0")
+	multiplier, err := sdkTypes.NewDecFromStr(msg.NftMultiplier)
+	if err != nil {
+		return err
+	}
+
+	if msg.Issuer.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
+	}
+
+	if len(msg.NftMultiplier) <= 0 {
+		return sdkTypes.ErrInvalidCoins("Multiplier cant be empty.")
+	}
+
+	if !multiplier.GT(minMultiplier) {
+		return sdkTypes.ErrInternal("Multiplier invalid.")
+	}
+
+	return nil
+}
+
+func (msg MsgNonFungibleTokenMultiplier) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgNonFungibleTokenMultiplier) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.Issuer}
+}
+
+type MsgAssignFeeToFungibleToken struct {
 	FeeName string              `json:"fee_name"`
 	Symbol  string              `json:"symbol"`
 	Action  string              `json:"action"`
 	Issuer  sdkTypes.AccAddress `json:"issuer"`
 }
 
-func NewMsgAssignFeeToToken(name, symbol, action string, issuer sdkTypes.AccAddress) MsgAssignFeeToToken {
-	return MsgAssignFeeToToken{
+func NewMsgAssignFeeToFungibleToken(name, symbol, action string, issuer sdkTypes.AccAddress) MsgAssignFeeToFungibleToken {
+	return MsgAssignFeeToFungibleToken{
 		FeeName: name,
 		Symbol:  symbol,
 		Action:  action,
@@ -307,15 +399,15 @@ func NewMsgAssignFeeToToken(name, symbol, action string, issuer sdkTypes.AccAddr
 	}
 }
 
-func (msg MsgAssignFeeToToken) Route() string {
+func (msg MsgAssignFeeToFungibleToken) Route() string {
 	return routeName
 }
 
-func (msg MsgAssignFeeToToken) Type() string {
-	return "assignFeeToToken"
+func (msg MsgAssignFeeToFungibleToken) Type() string {
+	return "assignFeeToFungibleToken"
 }
 
-func (msg MsgAssignFeeToToken) ValidateBasic() sdkTypes.Error {
+func (msg MsgAssignFeeToFungibleToken) ValidateBasic() sdkTypes.Error {
 	if msg.Issuer.Empty() {
 		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
 	}
@@ -335,10 +427,62 @@ func (msg MsgAssignFeeToToken) ValidateBasic() sdkTypes.Error {
 	return nil
 }
 
-func (msg MsgAssignFeeToToken) GetSignBytes() []byte {
+func (msg MsgAssignFeeToFungibleToken) GetSignBytes() []byte {
 	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
 }
 
-func (msg MsgAssignFeeToToken) GetSigners() []sdkTypes.AccAddress {
+func (msg MsgAssignFeeToFungibleToken) GetSigners() []sdkTypes.AccAddress {
+	return []sdkTypes.AccAddress{msg.Issuer}
+}
+
+type MsgAssignFeeToNonFungibleToken struct {
+	FeeName string              `json:"fee_name"`
+	Symbol  string              `json:"symbol"`
+	Action  string              `json:"action"`
+	Issuer  sdkTypes.AccAddress `json:"issuer"`
+}
+
+func NewMsgAssignFeeToNonFungibleToken(name, symbol, action string, issuer sdkTypes.AccAddress) MsgAssignFeeToNonFungibleToken {
+	return MsgAssignFeeToNonFungibleToken{
+		FeeName: name,
+		Symbol:  symbol,
+		Action:  action,
+		Issuer:  issuer,
+	}
+}
+
+func (msg MsgAssignFeeToNonFungibleToken) Route() string {
+	return routeName
+}
+
+func (msg MsgAssignFeeToNonFungibleToken) Type() string {
+	return "assignFeeToNonFungibleToken"
+}
+
+func (msg MsgAssignFeeToNonFungibleToken) ValidateBasic() sdkTypes.Error {
+	if msg.Issuer.Empty() {
+		return sdkTypes.ErrInvalidAddress(msg.Issuer.String())
+	}
+
+	if len(msg.FeeName) <= 0 {
+		return sdkTypes.ErrInvalidCoins("Fee name type cant be empty.")
+	}
+
+	if len(msg.Symbol) <= 0 {
+		return sdkTypes.ErrInvalidCoins("Symbol cant be empty.")
+	}
+
+	if len(msg.Action) <= 0 {
+		return sdkTypes.ErrInvalidCoins("Action cant be empty.")
+	}
+
+	return nil
+}
+
+func (msg MsgAssignFeeToNonFungibleToken) GetSignBytes() []byte {
+	return sdkTypes.MustSortJSON(msgCdc.MustMarshalJSON(msg))
+}
+
+func (msg MsgAssignFeeToNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Issuer}
 }

@@ -18,6 +18,16 @@ import (
 	sdkParams "github.com/cosmos/cosmos-sdk/x/params"
 	sdkStaking "github.com/cosmos/cosmos-sdk/x/staking"
 	sdkSupply "github.com/cosmos/cosmos-sdk/x/supply"
+	"github.com/maxonrow/maxonrow-go/genesis"
+	"github.com/maxonrow/maxonrow-go/types"
+	"github.com/maxonrow/maxonrow-go/x/auth"
+	"github.com/maxonrow/maxonrow-go/x/bank"
+	"github.com/maxonrow/maxonrow-go/x/fee"
+	"github.com/maxonrow/maxonrow-go/x/kyc"
+	"github.com/maxonrow/maxonrow-go/x/maintenance"
+	"github.com/maxonrow/maxonrow-go/x/nameservice"
+	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
+	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/tendermint/tendermint/libs/common"
 	"github.com/tendermint/tendermint/libs/log"
@@ -25,15 +35,6 @@ import (
 	rpc "github.com/tendermint/tendermint/rpc/lib/server"
 	tm "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
-	"github.com/maxonrow/maxonrow-go/genesis"
-	"github.com/maxonrow/maxonrow-go/types"
-	"github.com/maxonrow/maxonrow-go/x/bank"
-	"github.com/maxonrow/maxonrow-go/x/fee"
-	"github.com/maxonrow/maxonrow-go/x/kyc"
-	"github.com/maxonrow/maxonrow-go/x/maintenance"
-	"github.com/maxonrow/maxonrow-go/x/nameservice"
-	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
-	//nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 )
 
 const (
@@ -55,17 +56,16 @@ type mxwApp struct {
 	authAnteHandler sdkTypes.AnteHandler
 
 	// Storage keys
-	keyMain     *sdkTypes.KVStoreKey
-	keyAccount  *sdkTypes.KVStoreKey
-	keyNSnames  *sdkTypes.KVStoreKey
-	keyNSowners *sdkTypes.KVStoreKey
-	keySupply   *sdkTypes.KVStoreKey
-	keyStaking  *sdkTypes.KVStoreKey
-	keyParams   *sdkTypes.KVStoreKey
-	tkeyParams  *sdkTypes.TransientStoreKey
-	keyDistr    *sdkTypes.KVStoreKey
-	keyToken    *sdkTypes.KVStoreKey
-	//keyNonFungible  *sdkTypes.KVStoreKey
+	keyMain         *sdkTypes.KVStoreKey
+	keyAccount      *sdkTypes.KVStoreKey
+	keyNSnames      *sdkTypes.KVStoreKey
+	keyNSowners     *sdkTypes.KVStoreKey
+	keySupply       *sdkTypes.KVStoreKey
+	keyStaking      *sdkTypes.KVStoreKey
+	keyParams       *sdkTypes.KVStoreKey
+	tkeyParams      *sdkTypes.TransientStoreKey
+	keyDistr        *sdkTypes.KVStoreKey
+	keyToken        *sdkTypes.KVStoreKey
 	keyFee          *sdkTypes.KVStoreKey
 	KeyKyc          *sdkTypes.KVStoreKey
 	KeyKycData      *sdkTypes.KVStoreKey
@@ -73,18 +73,20 @@ type mxwApp struct {
 	KeyValidatorSet *sdkTypes.KVStoreKey
 
 	// Keepers
-	accountKeeper sdkAuth.AccountKeeper
-	supplyKeeper  sdkSupply.Keeper
-	bankKeeper    sdkBank.Keeper
-	stakingKeeper sdkStaking.Keeper
-	distrKeeper   sdkDist.Keeper
-	paramsKeeper  sdkParams.Keeper
-	nsKeeper      nameservice.Keeper
-	kycKeeper     kyc.Keeper
-	tokenKeeper   fungible.Keeper
-	//nonFungibleTokenKeeper nonFungible.Keeper
-	feeKeeper         fee.Keeper
-	maintenanceKeeper maintenance.Keeper
+	accountKeeper          sdkAuth.AccountKeeper
+	supplyKeeper           sdkSupply.Keeper
+	bankKeeper             sdkBank.Keeper
+	stakingKeeper          sdkStaking.Keeper
+	distrKeeper            sdkDist.Keeper
+	paramsKeeper           sdkParams.Keeper
+	nsKeeper               nameservice.Keeper
+	kycKeeper              kyc.Keeper
+	fungibleTokenKeeper    fungible.Keeper
+	nonFungibleTokenKeeper nonFungible.Keeper
+	feeKeeper              fee.Keeper
+	maintenanceKeeper      maintenance.Keeper
+
+	router sdkTypes.Router
 
 	mm *module.Manager
 
@@ -100,6 +102,7 @@ func init() {
 	config.SetBech32PrefixForConsensusNode(types.Bech32PrefixConsAddr, types.Bech32PrefixConsPub)
 	config.SetCoinType(376)
 	config.SetFullFundraiserPath("44'/376'/0'/0/0")
+	config.SetKeyringServiceName("mxw")
 
 	config.Seal()
 
@@ -122,20 +125,19 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	base := baseapp.NewBaseApp(appName, logger, db, sdkAuth.DefaultTxDecoder(cdc))
 
 	app := &mxwApp{
-		BaseApp:     base,
-		cdc:         cdc,
-		logger:      logger,
-		keyMain:     sdkTypes.NewKVStoreKey("main"),
-		keyAccount:  sdkTypes.NewKVStoreKey("acc"),
-		keyNSnames:  sdkTypes.NewKVStoreKey("ns_names"),
-		keyNSowners: sdkTypes.NewKVStoreKey("ns_owners"),
-		keySupply:   sdkTypes.NewKVStoreKey("supply"),
-		keyStaking:  sdkTypes.NewKVStoreKey("staking"),
-		keyParams:   sdkTypes.NewKVStoreKey("params"),
-		tkeyParams:  sdkTypes.NewTransientStoreKey("transient_params"),
-		keyDistr:    sdkTypes.NewKVStoreKey("distr"),
-		keyToken:    sdkTypes.NewKVStoreKey("token"),
-		//keyNonFungible:  sdkTypes.NewKVStoreKey("nonFungible"),
+		BaseApp:         base,
+		cdc:             cdc,
+		logger:          logger,
+		keyMain:         sdkTypes.NewKVStoreKey("main"),
+		keyAccount:      sdkTypes.NewKVStoreKey("acc"),
+		keyNSnames:      sdkTypes.NewKVStoreKey("ns_names"),
+		keyNSowners:     sdkTypes.NewKVStoreKey("ns_owners"),
+		keySupply:       sdkTypes.NewKVStoreKey("supply"),
+		keyStaking:      sdkTypes.NewKVStoreKey("staking"),
+		keyParams:       sdkTypes.NewKVStoreKey("params"),
+		tkeyParams:      sdkTypes.NewTransientStoreKey("transient_params"),
+		keyDistr:        sdkTypes.NewKVStoreKey("distr"),
+		keyToken:        sdkTypes.NewKVStoreKey("token"),
 		keyFee:          sdkTypes.NewKVStoreKey("fee"),
 		KeyKyc:          sdkTypes.NewKVStoreKey("kyc"),
 		KeyKycData:      sdkTypes.NewKVStoreKey("kycData"),
@@ -211,8 +213,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		app.ModuleAccountAddrs(maccPerms),
 	)
 
-	app.tokenKeeper = fungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
-	//app.nonFungibleTokenKeeper = nonFungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyNonFungible)
+	app.fungibleTokenKeeper = fungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
+	app.nonFungibleTokenKeeper = nonFungible.NewKeeper(cdc, &app.accountKeeper, &app.feeKeeper, app.keyToken)
 	app.feeKeeper = fee.NewKeeper(cdc, app.keyFee)
 	app.kycKeeper = kyc.NewKeeper(cdc, &app.accountKeeper, app.KeyKyc, app.KeyKycData)
 	app.maintenanceKeeper = maintenance.NewKeeper(cdc, app.KeyMaintenance, app.KeyValidatorSet, app.executeProposal)
@@ -234,18 +236,19 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		sdkAuth.NewAppModule(app.accountKeeper),
 		sdkBank.NewAppModule(app.bankKeeper, app.accountKeeper),
 		sdkSupply.NewAppModule(app.supplyKeeper, app.accountKeeper),
-		sdkDist.NewAppModule(app.distrKeeper, app.supplyKeeper),
+		sdkDist.NewAppModule(app.distrKeeper, app.accountKeeper, app.supplyKeeper, app.stakingKeeper),
 		sdkStaking.NewAppModule(app.stakingKeeper, app.accountKeeper, app.supplyKeeper),
 	)
 
 	app.Router().
+		//AddRoute("auth", auth.NewHandler(app.accountKeeper, app.kycKeeper, app.txEncoder)).
 		AddRoute("bank", bank.NewHandler(app.bankKeeper, app.accountKeeper)).
 		AddRoute("staking", sdkStaking.NewHandler(app.stakingKeeper)).
 		AddRoute("distribution", sdkDist.NewHandler(app.distrKeeper)).
 		AddRoute("nameservice", nameservice.NewHandler(app.nsKeeper)).
 		AddRoute("kyc", kyc.NewHandler(&app.kycKeeper)).
-		AddRoute("token", fungible.NewHandler(&app.tokenKeeper)).
-		//AddRoute("nonFungible", nonFungible.NewHandler(&app.nonFungibleTokenKeeper)).
+		AddRoute("token", fungible.NewHandler(&app.fungibleTokenKeeper)).
+		AddRoute("nonFungible", nonFungible.NewHandler(&app.nonFungibleTokenKeeper)).
 		AddRoute("fee", fee.NewHandler(&app.feeKeeper)).
 		AddRoute("maintenance", maintenance.NewHandler(&app.maintenanceKeeper, &app.accountKeeper))
 
@@ -256,11 +259,13 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		AddRoute("distribution", sdkDist.NewQuerier(app.distrKeeper)).
 		AddRoute("nameservice", nameservice.NewQuerier(app.cdc, app.nsKeeper, app.feeKeeper)).
 		AddRoute("kyc", kyc.NewQuerier(&app.kycKeeper, &app.feeKeeper)).
-		AddRoute("token", fungible.NewQuerier(app.cdc, &app.tokenKeeper, &app.feeKeeper)).
-		//AddRoute("nonFungible", nonFungible.NewQuerier(app.cdc, &app.nonFungibleTokenKeeper, &app.feeKeeper)).
+		AddRoute("token", fungible.NewQuerier(app.cdc, &app.fungibleTokenKeeper, &app.feeKeeper)).
+		AddRoute("nonFungible", nonFungible.NewQuerier(app.cdc, &app.nonFungibleTokenKeeper, &app.feeKeeper)).
 		AddRoute("fee", fee.NewQuerier(app.cdc, &app.feeKeeper)).
 		AddRoute("maintenance", maintenance.NewQuerier(&app.maintenanceKeeper))
+		//AddRoute("auth", auth.NewQuerier(app.cdc, app.accountKeeper))
 
+	app.router = app.Router()
 	app.MountStores(
 		app.keyMain,
 		app.keyAccount,
@@ -274,7 +279,6 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 		app.KeyKycData,
 		app.tkeyParams,
 		app.keyToken,
-		//app.keyNonFungible,
 		app.keyFee,
 		app.KeyMaintenance,
 		app.KeyValidatorSet,
@@ -289,6 +293,7 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	rpccore.Routes["is_whitelisted"] = rpc.NewRPCFunc(app.CheckWhitelist, "address")
 	rpccore.Routes["validator"] = rpc.NewRPCFunc(app.Validator, "address")
 	rpccore.Routes["account"] = rpc.NewRPCFunc(app.Account, "address")
+	rpccore.Routes["account_cdc"] = rpc.NewRPCFunc(app.AccountCdc, "address")
 	rpccore.Routes["decode_tx"] = rpc.NewRPCFunc(app.DecodeTx, "tx")
 	rpccore.Routes["encode_tx"] = rpc.NewRPCFunc(app.EncodeTx, "json")
 	rpccore.Routes["decoded_tx"] = rpc.NewRPCFunc(app.DecodedTx, "hash,prove")
@@ -300,7 +305,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	// We need to customized it
 	rpccore.Routes["debug/fee_info"] = rpc.NewRPCFunc(app.FeeInfo, "")
 	rpccore.Routes["debug/kyc_info"] = rpc.NewRPCFunc(app.KYCInfo, "")
-	rpccore.Routes["debug/token_list"] = rpc.NewRPCFunc(app.TokenList, "")
+	rpccore.Routes["debug/ft_info"] = rpc.NewRPCFunc(app.FungibleTokenInfo, "symbol")
+	rpccore.Routes["debug/nft_info"] = rpc.NewRPCFunc(app.NonFungibleTokenInfo, "symbol")
 
 	delete(rpccore.Routes, "genesis")
 
@@ -339,7 +345,7 @@ func (app *mxwApp) initChainer(ctx sdkTypes.Context, req abci.RequestInitChain) 
 
 	sdkDist.InitGenesis(ctx, app.distrKeeper, app.supplyKeeper, genesisState.DistrState)
 	kyc.InitGenesis(ctx, &app.kycKeeper, genesisState.KycState)
-	fungible.InitGenesis(ctx, &app.tokenKeeper, genesisState.TokenState)
+	fungible.InitGenesis(ctx, &app.fungibleTokenKeeper, genesisState.TokenState)
 	nameservice.InitGenesis(ctx, app.nsKeeper, genesisState.NameServiceState)
 	fee.InitGenesis(ctx, &app.feeKeeper, genesisState.FeeState)
 	maintenance.InitGenesis(ctx, &app.maintenanceKeeper, genesisState.MaintenanceState)
@@ -410,7 +416,7 @@ func (app *mxwApp) ExportStateAndValidators() (json.RawMessage, []tm.GenesisVali
 	StakingState := sdkStaking.ExportGenesis(ctx, app.stakingKeeper)
 	distrState := sdkDist.ExportGenesis(ctx, app.distrKeeper)
 	kycState := kyc.ExportGenesis(&app.kycKeeper)
-	tokenState := fungible.ExportGenesis(&app.tokenKeeper)
+	tokenState := fungible.ExportGenesis(&app.fungibleTokenKeeper)
 	feeState := fee.ExportGenesis(&app.feeKeeper)
 	nameServiceState := nameservice.ExportGenesis(&app.nsKeeper)
 	maintenanceState := maintenance.ExportGenesis(ctx, &app.maintenanceKeeper)
@@ -451,9 +457,10 @@ func MakeDefaultCodec() *codec.Codec {
 	kyc.RegisterCodec(cdc)
 	codec.RegisterCrypto(cdc)
 	fungible.RegisterCodec(cdc)
-	//nonFungible.RegisterCodec(cdc)
+	nonFungible.RegisterCodec(cdc)
 	fee.RegisterCodec(cdc)
 	maintenance.RegisterCodec(cdc)
+	auth.RegisterCodec(cdc)
 	return cdc
 }
 

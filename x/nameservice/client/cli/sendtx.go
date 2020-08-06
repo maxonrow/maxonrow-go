@@ -1,13 +1,14 @@
 package cli
 
 import (
+	"bufio"
 	"fmt"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/context"
-	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/client/utils"
 	authTypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -31,12 +32,13 @@ func SendTxCmd(cdc *codec.Codec) *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		Short: "Create and sign a send-alias tx",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			txBldr := authTypes.NewTxBuilderFromCLI().WithTxEncoder(utils.GetTxEncoder(cdc))
+			inBuf := bufio.NewReader(cmd.InOrStdin())
+			txBldr := authTypes.NewTxBuilderFromCLI(inBuf).WithTxEncoder(utils.GetTxEncoder(cdc))
 			cliCtx := context.NewCLIContext().
 				WithCodec(cdc)
 
 			toStr := args[0]
-			to,_, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nameservice/resolve/%s", toStr), nil)
+			to, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nameservice/resolve/%s", toStr), nil)
 			if err != nil {
 				return err
 			}
