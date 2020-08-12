@@ -1,5 +1,5 @@
 
-# Maxonrow
+# ![https://maxonrow.com](https://maxonrow.com/images/maxonrow_gold.png)
 
 Maxonrow is the sole main chain service provider in the world to offer real-name identity verification for KYC process and AML safety measures. Its a blockchain powered by Tendermint & Cosmos-SDK. We utilize GDPOS (Governed Delegated Proof of Stake) as a consensus mechanism, which is a mechanism of equity entrustment unique to Maxonrow.
 
