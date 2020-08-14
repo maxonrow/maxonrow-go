@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/big"
+	"os"
+	"runtime/pprof"
 
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -33,6 +35,7 @@ import (
 	"github.com/tendermint/tendermint/libs/log"
 	rpccore "github.com/tendermint/tendermint/rpc/core"
 	rpc "github.com/tendermint/tendermint/rpc/lib/server"
+	rpctypes "github.com/tendermint/tendermint/rpc/lib/types"
 	tm "github.com/tendermint/tendermint/types"
 	dbm "github.com/tendermint/tm-db"
 )
@@ -44,6 +47,10 @@ const (
 var (
 	ModuleBasics module.BasicManager
 )
+
+var profFile *os.File
+
+type Profile struct{}
 
 type mxwApp struct {
 	*baseapp.BaseApp
@@ -308,6 +315,11 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	rpccore.Routes["debug/ft_info"] = rpc.NewRPCFunc(app.FungibleTokenInfo, "symbol")
 	rpccore.Routes["debug/nft_info"] = rpc.NewRPCFunc(app.NonFungibleTokenInfo, "symbol")
 
+	//proffilling
+	rpccore.Routes["cpu_profile"] = rpc.NewRPCFunc(StartCPUProfiler, "")
+	rpccore.Routes["stop_cpu_profile"] = rpc.NewRPCFunc(StopCPUProfiler, "")
+	rpccore.Routes["heap_profile"] = rpc.NewRPCFunc(WriteHeapProfile, "")
+
 	delete(rpccore.Routes, "genesis")
 
 	return app
@@ -472,4 +484,81 @@ func (app *mxwApp) ModuleAccountAddrs(maccPerms map[string][]string) map[string]
 	}
 
 	return modAccAddrs
+}
+
+//Profilling
+
+//CPU Profiler starts a pprof profiler using the given filename.
+func StartCPUProfiler(ctx *rpctypes.Context) (*Profile, error) {
+	var err error
+	var filename = "../cpu"
+
+	if _, err := os.Stat(filename); err == nil {
+		os.Remove(filename)
+		profFile, err = os.Create(filename)
+		if err != nil {
+			fmt.Println("error", err)
+		}
+
+	} else if os.IsNotExist(err) {
+		profFile, err = os.Create(filename)
+		if err != nil {
+			fmt.Println("error", err)
+		}
+
+	}
+	profFile, err = os.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+	err = pprof.StartCPUProfile(profFile)
+	if err != nil {
+		return nil, err
+	}
+	return &Profile{}, nil
+}
+
+// stop cpu Profiler stops the running pprof profiler.
+func StopCPUProfiler(ctx *rpctypes.Context) (*Profile, error) {
+	pprof.StopCPUProfile()
+	if err := profFile.Close(); err != nil {
+		return nil, err
+	}
+	return &Profile{}, nil
+}
+
+//WriteHeapProfile heap profile to the given filename.
+func WriteHeapProfile(ctx *rpctypes.Context) (*Profile, error) {
+	var err error
+	var filename = "../heap-memory"
+	if _, err := os.Stat(filename); err == nil {
+		os.Remove(filename)
+		profFile, err = os.Create(filename)
+		if err != nil {
+			fmt.Println("error", err)
+		}
+
+	} else if os.IsNotExist(err) {
+		profFile, err = os.Create(filename)
+		if err != nil {
+			fmt.Println("error", err)
+		}
+
+	}
+	profFile, err = os.Create(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	if err := pprof.WriteHeapProfile(profFile); err != nil {
+		return nil, err
+	}
+	if err := profFile.Close(); err != nil {
+		return nil, err
+	}
+
+	return &Profile{}, nil
 }
