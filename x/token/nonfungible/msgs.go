@@ -314,6 +314,10 @@ func (msg MsgTransferNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
