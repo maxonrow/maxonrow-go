@@ -222,6 +222,11 @@ func makeFungibleTokenTxs() []*testCase {
 		{"token", false, false, "Approve transfer token ownership - Happy-path for TT-6", "token-auth-2", "0cin", 0, TokenInfo{"verify-transfer-tokenOwnership", "", "", "", "TT-6", 0, "", "", "", false, "", true, false, false, "", "token-prov-2", "0", "token-issuer-2", "", "APPROVE_TRANFER_TOKEN_OWNERSHIP"}, "", nil},
 		{"token", false, false, "Accept token ownership - Happy-path for TT-6", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-6", 8, "acc-40", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 
+		// 1. burnable flag
+		{"token", false, false, "Create token - Happy Path (Burnable false)", "acc-40", "100000000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken123", "TT123", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "", nil},
+		{"token", false, false, "Approve token - Happy path (Burnable false)", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken123", "TT123", 8, "", "", "", false, "", false, false, false, "1", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
+		{"token", true, true, "Burn token (TestToken123)", "acc-40", "100000000cin", 0, TokenInfo{"burn", "", "", "", "TT123", 0, "acc-40", "", "", false, "", false, false, true, "1", "", "", "", "", ""}, "", nil},
+
 		// Base on : validation.go
 		{"token", true, true, "Create token - Error due to Invalid fee amount", "acc-40", "1cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken-validate01", "TFT-validate01", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "Create token - Error due to Invalid fee amount.", nil},
 		{"token", true, true, "Create token - Error due to Insufficient balance to pay for application fee", "acc-40", "10000cin", 0, TokenInfo{"create", "10000000", "mostafa", "TestToken-validate01", "TFT-validate01", 8, "acc-40", "", "", true, "100000", false, false, false, "", "", "", "", "", ""}, "Create token - Error due to Insufficient balance to pay for application fee.", nil},
