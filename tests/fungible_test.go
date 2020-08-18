@@ -36,33 +36,28 @@ func makeFungibleTokenTxs() []*testCase {
 
 	tcs := []*testCase{
 
-		//-D
 		///2. 20200818-MsgMintFungibleToken
 		{"token", false, false, "Create token TFT-772 - Dynamic-supply with mint unlimited", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-772", "TFT-772", 8, "acc-40", "", "", false, "0", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Approve token TFT-772 - for Dynamic-supply with mint unlimited purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken-772", "TFT-772", 0, "", "", "", false, "0", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
 		{"token", true, true, "Mint token TFT-772 - Error, due to Invalid token symbol field length which maximum is 40.", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "TestToken-772-name", "TFT-772-aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjkkkkklllllmmmmmnnnnnooooopppppqqqqqrrrrrssssstttttuuuuuvvvvvwwwwwxxxxxyyyyyzzzzzz11111222223333344444555556666677777888889999900000", 8, "acc-40", "carlo", "", false, "0", false, false, true, "0", "", "", "", "", ""}, "", nil},
 
-		//-D
 		///3. 20200818-MsgTransferFungibleToken
 		{"token", false, false, "Create token TFT-773 - Dynamic-supply with mint unlimited", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-773", "TFT-773", 8, "acc-40", "", "", false, "0", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Approve token TFT-773 - for Dynamic-supply with mint unlimited purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken-773", "TFT-773", 0, "", "", "", false, "0", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
 		{"token", false, false, "Mint token TFT-773 - Dynamic-supply which allowed to mint-token with 0 amount.", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "TestToken-773-name", "TFT-773", 8, "acc-40", "carlo", "", false, "0", false, false, true, "0", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token TFT-773 -Error due to Invalid token symbol field length which maximum is 40.", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TFT-773-aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjkkkkklllllmmmmmnnnnnooooopppppqqqqqrrrrrssssstttttuuuuuvvvvvwwwwwxxxxxyyyyyzzzzzz11111222223333344444555556666677777888889999900000", 8, "acc-40", "eve", "", false, "", true, false, false, "0", "", "", "", "", ""}, "", nil},
 
-		//-D
 		///4. 20200818-MsgBurnFungibleToken
 		{"token", false, false, "Create token TFT-774 - Dynamic-supply with mint unlimited", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-774", "TFT-774", 8, "acc-40", "", "", false, "0", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Approve token TFT-774 - for Dynamic-supply with mint unlimited purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken-774", "TFT-774", 0, "", "", "", false, "0", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
 		{"token", false, false, "Mint token TFT-774 - Dynamic-supply which allowed to mint-token with 0 amount.", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "TestToken-774-name", "TFT-774", 8, "acc-40", "carlo", "", false, "0", false, false, true, "0", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Burn token TFT-774 - Error due to Invalid token symbol field length which maximum is 40.", "acc-40", "100000000cin", 0, TokenInfo{"burn", "", "", "", "TFT-774-aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjkkkkklllllmmmmmnnnnnooooopppppqqqqqrrrrrssssstttttuuuuuvvvvvwwwwwxxxxxyyyyyzzzzzz11111222223333344444555556666677777888889999900000", 0, "acc-40", "", "", false, "", false, false, true, "100", "", "", "", "", ""}, "", nil},
 
-		//-D
 		///1. 20200818-MsgTransferFungibleTokenOwnership
 		{"token", false, false, "Create token TFT-776 - Dynamic-supply with mint unlimited", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-776", "TFT-776", 8, "acc-40", "", "", false, "0", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Approve token TFT-776 - for Dynamic-supply with mint unlimited purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken-776", "TFT-776", 0, "", "", "", false, "0", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
 		{"token", true, true, "Transfer token ownership TFT-776 - Error due to Invalid token symbol field length which maximum is 40.", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TFT-776-aaaaabbbbbcccccdddddeeeeefffffggggghhhhhiiiiijjjjjkkkkklllllmmmmmnnnnnooooopppppqqqqqrrrrrssssstttttuuuuuvvvvvwwwwwxxxxxyyyyyzzzzzz11111222223333344444555556666677777888889999900000", 8, "acc-40", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 
-		//-D
 		///1. 20200818-MsgAcceptFungibleTokenOwnership
 		{"token", false, false, "Create token TFT-775 - Dynamic-supply with mint unlimited", "acc-40", "100000000cin", 0, TokenInfo{"create", "100000", "mostafa", "TestToken-775", "TFT-775", 8, "acc-40", "", "", false, "0", false, false, false, "", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Approve token TFT-775 - for Dynamic-supply with mint unlimited purpose.", "token-auth-1", "0cin", 0, TokenInfo{"approve", "", "", "TestToken-775", "TFT-775", 0, "", "", "", false, "0", false, false, true, "0", "token-prov-1", "0", "token-issuer-1", "default", ""}, "", nil},
