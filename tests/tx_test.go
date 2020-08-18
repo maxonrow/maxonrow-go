@@ -284,7 +284,7 @@ func makeMsg(t *testing.T, msgType string, signer string, msgInfo interface{}) s
 			case "verify-transfer-token-ownership":
 				msg = makeVerifyTransferNonFungibleTokenOwnershipMsg(t, signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.VerifyTransferTokenOwnership, i.Burnable, i.Modifiable, i.Public)
 			case "reject-transfer-token-ownership":
-				msg = makeRejectTransferTokenOwnershipMsg(t, signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "REJECT_TRANFER_TOKEN_OWNERSHIP")
+				msg = makeRejectTransferTokenOwnershipMsg(t, signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, "REJECT_TRANSFER_TOKEN_OWNERSHIP")
 			case "freeze-item":
 				msg = makeFreezeNonFungibleItemMsg(t, signer, i.Provider, i.ProviderNonce, i.Issuer, i.Symbol, i.ItemID)
 			case "unfreeze-item":
