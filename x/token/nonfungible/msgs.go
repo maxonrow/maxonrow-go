@@ -269,6 +269,14 @@ func (msg MsgMintNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := validateProperties(msg.Properties); err != nil {
+		return err
+	}
+
+	if err := validateMetadata(msg.Metadata); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -365,6 +373,10 @@ func (msg MsgBurnNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -423,6 +435,10 @@ func (msg MsgSetNonFungibleItemStatus) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.ItemPayload.Item.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateItemID(msg.ItemPayload.Item.ItemID); err != nil {
 		return err
 	}
 
@@ -584,6 +600,10 @@ func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -633,6 +653,10 @@ func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateItemID(msg.ItemID); err != nil {
 		return err
 	}
 
