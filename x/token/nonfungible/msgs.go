@@ -438,6 +438,10 @@ func (msg MsgSetNonFungibleItemStatus) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemPayload.Item.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 

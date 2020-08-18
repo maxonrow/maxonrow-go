@@ -355,12 +355,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
-				return types.ErrTokenAccountFrozen()
+				return types.ErrTokenItemFrozen()
 			}
 		}
 		if msg.ItemPayload.Item.Status == nonFungible.UnfreezeItem {
 			if !app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
-				return types.ErrTokenAccountUnFrozen()
+				return types.ErrTokenItemUnFrozen()
 			}
 		}
 
