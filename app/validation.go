@@ -496,10 +496,6 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if item == nil {
 			return types.ErrTokenInvalid()
 		}
-		// 2. [endorse a nonfungible item - Invalid Token Symbol]
-		if err := nonFungible.ValidateSymbol(msg.Symbol); err != nil {
-			return err
-		}
 
 	case nonFungible.MsgUpdateNFTMetadata:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
