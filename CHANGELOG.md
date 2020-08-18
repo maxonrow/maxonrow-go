@@ -1,3 +1,9 @@
+# Version 1.3.5
+- implement length limit for itemID(28)
+- implement validation for burn flag upon burning token (ft/nft)
+- implement length limit for nft endorser list(10)
+- fix spelling error for "APPROVE_TRANSFER_TOKEN_OWNERSHIP" and "REJECT_TRANSFER_TOKEN_OWNERSHIP"
+
 # Version 1.3.4
 - fix when burn and item is frozen, burn is not allowed
 - fix when ft/nft token if frozen there is no other action can be done until it is unfrozen. Except for nft

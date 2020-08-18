@@ -299,6 +299,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			if app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenAlreadyApproved(msg.Payload.Token.Symbol)
 			}
+
+			for _, v := range msg.Payload.Token.EndorserList {
+				if !app.kycKeeper.IsWhitelisted(ctx, v) {
+					return types.ErrUnauthorisedEndorser()
+				}
+			}
 		}
 
 		if msg.Payload.Token.Status == nonFungible.RejectToken {
