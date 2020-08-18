@@ -265,6 +265,10 @@ func (msg MsgMintNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInternal("Item id not allow to be empty.")
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -716,6 +720,10 @@ func (msg MsgUpdateEndorserList) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateEndorserListLength(msg.Endorsers); err != nil {
 		return err
 	}
 
