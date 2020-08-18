@@ -305,8 +305,8 @@ func NewMXWApp(logger log.Logger, db dbm.DB) *mxwApp {
 	// We need to customized it
 	rpccore.Routes["debug/fee_info"] = rpc.NewRPCFunc(app.FeeInfo, "")
 	rpccore.Routes["debug/kyc_info"] = rpc.NewRPCFunc(app.KYCInfo, "")
-	//rpccore.Routes["debug/fungible_token_list"] = rpc.NewRPCFunc(app.FungibleTokenList, "")
-	//rpccore.Routes["debug/non_fungible_token_list"] = rpc.NewRPCFunc(app.NonFungibleTokenList, "")
+	rpccore.Routes["debug/ft_info"] = rpc.NewRPCFunc(app.FungibleTokenInfo, "symbol")
+	rpccore.Routes["debug/nft_info"] = rpc.NewRPCFunc(app.NonFungibleTokenInfo, "symbol")
 
 	delete(rpccore.Routes, "genesis")
 

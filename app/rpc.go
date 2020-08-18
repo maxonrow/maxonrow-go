@@ -12,8 +12,8 @@ import (
 	"github.com/maxonrow/maxonrow-go/utils"
 	ver "github.com/maxonrow/maxonrow-go/version"
 	"github.com/maxonrow/maxonrow-go/x/fee"
-	"github.com/maxonrow/maxonrow-go/x/token/fungible"
-	"github.com/maxonrow/maxonrow-go/x/token/nonfungible"
+	fungible "github.com/maxonrow/maxonrow-go/x/token/fungible"
+	nonFungible "github.com/maxonrow/maxonrow-go/x/token/nonfungible"
 	abci "github.com/tendermint/tendermint/abci/types"
 	cmn "github.com/tendermint/tendermint/libs/common"
 	rpc "github.com/tendermint/tendermint/rpc/core"
@@ -36,16 +36,6 @@ type ResultDecodedTx struct {
 type Version struct {
 	MaxonrowVersion   string `json:"Maxonrow"`
 	TendermintVersion string `json:"Tendermint"`
-}
-
-type FungibleTokenListInfo struct {
-	Count  int
-	Tokens []fungible.Token
-}
-
-type NonFungibleTokenListInfo struct {
-	Count  int
-	Tokens []nonfungible.Token
 }
 
 type FeeInfo struct {
@@ -320,20 +310,16 @@ func parseJSON(in string) []byte {
 	return []byte(out)
 }
 
-func (app *mxwApp) FungibleTokenList(ctx *rpctypes.Context) (FungibleTokenListInfo, error) {
+func (app *mxwApp) FungibleTokenInfo(ctx *rpctypes.Context, symbol string) (*fungible.Token, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-	lst := app.fungibleTokenKeeper.ListTokens(appCtx)
-	var i FungibleTokenListInfo
-	i.Count = len(lst)
-	i.Tokens = lst
-	return i, nil
+	var token = new(fungible.Token)
+	app.fungibleTokenKeeper.GetFungibleTokenDataInfo(appCtx, symbol, token)
+	return token, nil
 }
 
-func (app *mxwApp) NonFungibleTokenList(ctx *rpctypes.Context) (NonFungibleTokenListInfo, error) {
+func (app *mxwApp) NonFungibleTokenInfo(ctx *rpctypes.Context, symbol string) (*nonFungible.Token, error) {
 	appCtx := app.NewContext(true, abci.Header{})
-	lst := app.nonFungibleTokenKeeper.ListTokens(appCtx)
-	var i NonFungibleTokenListInfo
-	i.Count = len(lst)
-	i.Tokens = lst
-	return i, nil
+	var token = new(nonFungible.Token)
+	app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(appCtx, symbol, token)
+	return token, nil
 }

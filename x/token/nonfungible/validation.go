@@ -12,6 +12,7 @@ const (
 	MaxLength            = 256
 	TokenNameMaxLength   = 100
 	TokenSymbolMaxLength = 40
+	TokenItemIDMaxLength = 128
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {
@@ -61,6 +62,12 @@ func validateAmount(amount string) sdkTypes.Error {
 	if err != nil {
 		return sdkTypes.ErrInvalidCoins(fmt.Sprintf("Invalid amount string: %s", err))
 	}
+	return nil
+}
 
+func ValidateItemID(itemID string) sdkTypes.Error {
+	if len(itemID) > TokenItemIDMaxLength {
+		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid itemID field length: %d", len(itemID)))
+	}
 	return nil
 }

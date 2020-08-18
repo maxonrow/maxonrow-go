@@ -194,7 +194,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		// (FixedSupply-FungibleToken) MintFlag - types.Bitmask = 0x0002
-		if !fungibleToken.Flags.HasFlag(0x0002) {
+		if !fungibleToken.Flags.HasFlag(fungible.MintFlag) {
 			return types.ErrInvalidTokenAction()
 		}
 
@@ -204,6 +204,13 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
+		}
+
+		var fungibleToken = new(fungible.Token)
+		app.fungibleTokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
+		if !fungibleToken.Flags.HasFlag(fungible.BurnFlag) {
+			return types.ErrInvalidTokenAction()
 		}
 
 		var account = new(fungible.FungibleTokenAccount)
@@ -406,7 +413,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		//1. checking: (flag of Public equals to TRUE)
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
-		if token.Flags.HasFlag(0x0080) {
+		if token.Flags.HasFlag(nonFungible.PubFlag) {
 			ownerAcc := msg.Owner
 			newOwnerAcc := msg.To
 			if !ownerAcc.Equals(newOwnerAcc) {
@@ -426,6 +433,13 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+
+		var token = new(nonFungible.Token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
+		if !token.Flags.HasFlag(nonFungible.BurnFlag) {
+			return types.ErrInvalidTokenAction()
+		}
+
 		// 1. [Burn non fungible token item - Invalid Item-owner]
 		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
 		if item == nil {
