@@ -1,5 +1,5 @@
 # Version 1.3.5
-- implement length limit for itemID(28)
+- implement length limit for itemID(128)
 - implement validation for burn flag upon burning token (ft/nft)
 - implement length limit for nft endorser list(10)
 - fix spelling error for "APPROVE_TRANSFER_TOKEN_OWNERSHIP" and "REJECT_TRANSFER_TOKEN_OWNERSHIP"
