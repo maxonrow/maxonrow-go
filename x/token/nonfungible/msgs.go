@@ -186,8 +186,13 @@ func (msg MsgSetNonFungibleTokenStatus) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress("From cannot be empty.")
 	}
 
-	if msg.Payload.Token.Status == ApproveToken && msg.Payload.Token.TokenFees == nil {
-		return sdkTypes.ErrUnknownRequest("Approve token, token fees cannot be empty.")
+	if msg.Payload.Token.Status == ApproveToken {
+		if msg.Payload.Token.TokenFees == nil {
+			return sdkTypes.ErrUnknownRequest("Approve token, token fees cannot be empty.")
+		}
+		if err := ValidateEndorserListLength(msg.Payload.Token.EndorserList); err != nil {
+			return err
+		}
 	}
 
 	return nil
