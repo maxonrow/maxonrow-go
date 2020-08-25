@@ -152,6 +152,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case fungible.MsgTransferFungibleToken:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -166,6 +171,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenAccountFrozen()
 		}
 	case fungible.MsgMintFungibleToken:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -225,6 +235,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
@@ -461,6 +476,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case nonFungible.MsgTransferNonFungibleTokenOwnership:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
 
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
