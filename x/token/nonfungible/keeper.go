@@ -1,6 +1,8 @@
 package nonfungible
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -32,20 +34,23 @@ const (
 	AcceptTokenOwnershipFlag          types.Bitmask = 0x0400
 
 	NonFungibleTokenMask = NonFungibleFlag + MintFlag
+
+	DefaultEndorserListLimit string = "10"
 )
 
 type Token struct {
-	Flags         types.Bitmask
-	Name          string
-	Symbol        string
-	Owner         sdkTypes.AccAddress
-	NewOwner      sdkTypes.AccAddress
-	Properties    string
-	Metadata      string
-	TotalSupply   sdkTypes.Uint
-	TransferLimit sdkTypes.Uint
-	MintLimit     sdkTypes.Uint
-	EndorserList  []sdkTypes.AccAddress
+	Flags             types.Bitmask
+	Name              string
+	Symbol            string
+	Owner             sdkTypes.AccAddress
+	NewOwner          sdkTypes.AccAddress
+	Properties        string
+	Metadata          string
+	TotalSupply       sdkTypes.Uint
+	TransferLimit     sdkTypes.Uint
+	MintLimit         sdkTypes.Uint
+	EndorserList      []sdkTypes.AccAddress
+	EndorserListLimit sdkTypes.Uint
 }
 
 type Item struct {
@@ -301,19 +306,27 @@ func (k *Keeper) CreateNonFungibleToken(
 }
 
 // ApproveToken
-func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
+func (k *Keeper) ApproveToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, endorserList []sdkTypes.AccAddress, signer sdkTypes.AccAddress, burnable, transferable, modifiable, public bool, endorserListLimit sdkTypes.Uint) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, signer) {
 		return sdkTypes.ErrUnauthorized("Not authorised to approve.").Result()
 	}
 
-	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, signer, endorserList, burnable, transferable, modifiable, public)
+	return k.approveNonFungibleToken(ctx, symbol, tokenFees, mintLimit, transferLimit, signer, endorserList, burnable, transferable, modifiable, public, endorserListLimit)
 }
 
-func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) sdkTypes.Result {
+func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, tokenFees []TokenFee, mintLimit, transferLimit sdkTypes.Uint, signer sdkTypes.AccAddress, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool, endorserListLimit sdkTypes.Uint) sdkTypes.Result {
 	var token = new(Token)
 	err := k.mustGetTokenData(ctx, symbol, token)
 	if err != nil {
 		return err.Result()
+	}
+
+	if endorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
+		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit cannot less than or equal %v", endorserListLimit)).Result()
+	}
+
+	if sdkTypes.NewUint(uint64(len(endorserList))).GT(endorserListLimit) {
+		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", endorserListLimit)).Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, token.Owner)

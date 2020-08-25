@@ -35,6 +35,7 @@ type NonFungibleTokenInfo struct {
 	TransferLimit                string
 	MintLimit                    string
 	EndorserList                 []string
+	EndorserListLimit            string
 }
 
 func makeNonFungibleTokenTxs() []*testCase {
