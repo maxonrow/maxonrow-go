@@ -542,6 +542,18 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 
+		var token = new(nonFungible.Token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
+		if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
+			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(sdkTypes.NewUintFromString(nonFungible.DefaultEndorserListLimit)) {
+				return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(msg.Endorsers)))
+			}
+		} else {
+			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
+				return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(msg.Endorsers)))
+			}
+		}
+
 	case maintenance.MsgProposal:
 		if !app.maintenanceKeeper.IsMaintainers(ctx, msg.Proposer) {
 			return sdkTypes.ErrUnauthorized("Not authorised to submit proposal.")

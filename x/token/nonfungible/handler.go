@@ -68,7 +68,7 @@ func handleMsgSetNonFungibleTokenStatus(ctx sdkTypes.Context, keeper *Keeper, ms
 	//* token.metadata temporaily not in use.
 	switch msg.Payload.Token.Status {
 	case ApproveToken:
-		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, msg.Payload.Token.Burnable, msg.Payload.Token.Transferable, msg.Payload.Token.Modifiable, msg.Payload.Token.Public)
+		return keeper.ApproveToken(ctx, msg.Payload.Token.Symbol, msg.Payload.Token.TokenFees, msg.Payload.Token.MintLimit, msg.Payload.Token.TransferLimit, msg.Payload.Token.EndorserList, msg.Owner, msg.Payload.Token.Burnable, msg.Payload.Token.Transferable, msg.Payload.Token.Modifiable, msg.Payload.Token.Public, msg.Payload.Token.EndorserListLimit)
 	case RejectToken:
 		return keeper.RejectToken(ctx, msg.Payload.Token.Symbol, msg.Owner)
 	case FreezeToken:

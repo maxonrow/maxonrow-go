@@ -1,6 +1,8 @@
 package nonfungible
 
 import (
+	"fmt"
+
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/maxonrow/maxonrow-go/types"
 )
@@ -472,6 +474,17 @@ func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from
 	if !token.Flags.HasFlag(ApprovedFlag) {
 		return types.ErrTokenInvalid().Result()
 	}
+
+	if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
+		if sdkTypes.NewUint(uint64(len(endorsers))).GT(sdkTypes.NewUintFromString(DefaultEndorserListLimit)) {
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(endorsers))).Result()
+		}
+	} else {
+		if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(endorsers))).Result()
+		}
+	}
+
 
 	token.EndorserList = endorsers
 	k.storeToken(ctx, symbol, token)

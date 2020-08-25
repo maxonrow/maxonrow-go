@@ -13,7 +13,6 @@ const (
 	TokenNameMaxLength   = 100
 	TokenSymbolMaxLength = 40
 	TokenItemIDMaxLength = 128
-	EndorserListSize     = 10
 )
 
 func validateTokenName(tokenName string) sdkTypes.Error {
@@ -70,16 +69,5 @@ func ValidateItemID(itemID string) sdkTypes.Error {
 	if len(itemID) > TokenItemIDMaxLength {
 		return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid itemID field length: %d", len(itemID)))
 	}
-	return nil
-}
-
-func ValidateEndorserListLength(endorsers []sdkTypes.AccAddress) sdkTypes.Error {
-
-	if len(endorsers) > 0 {
-		if len(endorsers) > EndorserListSize {
-			return sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid endorsers field length: %d", len(endorsers)))
-		}
-	}
-
 	return nil
 }
