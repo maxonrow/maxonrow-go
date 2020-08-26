@@ -1,8 +1,12 @@
+# Version 1.3.6
+- Enhancement move UpdateNFTItemMetadata into token action (Fixing #178) 
+- check endorserlist limit during approval and update endorser list (Fixing #179)
+
 # Version 1.3.5
 - implement length limit for itemID(128)
 - implement validation for burn flag upon burning token (ft/nft)
 - implement length limit for nft endorser list(10)
-- fix spelling error for "APPROVE_TRANSFER_TOKEN_OWNERSHIP" and "REJECT_TRANSFER_TOKEN_OWNERSHIP"
+- Fix spelling error for "APPROVE_TRANSFER_TOKEN_OWNERSHIP" and "REJECT_TRANSFER_TOKEN_OWNERSHIP"
 
 # Version 1.3.4
 - fix when burn and item is frozen, burn is not allowed
