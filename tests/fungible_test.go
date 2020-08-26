@@ -143,6 +143,7 @@ func makeFungibleTokenTxs() []*testCase {
 		// mint
 		{"token", true, true, "Mint token - Token not existed", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-3", 8, "acc-40", "carlo", "", true, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Mint token - Invalid owner", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-1", 8, "nago", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Mint token - Error, due to owner is non-kyc", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-1", 8, "acc-40", "nft-acc-notKYC", "", false, "100000", true, false, false, "100", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Mint token - Happy path for TT-1 which is dynamic supply", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "100000", true, false, false, "100", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Mint token - Allow to issue another TWO amount of TT-1 again", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "100000", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Mint token - Allow to issue ZERO amount of TT-1", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "100000", true, false, false, "0", "", "", "", "", ""}, "", nil},
@@ -188,6 +189,7 @@ func makeFungibleTokenTxs() []*testCase {
 		{"token", true, true, "Mint token TFT-1103 MaxSupply = 0 - Error, due to Invalid token action where FixedSupply not allowed do mint-token.", "acc-40", "100000000cin", 0, TokenInfo{"mint", "", "", "TestToken-1103", "TFT-1103", 8, "acc-40", "carlo", "", true, "2", false, false, true, "222", "", "", "", "", ""}, "", nil},
 
 		// transfer
+		{"token", true, true, "Transfer token - Error, due to new owner is non-kyc", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "nft-acc-notKYC", "", false, "", false, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token - Not allow to transfer if was approved and frozen", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, true, false, "1000000000000000", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token - Token not existed", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-3", 8, "acc-40", "eve", "", false, "", false, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token - Invalid owner", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "nago", "eve", "", false, "", false, false, false, "1", "", "", "", "", ""}, "", nil},
@@ -199,6 +201,7 @@ func makeFungibleTokenTxs() []*testCase {
 
 		// transfer ownership
 		{"token", true, true, "Transfer token ownership - Token not existed", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TT-3", 8, "acc-40", "carlo", "", true, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Transfer token ownership - Error, due to signer is non-kyc", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TT-1", 8, "acc-40", "nft-acc-notKYC", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token ownership - Invalid owner", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TT-1", 8, "nago", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Transfer token ownership - Happy path", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 
@@ -207,6 +210,7 @@ func makeFungibleTokenTxs() []*testCase {
 
 		// accept ownership
 		{"token", true, true, "Accept token ownership - Token not existed", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-3", 8, "acc-40", "carlo", "", true, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Accept token ownership - Error, due to new owner is non-kyc", "nft-acc-notKYC", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-1", 8, "nft-acc-notKYC", "nft-acc-notKYC", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Accept token ownership - Invalid new owner", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-1", 8, "acc-40", "nago", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Accept token ownership - Happy path. commit", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Accept token ownership - Not Allow for TT-1 again", "carlo", "100000000cin", 0, TokenInfo{"accept-ownership", "", "", "", "TT-1", 8, "acc-40", "carlo", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
