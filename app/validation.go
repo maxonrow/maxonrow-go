@@ -366,7 +366,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.Owner) {
-			return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.")
+			return sdkTypes.ErrUnauthorized("Not authorised to unfreeze non-fungible token account.")
 		}
 
 		signatureErr := app.nonFungibleTokenKeeper.ValidateSignatures(ctx, msg)
@@ -543,7 +543,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
-			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
+			return sdkTypes.ErrInternal("Non-fungible item metadata is not modifiable.")
 		}
 	case nonFungible.MsgUpdateEndorserList:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
@@ -565,11 +565,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
 			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(sdkTypes.NewUintFromString(nonFungible.DefaultEndorserListLimit)) {
-				return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(msg.Endorsers)))
+				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded")
 			}
 		} else {
 			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
-				return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(msg.Endorsers)))
+				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded")
 			}
 		}
 
@@ -600,7 +600,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx create failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx create failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.IsSigner(msg.Sender) {
 			return sdkTypes.ErrInternal("Sender is not group account's signer.")
@@ -623,7 +623,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().GetOwner().Equals(msg.Owner) {
 			return sdkTypes.ErrUnknownRequest("Owner address invalid.")
@@ -634,7 +634,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().IsOwner(msg.Owner) {
 			return sdkTypes.ErrUnknownRequest("Owner of group address invalid.")
@@ -645,7 +645,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().IsOwner(msg.Sender) {
 			return sdkTypes.ErrUnknownRequest("Only group account owner can remove pending tx.")
@@ -660,7 +660,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx sign failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx sign failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.IsSigner(msg.Sender) {
 			return sdkTypes.ErrInternal("Sender is not group account's signer.")

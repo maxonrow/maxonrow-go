@@ -543,7 +543,7 @@ func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string,
 	}
 
 	if !k.IsAuthorised(ctx, owner) {
-		return sdkTypes.ErrUnauthorized("Not authorised to freeze token account.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to freeze fungible token account.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
@@ -553,7 +553,7 @@ func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string,
 
 	fungibleAccount := k.GetFungibleAccount(ctx, symbol, tokenAccount)
 	if fungibleAccount == nil {
-		return sdkTypes.ErrUnknownRequest("No such token account to freeze.").Result()
+		return sdkTypes.ErrUnknownRequest("No such fungible token account to freeze.").Result()
 	}
 
 	if fungibleAccount.Frozen {
@@ -579,7 +579,7 @@ func (k *Keeper) FreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string,
 
 func (k *Keeper) UnfreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, tokenAccount sdkTypes.AccAddress, metadata string) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, owner) {
-		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze fungible token account.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
@@ -621,7 +621,7 @@ func (k *Keeper) UnfreezeFungibleTokenAccount(ctx sdkTypes.Context, symbol strin
 
 func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, from) {
-		return sdkTypes.ErrUnauthorized("Not authorised to accept transfer token ownership.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to approve transfer token ownership.").Result()
 	}
 
 	fromWalletAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -658,7 +658,7 @@ func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol stri
 
 func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, from) {
-		return sdkTypes.ErrUnauthorized("Not authorised to accept transfer token ownership.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to reject transfer token ownership.").Result()
 	}
 
 	fromWalletAccount := k.accountKeeper.GetAccount(ctx, from)

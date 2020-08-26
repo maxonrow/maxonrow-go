@@ -103,7 +103,7 @@ func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from
 
 	ownerAccount := k.GetFungibleAccount(ctx, symbol, from)
 	if ownerAccount == nil {
-		return sdkTypes.ErrUnknownRequest("Owner doesn't have such token").Result()
+		return sdkTypes.ErrUnknownRequest("Owner doesn't have such token.").Result()
 	}
 
 	if ownerAccount.Frozen {
@@ -303,7 +303,7 @@ func (k *Keeper) acceptFungibleTokenOwnership(ctx sdkTypes.Context, from sdkType
 	}
 
 	if newOwnerAccount.Frozen {
-		return sdkTypes.ErrUnknownRequest("New owner is frozen").Result()
+		return sdkTypes.ErrUnknownRequest("New owner account is frozen").Result()
 	}
 
 	if newOwnerWalletAccount != nil && token.NewOwner.String() != from.String() {
@@ -311,7 +311,7 @@ func (k *Keeper) acceptFungibleTokenOwnership(ctx sdkTypes.Context, from sdkType
 	}
 
 	if !token.Flags.HasFlag(ApprovedFlag) {
-		return sdkTypes.ErrUnknownRequest("Token is not approved.").Result()
+		return sdkTypes.ErrUnknownRequest("Fungible token is not approved.").Result()
 	}
 
 	if token.Flags.HasFlag(FrozenFlag) {

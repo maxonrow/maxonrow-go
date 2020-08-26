@@ -1,8 +1,6 @@
 package nonfungible
 
 import (
-	"fmt"
-
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -322,11 +320,11 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	}
 
 	if endorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
-		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit cannot less than or equal %v", endorserListLimit)).Result()
+		return sdkTypes.ErrUnauthorized("Endorserlist limit cannot less than or equal zero.").Result()
 	}
 
 	if sdkTypes.NewUint(uint64(len(endorserList))).GT(endorserListLimit) {
-		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", endorserListLimit)).Result()
+		return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, token.Owner)
@@ -389,7 +387,7 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 	var token = new(Token)
 
 	if !k.IsAuthorised(ctx, signer) {
-		return sdkTypes.ErrUnauthorized("Not authorised to reject").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to reject.").Result()
 	}
 
 	err := k.mustGetTokenData(ctx, symbol, token)
@@ -493,7 +491,7 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 	}
 
 	if !token.Flags.HasFlag(FrozenFlag) {
-		return sdkTypes.ErrUnknownRequest("Fungible token is not frozen.").Result()
+		return sdkTypes.ErrUnknownRequest("Non-fungible token is not frozen.").Result()
 	}
 
 	token.Flags.RemoveFlag(FrozenFlag)
@@ -517,11 +515,11 @@ func (k *Keeper) unfreezeNonFungibleToken(ctx sdkTypes.Context, symbol string, s
 func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner, itemOwner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	var token = new(Token)
 	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
-		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
+		return sdkTypes.ErrUnknownRequest("No such non-fungible token.").Result()
 	}
 
 	if !k.IsAuthorised(ctx, owner) {
-		return sdkTypes.ErrUnauthorized("Not authorised to freeze non fungible item.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to freeze non-fungible item.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
@@ -531,7 +529,7 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 
 	nonFungibleItem := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if nonFungibleItem == nil {
-		return sdkTypes.ErrUnknownRequest("No such item to freeze.").Result()
+		return sdkTypes.ErrUnknownRequest("No such non-fungible item to freeze.").Result()
 	}
 
 	itemOwner = k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
@@ -540,7 +538,7 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 	}
 
 	if nonFungibleItem.Frozen {
-		return sdkTypes.ErrUnknownRequest("Non Fungible item already frozen.").Result()
+		return sdkTypes.ErrUnknownRequest("Non-fungible item already frozen.").Result()
 	}
 
 	nonFungibleItem.Frozen = true
@@ -561,7 +559,7 @@ func (k *Keeper) FreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owne
 
 func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, owner sdkTypes.AccAddress, itemID string, metadata string) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, owner) {
-		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to unfreeze non-fungible token account.").Result()
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, owner)
@@ -571,12 +569,12 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 
 	var token = new(Token)
 	if exists := k.GetNonfungibleTokenDataInfo(ctx, symbol, token); !exists {
-		return sdkTypes.ErrUnknownRequest("No such non fungible token.").Result()
+		return sdkTypes.ErrUnknownRequest("No such non-fungible token.").Result()
 	}
 
 	nonFungibleItem := k.GetNonFungibleItem(ctx, symbol, itemID)
 	if nonFungibleItem == nil {
-		return sdkTypes.ErrUnknownRequest("No such  non fungible item to unfreeze.").Result()
+		return sdkTypes.ErrUnknownRequest("No such non-fungible item to unfreeze.").Result()
 	}
 
 	itemOwner := k.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
@@ -585,7 +583,7 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 	}
 
 	if !nonFungibleItem.Frozen {
-		return sdkTypes.ErrUnknownRequest("Non fungible item not frozen.").Result()
+		return sdkTypes.ErrUnknownRequest("Non-fungible item not frozen.").Result()
 	}
 
 	nonFungibleItem.Frozen = false
@@ -607,7 +605,7 @@ func (k *Keeper) UnfreezeNonFungibleItem(ctx sdkTypes.Context, symbol string, ow
 
 func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, from) {
-		return sdkTypes.ErrUnauthorized("Not authorised to accept transfer token ownership.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to approve transfer token ownership.").Result()
 	}
 
 	fromWalletAccount := k.accountKeeper.GetAccount(ctx, from)
@@ -644,7 +642,7 @@ func (k *Keeper) ApproveTransferTokenOwnership(ctx sdkTypes.Context, symbol stri
 
 func (k *Keeper) RejectTransferTokenOwnership(ctx sdkTypes.Context, symbol string, from sdkTypes.AccAddress) sdkTypes.Result {
 	if !k.IsAuthorised(ctx, from) {
-		return sdkTypes.ErrUnauthorized("Not authorised to accept transfer token ownership.").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to reject transfer token ownership.").Result()
 	}
 
 	fromWalletAccount := k.accountKeeper.GetAccount(ctx, from)
