@@ -55,7 +55,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	if !nonFungibleToken.MintLimit.IsZero() {
 
 		if k.IsMintLimitExceeded(ctx, nonFungibleToken.Symbol, to) {
-			return sdkTypes.ErrInternal("Holding limit existed.").Result()
+			return sdkTypes.ErrInternal("Holding limit exceeded.").Result()
 		}
 		k.increaseMintItemLimit(ctx, symbol, to)
 	}
@@ -125,7 +125,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
-		return sdkTypes.ErrInternal("Item has existed transfer limit.").Result()
+		return sdkTypes.ErrInternal("Transfer limit exceeded.").Result()
 	}
 
 	// delete old owner
@@ -238,7 +238,7 @@ func (k *Keeper) transferNonFungibleTokenOwnership(ctx sdkTypes.Context, from sd
 
 	if !token.IsApproved() {
 		// TODO: Please define an error code
-		return sdkTypes.ErrUnknownRequest("Token is not approved.").Result()
+		return sdkTypes.ErrUnknownRequest("Non-fungible token is not approved.").Result()
 	}
 
 	if token.IsFrozen() {
@@ -299,7 +299,7 @@ func (k *Keeper) acceptNonFungibleTokenOwnership(ctx sdkTypes.Context, from sdkT
 	}
 
 	if !token.Flags.HasFlag(ApprovedFlag) {
-		return sdkTypes.ErrUnknownRequest("Token is not approved.").Result()
+		return sdkTypes.ErrUnknownRequest("Non-fungible token is not approved.").Result()
 	}
 
 	if token.Flags.HasFlag(FrozenFlag) {
@@ -477,14 +477,13 @@ func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from
 
 	if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
 		if sdkTypes.NewUint(uint64(len(endorsers))).GT(sdkTypes.NewUintFromString(DefaultEndorserListLimit)) {
-			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(endorsers))).Result()
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
 		}
 	} else {
 		if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
-			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", len(endorsers))).Result()
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
 		}
 	}
-
 
 	token.EndorserList = endorsers
 	k.storeToken(ctx, symbol, token)
