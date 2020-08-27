@@ -32,8 +32,6 @@ const (
 	AcceptTokenOwnershipFlag          types.Bitmask = 0x0400
 
 	NonFungibleTokenMask = NonFungibleFlag + MintFlag
-
-	DefaultEndorserListLimit string = "10"
 )
 
 type Token struct {
@@ -364,6 +362,7 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	token.TransferLimit = transferLimit
 	token.MintLimit = mintLimit
 	token.EndorserList = endorserList
+	token.EndorserListLimit = endorserListLimit
 
 	k.storeToken(ctx, symbol, token)
 

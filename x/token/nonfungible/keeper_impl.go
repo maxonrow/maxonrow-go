@@ -475,14 +475,8 @@ func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from
 		return types.ErrTokenInvalid().Result()
 	}
 
-	if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
-		if sdkTypes.NewUint(uint64(len(endorsers))).GT(sdkTypes.NewUintFromString(DefaultEndorserListLimit)) {
-			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
-		}
-	} else {
-		if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
-			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
-		}
+	if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
+		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
 	}
 
 	token.EndorserList = endorsers
