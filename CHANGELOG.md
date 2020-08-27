@@ -1,6 +1,8 @@
 # Version 1.3.6
 - Enhancement move UpdateNFTItemMetadata into token action (Fixing #178) 
 - check endorserlist limit during approval and update endorser list (Fixing #179)
+- New NFT test-cases by checking for Endorser List Limit Setting
+- Update with meaningful error messages in validation.go and keeper files in the modules
 
 # Version 1.3.5
 - implement length limit for itemID(128)
