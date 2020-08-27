@@ -409,7 +409,7 @@ func (k *Keeper) RejectToken(ctx sdkTypes.Context, symbol string, signer sdkType
 	var token = new(Token)
 
 	if !k.IsAuthorised(ctx, signer) {
-		return sdkTypes.ErrUnauthorized("Not authorised to reject").Result()
+		return sdkTypes.ErrUnauthorized("Not authorised to reject.").Result()
 	}
 
 	err := k.mustGetTokenData(ctx, symbol, token)

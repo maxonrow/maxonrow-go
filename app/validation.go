@@ -231,7 +231,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if account.Balance.LT(msg.Value) {
-			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
+			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", account.Balance.String()))
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
@@ -362,7 +362,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID)
 		if nonFungibleItem == nil {
-			return sdkTypes.ErrUnknownRequest("No such item to freeze.")
+			return sdkTypes.ErrUnknownRequest("No such non-fungible item to freeze.")
 		}
 
 		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.Owner) {
@@ -408,7 +408,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		// 1. [Transfer non fungible token item - Invalid Item-ID]
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
 		if nonFungibleItem == nil {
-			return sdkTypes.ErrUnknownRequest("Invalid Item ID.")
+			return sdkTypes.ErrUnknownRequest("Invalid non-fungible Item ID.")
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
@@ -565,11 +565,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
 			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(sdkTypes.NewUintFromString(nonFungible.DefaultEndorserListLimit)) {
-				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded")
+				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.")
 			}
 		} else {
 			if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
-				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded")
+				return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.")
 			}
 		}
 

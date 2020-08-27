@@ -111,7 +111,7 @@ func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from
 	}
 
 	if ownerAccount.Balance.LT(value) {
-		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", ownerAccount.Balance.String())).Result()
+		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", ownerAccount.Balance.String())).Result()
 	}
 
 	newOwnerAccount := k.GetFungibleAccount(ctx, symbol, to)
@@ -180,7 +180,7 @@ func (k *Keeper) BurnFungibleToken(ctx sdkTypes.Context, symbol string, owner sd
 	}
 
 	if account.Balance.LT(value) {
-		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String())).Result()
+		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", account.Balance.String())).Result()
 	}
 
 	token.TotalSupply = token.TotalSupply.Sub(value)
@@ -244,7 +244,7 @@ func (k *Keeper) transferFungibleTokenOwnership(ctx sdkTypes.Context, from sdkTy
 	}
 
 	if newOwnerAccount.Frozen {
-		return sdkTypes.ErrUnknownRequest("New owner is frozen").Result()
+		return sdkTypes.ErrUnknownRequest("New owner is frozen.").Result()
 	}
 
 	// set token newowner to new owner, pending for accepting by new owner
@@ -303,7 +303,7 @@ func (k *Keeper) acceptFungibleTokenOwnership(ctx sdkTypes.Context, from sdkType
 	}
 
 	if newOwnerAccount.Frozen {
-		return sdkTypes.ErrUnknownRequest("New owner account is frozen").Result()
+		return sdkTypes.ErrUnknownRequest("New owner account is frozen.").Result()
 	}
 
 	if newOwnerWalletAccount != nil && token.NewOwner.String() != from.String() {
