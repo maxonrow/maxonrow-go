@@ -3,6 +3,7 @@
 - check endorserlist limit during approval and update endorser list (Fixing #179)
 - New NFT test-cases by checking for Endorser List Limit Setting
 - Update with meaningful error messages in validation.go and keeper files in the modules
+- remove default endorser list limit
 
 # Version 1.3.5
 - implement length limit for itemID(128)
