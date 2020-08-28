@@ -29,10 +29,11 @@ const (
 	CodeTokenItemIDInUsed                  sdkTypes.CodeType = 2105
 	CodeTokenInvalidEndorser               sdkTypes.CodeType = 2106
 	CodeTokenItemFrozen                    sdkTypes.CodeType = 2107
-	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2108
-	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2109
-	CodeTokenItemNotFound                  sdkTypes.CodeType = 2110
-	CodeUnauthorisedEndorser               sdkTypes.CodeType = 2111
+	CodeTokenItemUnFrozen                  sdkTypes.CodeType = 2108
+	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2109
+	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2110
+	CodeTokenItemNotFound                  sdkTypes.CodeType = 2111
+	CodeUnauthorisedEndorser               sdkTypes.CodeType = 2112
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -162,6 +163,11 @@ func ErrInvalidEndorser() sdkTypes.Error {
 func ErrTokenItemFrozen() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item frozen.")
 }
+
+func ErrTokenItemUnFrozen() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenItemFrozen, "Token item unfrozen.")
+}
+
 func ErrTokenItemNotModifiable() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemNotModifiable, "Token item not modifiable.")
 }

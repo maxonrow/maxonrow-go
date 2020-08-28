@@ -92,6 +92,7 @@ func makeFeeTxs() []*testCase {
 		{"fee", false, false, "Create nft acceptOwnership action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_acceptOwnership_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
 		{"fee", false, false, "Create nft endorse action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_endorse_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
 		{"fee", false, false, "Create nft updateEndorserList action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_updateNFTEndorserList_default", "", "", "400000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
+		{"fee", false, false, "Create nft updateNFTItemMetadata action fee setting", "fee-auth", "0cin", 0, feeInfo{"sys-fee", "nft_updateNFTItemMetadata_default", "", "", "100000000cin", "2000000000cin", "0.001", "fee-auth"}, "", nil},
 
 		//add token fee multiplier
 		{"fee", false, false, "create fungible token fee multiplier. commit", "fee-auth", "0cin", 0, feeInfo{"fungible-token-fee-multiplier", "", "", "1", "", "", "", "fee-auth"}, "", nil},

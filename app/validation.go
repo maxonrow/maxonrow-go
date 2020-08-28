@@ -152,6 +152,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			}
 		}
 	case fungible.MsgTransferFungibleToken:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -166,6 +171,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenAccountFrozen()
 		}
 	case fungible.MsgMintFungibleToken:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
@@ -194,7 +204,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		// (FixedSupply-FungibleToken) MintFlag - types.Bitmask = 0x0002
-		if !fungibleToken.Flags.HasFlag(0x0002) {
+		if !fungibleToken.Flags.HasFlag(fungible.MintFlag) {
 			return types.ErrInvalidTokenAction()
 		}
 
@@ -206,6 +216,13 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 
+		var fungibleToken = new(fungible.Token)
+		app.fungibleTokenKeeper.GetFungibleTokenDataInfo(ctx, msg.Symbol, fungibleToken)
+		fungibleToken.TotalSupply = fungibleToken.TotalSupply.Add(msg.Value)
+		if !fungibleToken.Flags.HasFlag(fungible.BurnFlag) {
+			return types.ErrInvalidTokenAction()
+		}
+
 		var account = new(fungible.FungibleTokenAccount)
 		account = app.fungibleTokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
 
@@ -214,10 +231,15 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if account.Balance.LT(msg.Value) {
-			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String()))
+			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", account.Balance.String()))
 		}
 
 	case fungible.MsgTransferFungibleTokenOwnership:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
+
 		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
@@ -292,6 +314,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			if app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Payload.Token.Symbol) {
 				return types.ErrTokenAlreadyApproved(msg.Payload.Token.Symbol)
 			}
+
+			for _, v := range msg.Payload.Token.EndorserList {
+				if !app.kycKeeper.IsWhitelisted(ctx, v) {
+					return types.ErrUnauthorisedEndorser()
+				}
+			}
 		}
 
 		if msg.Payload.Token.Status == nonFungible.RejectToken {
@@ -334,11 +362,11 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID)
 		if nonFungibleItem == nil {
-			return sdkTypes.ErrUnknownRequest("No such item to freeze.")
+			return sdkTypes.ErrUnknownRequest("No such non-fungible item to freeze.")
 		}
 
 		if !app.nonFungibleTokenKeeper.IsAuthorised(ctx, msg.Owner) {
-			return sdkTypes.ErrUnauthorized("Not authorised to unfreeze token account.")
+			return sdkTypes.ErrUnauthorized("Not authorised to unfreeze non-fungible token account.")
 		}
 
 		signatureErr := app.nonFungibleTokenKeeper.ValidateSignatures(ctx, msg)
@@ -348,12 +376,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		if msg.ItemPayload.Item.Status == nonFungible.FreezeItem {
 			if app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
-				return types.ErrTokenAccountFrozen()
+				return types.ErrTokenItemFrozen()
 			}
 		}
 		if msg.ItemPayload.Item.Status == nonFungible.UnfreezeItem {
 			if !app.nonFungibleTokenKeeper.IsNonFungibleItemFrozen(ctx, msg.ItemPayload.Item.Symbol, msg.ItemPayload.Item.ItemID) {
-				return types.ErrTokenAccountUnFrozen()
+				return types.ErrTokenItemUnFrozen()
 			}
 		}
 
@@ -380,7 +408,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		// 1. [Transfer non fungible token item - Invalid Item-ID]
 		nonFungibleItem := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
 		if nonFungibleItem == nil {
-			return sdkTypes.ErrUnknownRequest("Invalid Item ID.")
+			return sdkTypes.ErrUnknownRequest("Invalid non-fungible Item ID.")
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
@@ -406,7 +434,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		//1. checking: (flag of Public equals to TRUE)
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
-		if token.Flags.HasFlag(0x0080) {
+		if token.Flags.HasFlag(nonFungible.PubFlag) {
 			ownerAcc := msg.Owner
 			newOwnerAcc := msg.To
 			if !ownerAcc.Equals(newOwnerAcc) {
@@ -426,6 +454,13 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
 		}
+
+		var token = new(nonFungible.Token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
+		if !token.Flags.HasFlag(nonFungible.BurnFlag) {
+			return types.ErrInvalidTokenAction()
+		}
+
 		// 1. [Burn non fungible token item - Invalid Item-owner]
 		item := app.nonFungibleTokenKeeper.GetNonFungibleItem(ctx, msg.Symbol, msg.ItemID)
 		if item == nil {
@@ -441,6 +476,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 	case nonFungible.MsgTransferNonFungibleTokenOwnership:
+
+		if !app.kycKeeper.IsWhitelisted(ctx, msg.To) {
+			return types.ErrReceiverNotKyc()
+		}
 
 		if app.nonFungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
 			return types.ErrTokenFrozen()
@@ -482,10 +521,6 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if item == nil {
 			return types.ErrTokenInvalid()
 		}
-		// 2. [endorse a nonfungible item - Invalid Token Symbol]
-		if err := nonFungible.ValidateSymbol(msg.Symbol); err != nil {
-			return err
-		}
 
 	case nonFungible.MsgUpdateNFTMetadata:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
@@ -508,7 +543,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenFrozen()
 		}
 		if !app.nonFungibleTokenKeeper.IsItemMetadataModifiable(ctx, msg.Symbol, msg.From, msg.ItemID) {
-			return sdkTypes.ErrInternal("Non fungible item metadata is not modifiable.")
+			return sdkTypes.ErrInternal("Non-fungible item metadata is not modifiable.")
 		}
 	case nonFungible.MsgUpdateEndorserList:
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
@@ -524,6 +559,12 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			if !app.kycKeeper.IsWhitelisted(ctx, v) {
 				return types.ErrUnauthorisedEndorser()
 			}
+		}
+
+		var token = new(nonFungible.Token)
+		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
+		if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
+			return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.")
 		}
 
 	case maintenance.MsgProposal:
@@ -553,7 +594,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx create failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx create failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.IsSigner(msg.Sender) {
 			return sdkTypes.ErrInternal("Sender is not group account's signer.")
@@ -576,7 +617,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().GetOwner().Equals(msg.Owner) {
 			return sdkTypes.ErrUnknownRequest("Owner address invalid.")
@@ -587,7 +628,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().IsOwner(msg.Owner) {
 			return sdkTypes.ErrUnknownRequest("Owner of group address invalid.")
@@ -598,7 +639,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx update failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx update failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.GetMultiSig().IsOwner(msg.Sender) {
 			return sdkTypes.ErrUnknownRequest("Only group account owner can remove pending tx.")
@@ -613,7 +654,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return sdkTypes.ErrInternal("Group account not found.")
 		}
 		if !groupAcc.IsMultiSig() {
-			return sdkTypes.ErrInternal("MultiSig Tx sign failed, group address is not a multisig account.")
+			return sdkTypes.ErrInternal("MultiSig Tx sign failed, as group address is not a multisig account.")
 		}
 		if !groupAcc.IsSigner(msg.Sender) {
 			return sdkTypes.ErrInternal("Sender is not group account's signer.")

@@ -103,7 +103,7 @@ func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from
 
 	ownerAccount := k.GetFungibleAccount(ctx, symbol, from)
 	if ownerAccount == nil {
-		return sdkTypes.ErrUnknownRequest("Owner doesn't have such token").Result()
+		return sdkTypes.ErrUnknownRequest("Owner doesn't have such token.").Result()
 	}
 
 	if ownerAccount.Frozen {
@@ -111,7 +111,7 @@ func (k *Keeper) TransferFungibleToken(ctx sdkTypes.Context, symbol string, from
 	}
 
 	if ownerAccount.Balance.LT(value) {
-		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", ownerAccount.Balance.String())).Result()
+		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", ownerAccount.Balance.String())).Result()
 	}
 
 	newOwnerAccount := k.GetFungibleAccount(ctx, symbol, to)
@@ -180,7 +180,7 @@ func (k *Keeper) BurnFungibleToken(ctx sdkTypes.Context, symbol string, owner sd
 	}
 
 	if account.Balance.LT(value) {
-		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v", account.Balance.String())).Result()
+		return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens. Have only %v.", account.Balance.String())).Result()
 	}
 
 	token.TotalSupply = token.TotalSupply.Sub(value)
@@ -244,7 +244,7 @@ func (k *Keeper) transferFungibleTokenOwnership(ctx sdkTypes.Context, from sdkTy
 	}
 
 	if newOwnerAccount.Frozen {
-		return sdkTypes.ErrUnknownRequest("New owner is frozen").Result()
+		return sdkTypes.ErrUnknownRequest("New owner is frozen.").Result()
 	}
 
 	// set token newowner to new owner, pending for accepting by new owner
@@ -303,7 +303,7 @@ func (k *Keeper) acceptFungibleTokenOwnership(ctx sdkTypes.Context, from sdkType
 	}
 
 	if newOwnerAccount.Frozen {
-		return sdkTypes.ErrUnknownRequest("New owner is frozen").Result()
+		return sdkTypes.ErrUnknownRequest("New owner account is frozen.").Result()
 	}
 
 	if newOwnerWalletAccount != nil && token.NewOwner.String() != from.String() {
@@ -311,7 +311,7 @@ func (k *Keeper) acceptFungibleTokenOwnership(ctx sdkTypes.Context, from sdkType
 	}
 
 	if !token.Flags.HasFlag(ApprovedFlag) {
-		return sdkTypes.ErrUnknownRequest("Token is not approved.").Result()
+		return sdkTypes.ErrUnknownRequest("Fungible token is not approved.").Result()
 	}
 
 	if token.Flags.HasFlag(FrozenFlag) {

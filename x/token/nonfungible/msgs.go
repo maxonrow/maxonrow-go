@@ -1,6 +1,8 @@
 package nonfungible
 
 import (
+	"fmt"
+
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/tendermint/tendermint/crypto"
 )
@@ -95,7 +97,7 @@ func (msg MsgCreateNonFungibleToken) GetSigners() []sdkTypes.AccAddress {
 	return []sdkTypes.AccAddress{msg.Owner}
 }
 
-// MsgSetFungibleTokenStatus
+// MsgSetNonFungibleTokenStatus
 type MsgSetNonFungibleTokenStatus struct {
 	Owner      sdkTypes.AccAddress `json:"owner"`
 	Payload    Payload             `json:"payload"`
@@ -109,18 +111,19 @@ type Payload struct {
 }
 
 type TokenData struct {
-	From          sdkTypes.AccAddress   `json:"from"`
-	Nonce         string                `json:"nonce"`
-	Status        string                `json:"status"`
-	Symbol        string                `json:"symbol"`
-	TransferLimit sdkTypes.Uint         `json:"transferLimit"`
-	MintLimit     sdkTypes.Uint         `json:"mintLimit"`
-	Burnable      bool                  `json:"burnable"`
-	Transferable  bool                  `json:"transferable"`
-	Modifiable    bool                  `json:"modifiable"`
-	Public        bool                  `json:"pub"`
-	TokenFees     []TokenFee            `json:"tokenFees,omitempty"`
-	EndorserList  []sdkTypes.AccAddress `json:"endorserList"`
+	From              sdkTypes.AccAddress   `json:"from"`
+	Nonce             string                `json:"nonce"`
+	Status            string                `json:"status"`
+	Symbol            string                `json:"symbol"`
+	TransferLimit     sdkTypes.Uint         `json:"transferLimit"`
+	MintLimit         sdkTypes.Uint         `json:"mintLimit"`
+	Burnable          bool                  `json:"burnable"`
+	Transferable      bool                  `json:"transferable"`
+	Modifiable        bool                  `json:"modifiable"`
+	Public            bool                  `json:"pub"`
+	TokenFees         []TokenFee            `json:"tokenFees,omitempty"`
+	EndorserList      []sdkTypes.AccAddress `json:"endorserList"`
+	EndorserListLimit sdkTypes.Uint         `json:"endorserListLimit"`
 }
 
 type TokenFee struct {
@@ -144,20 +147,21 @@ func NewPayload(token TokenData, pubKey crypto.PubKey, signature []byte) *Payloa
 	}
 }
 
-func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool) *TokenData {
+func NewToken(from sdkTypes.AccAddress, nonce, status, symbol string, transferLimit, mintLimit sdkTypes.Uint, tokenFees []TokenFee, endorserList []sdkTypes.AccAddress, burnable, transferable, modifiable, public bool, endorserListLimit sdkTypes.Uint) *TokenData {
 	return &TokenData{
-		From:          from,
-		Nonce:         nonce,
-		Status:        status,
-		Symbol:        symbol,
-		TransferLimit: transferLimit,
-		MintLimit:     mintLimit,
-		Burnable:      burnable,
-		Transferable:  transferable,
-		Modifiable:    modifiable,
-		Public:        public,
-		TokenFees:     tokenFees,
-		EndorserList:  endorserList,
+		From:              from,
+		Nonce:             nonce,
+		Status:            status,
+		Symbol:            symbol,
+		TransferLimit:     transferLimit,
+		MintLimit:         mintLimit,
+		Burnable:          burnable,
+		Transferable:      transferable,
+		Modifiable:        modifiable,
+		Public:            public,
+		TokenFees:         tokenFees,
+		EndorserList:      endorserList,
+		EndorserListLimit: endorserListLimit,
 	}
 }
 
@@ -186,8 +190,19 @@ func (msg MsgSetNonFungibleTokenStatus) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInvalidAddress("From cannot be empty.")
 	}
 
-	if msg.Payload.Token.Status == ApproveToken && msg.Payload.Token.TokenFees == nil {
-		return sdkTypes.ErrUnknownRequest("Approve token, token fees cannot be empty.")
+	if msg.Payload.Token.Status == ApproveToken {
+		if msg.Payload.Token.TokenFees == nil {
+			return sdkTypes.ErrUnknownRequest("Approve token, token fees cannot be empty.")
+		}
+
+		if msg.Payload.Token.EndorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit cannot less than or equal %v", msg.Payload.Token.EndorserListLimit))
+		}
+
+		if sdkTypes.NewUint(uint64(len(msg.Payload.Token.EndorserList))).GT(msg.Payload.Token.EndorserListLimit) {
+			return sdkTypes.ErrUnauthorized(fmt.Sprintf("Exceeded endorserlist limit %v", msg.Payload.Token.EndorserListLimit))
+		}
+
 	}
 
 	return nil
@@ -265,6 +280,18 @@ func (msg MsgMintNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return sdkTypes.ErrInternal("Item id not allow to be empty.")
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
+	if err := validateProperties(msg.Properties); err != nil {
+		return err
+	}
+
+	if err := validateMetadata(msg.Metadata); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -314,6 +341,10 @@ func (msg MsgTransferNonFungibleItem) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -354,6 +385,10 @@ func (msg MsgBurnNonFungibleItem) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateItemID(msg.ItemID); err != nil {
 		return err
 	}
 
@@ -415,6 +450,10 @@ func (msg MsgSetNonFungibleItemStatus) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.ItemPayload.Item.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateItemID(msg.ItemPayload.Item.ItemID); err != nil {
 		return err
 	}
 
@@ -576,6 +615,10 @@ func (msg MsgEndorsement) ValidateBasic() sdkTypes.Error {
 		return err
 	}
 
+	if err := ValidateItemID(msg.ItemID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -625,6 +668,10 @@ func (msg MsgUpdateItemMetadata) ValidateBasic() sdkTypes.Error {
 	}
 
 	if err := ValidateSymbol(msg.Symbol); err != nil {
+		return err
+	}
+
+	if err := ValidateItemID(msg.ItemID); err != nil {
 		return err
 	}
 

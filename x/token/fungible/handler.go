@@ -14,8 +14,8 @@ const (
 	FreezeTokenAccount   = "FREEZE_ACCOUNT"
 	UnfreezeTokenAccount = "UNFREEZE_ACCOUNT"
 
-	ApproveTransferTokenOwnership = "APPROVE_TRANFER_TOKEN_OWNERSHIP"
-	RejectTransferTokenOwnership  = "REJECT_TRANFER_TOKEN_OWNERSHIP"
+	ApproveTransferTokenOwnership = "APPROVE_TRANSFER_TOKEN_OWNERSHIP"
+	RejectTransferTokenOwnership  = "REJECT_TRANSFER_TOKEN_OWNERSHIP"
 )
 
 func NewHandler(keeper *Keeper) sdkTypes.Handler {
