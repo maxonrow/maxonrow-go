@@ -564,7 +564,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
-			return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.")
+			return sdkTypes.ErrInternal("Endorserlist limit exceeded.")
 		}
 
 	case maintenance.MsgProposal:
