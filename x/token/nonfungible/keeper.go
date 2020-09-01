@@ -318,11 +318,12 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	}
 
 	if endorserListLimit.LTE(sdkTypes.NewUintFromString("0")) {
-		return sdkTypes.ErrUnauthorized("Endorserlist limit cannot less than or equal zero.").Result()
+		return sdkTypes.ErrInternal("Endorserlist limit cannot less than or equal zero.").Result()
 	}
 
 	if sdkTypes.NewUint(uint64(len(endorserList))).GT(endorserListLimit) {
-		return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.").Result()
+		return sdkTypes.ErrInternal("Endorserlist limit exceeded.").Result()
+
 	}
 
 	ownerWalletAccount := k.accountKeeper.GetAccount(ctx, token.Owner)
