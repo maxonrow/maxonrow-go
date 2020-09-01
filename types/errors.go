@@ -33,7 +33,8 @@ const (
 	CodeTokenInvalidItemOwner              sdkTypes.CodeType = 2109
 	CodeTokenItemNotModifiable             sdkTypes.CodeType = 2110
 	CodeTokenItemNotFound                  sdkTypes.CodeType = 2111
-	CodeUnauthorisedEndorser               sdkTypes.CodeType = 2112
+	CodeTokenUnauthorisedEndorser          sdkTypes.CodeType = 2112
+	CodeTokenLimitExceededError            sdkTypes.CodeType = 2113
 
 	CodeFeeNotFound             sdkTypes.CodeType = 3001
 	CodeTokenFeeSettingNotFound sdkTypes.CodeType = 3002
@@ -176,6 +177,10 @@ func ErrTokenItemNotFound() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenItemNotFound, "Token item not found.")
 }
 
-func ErrUnauthorisedEndorser() sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeUnauthorisedEndorser, "Endorser is not whitelisted.")
+func ErrTokenUnauthorisedEndorser() sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenUnauthorisedEndorser, "Endorser is not whitelisted.")
+}
+
+func ErrTokenLimitExceededError(action string) sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenLimitExceededError, "Limit exceeded : %s", action)
 }
