@@ -181,6 +181,6 @@ func ErrTokenUnauthorisedEndorser() sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenUnauthorisedEndorser, "Endorser is not whitelisted.")
 }
 
-func ErrTokenLimitExceededError() sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeTokenLimitExceededError, "Token limit exceeded.")
+func ErrTokenLimitExceededError(action string) sdkTypes.Error {
+	return newErrorWithMXWCodespace(CodeTokenLimitExceededError, "Limit exceeded : %s", action)
 }

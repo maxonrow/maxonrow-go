@@ -53,7 +53,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	if !nonFungibleToken.MintLimit.IsZero() {
 
 		if k.IsMintLimitExceeded(ctx, nonFungibleToken.Symbol, to) {
-			return types.ErrTokenLimitExceededError().Result()
+			return types.ErrTokenLimitExceededError("Mint non-fungible item").Result()
 		}
 		k.increaseMintItemLimit(ctx, symbol, to)
 	}
@@ -123,7 +123,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
-		return types.ErrTokenLimitExceededError().Result()
+		return types.ErrTokenLimitExceededError("Transfer non-fungible item").Result()
 	}
 
 	// delete old owner
@@ -474,7 +474,7 @@ func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from
 	}
 
 	if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
-		return types.ErrTokenLimitExceededError().Result()
+		return types.ErrTokenLimitExceededError("Update endorser list").Result()
 	}
 
 	token.EndorserList = endorsers
