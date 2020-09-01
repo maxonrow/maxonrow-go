@@ -322,7 +322,7 @@ func (k *Keeper) approveNonFungibleToken(ctx sdkTypes.Context, symbol string, to
 	}
 
 	if sdkTypes.NewUint(uint64(len(endorserList))).GT(endorserListLimit) {
-		return sdkTypes.ErrInternal("Endorserlist limit exceeded.").Result()
+		return types.ErrTokenLimitExceededError().Result()
 
 	}
 
