@@ -1,6 +1,8 @@
 package maintenance
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/maxonrow/maxonrow-go/types"
@@ -184,7 +186,7 @@ func (keeper Keeper) ApproveProposal(ctx sdkTypes.Context, proposalID uint64, ap
 		keeper.SetProposal(ctx, proposal)
 
 		// Event: executed proposal
-		executedEventParam := []string{EXECUTED, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", string(proposal.ProposalID)}
+		executedEventParam := []string{EXECUTED, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", fmt.Sprint(proposal.ProposalID)}
 		executedEventSignature := "ExecutedProposal(string,string,string)"
 		executedEvents = types.MakeMxwEvents(executedEventSignature, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", executedEventParam)
 
@@ -217,7 +219,7 @@ func (keeper Keeper) RejectProposal(ctx sdkTypes.Context, proposalID uint64, rej
 		keeper.SetProposal(ctx, proposal)
 
 		// Event: executed proposal
-		executedEventParam := []string{EXECUTED, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", string(proposal.ProposalID)}
+		executedEventParam := []string{EXECUTED, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", fmt.Sprint(proposal.ProposalID)}
 		executedEventSignature := "ExecutedProposal(string,string,string)"
 		executedEvents = types.MakeMxwEvents(executedEventSignature, "mxw1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqgcpfl3", executedEventParam)
 	}

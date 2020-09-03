@@ -1,0 +1,27 @@
+language: go
+go_import_path: github.com/maxonrow/maxonrow-go
+sudo: false
+
+matrix:
+  include:
+  - os: linux
+    dist: trusty
+    go: 1.14.x
+    script: make all
+  - os: linux
+    dist: trusty
+    go: 1.15.x
+    script: make all
+  - os: linux
+    dist: trusty
+    go: master
+    script: make all && make docker
+  - os: osx
+    go: 1.14.x
+    script: make all
+  - os: osx
+    go: 1.15.x
+    script: make all
+  - os: osx
+    go: master
+    script: make all

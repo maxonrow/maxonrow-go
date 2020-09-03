@@ -1,5 +1,8 @@
+# Version 1.3.7
+- Upgrade to go version 1.15
+
 # Version 1.3.6
-- Enhancement move UpdateNFTItemMetadata into token action (Fixing #178) 
+- Enhancement move UpdateNFTItemMetadata into token action (Fixing #178)
 - check endorserlist limit during approval and update endorser list (Fixing #179)
 - New NFT test-cases by checking for Endorser List Limit Setting
 - Update with meaningful error messages in validation.go and keeper files in the modules
@@ -43,7 +46,7 @@
 - enable codec for fungible and nonfungible token in multisig.
 - symbol length change to 40
 - added validation for decimal in ft (token decimal not allow to be 0 or greater than 18)
-- disable rpc end point for listing token and nonfungible token 
+- disable rpc end point for listing token and nonfungible token
 - added another rpc for test (AccountCdc)
 - remove cdc from querry account end point (Account)
 
@@ -80,9 +83,9 @@
 - Alias letters and characters issue.
 - Kyc bind/unbind
 - RPC methods for debugging and query fees
-- RPC methods for getting accont status 
+- RPC methods for getting accont status
 - mxwcli enable to add key from mnemonic into keyring
-- Old keybase deprecated  
+- Old keybase deprecated
 - mxwcli generating multisig account address from sequence and owner address
 - Updating tests
 

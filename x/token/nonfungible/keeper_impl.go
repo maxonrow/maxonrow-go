@@ -1,8 +1,6 @@
 package nonfungible
 
 import (
-	"fmt"
-
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/maxonrow/maxonrow-go/types"
 )
@@ -55,7 +53,7 @@ func (k *Keeper) MintNonFungibleItem(ctx sdkTypes.Context, symbol string, from s
 	if !nonFungibleToken.MintLimit.IsZero() {
 
 		if k.IsMintLimitExceeded(ctx, nonFungibleToken.Symbol, to) {
-			return sdkTypes.ErrInternal("Holding limit exceeded.").Result()
+			return types.ErrTokenLimitExceeded("Mint non-fungible item").Result()
 		}
 		k.increaseMintItemLimit(ctx, symbol, to)
 	}
@@ -125,7 +123,7 @@ func (k *Keeper) TransferNonFungibleItem(ctx sdkTypes.Context, symbol string, fr
 	if k.IsItemTransferLimitExceeded(ctx, symbol, itemID) {
 
 		// TO-DO: own error message.
-		return sdkTypes.ErrInternal("Transfer limit exceeded.").Result()
+		return types.ErrTokenLimitExceeded("Transfer non-fungible item").Result()
 	}
 
 	// delete old owner
@@ -476,7 +474,7 @@ func (k *Keeper) UpdateNFTEndorserList(ctx sdkTypes.Context, symbol string, from
 	}
 
 	if sdkTypes.NewUint(uint64(len(endorsers))).GT(token.EndorserListLimit) {
-		return sdkTypes.ErrUnauthorized(fmt.Sprintf("Endorserlist limit exceeded.")).Result()
+		return types.ErrTokenLimitExceeded("Update endorser list").Result()
 	}
 
 	token.EndorserList = endorsers

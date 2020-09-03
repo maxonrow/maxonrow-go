@@ -317,7 +317,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 			for _, v := range msg.Payload.Token.EndorserList {
 				if !app.kycKeeper.IsWhitelisted(ctx, v) {
-					return types.ErrUnauthorisedEndorser()
+					return types.ErrTokenUnauthorisedEndorser()
 				}
 			}
 		}
@@ -412,7 +412,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
-			return sdkTypes.ErrInternal("Transfer limit exceeded.")
+			return types.ErrTokenLimitExceeded("Transfer non-fungible item")
 		}
 
 	case nonFungible.MsgMintNonFungibleItem:
@@ -428,7 +428,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
-			return sdkTypes.ErrInternal("Mint limit exceeded.")
+			return types.ErrTokenLimitExceeded("Mint non-fungible item")
 		}
 
 		//1. checking: (flag of Public equals to TRUE)
@@ -557,14 +557,14 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 		for _, v := range msg.Endorsers {
 			if !app.kycKeeper.IsWhitelisted(ctx, v) {
-				return types.ErrUnauthorisedEndorser()
+				return types.ErrTokenUnauthorisedEndorser()
 			}
 		}
 
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
-			return sdkTypes.ErrUnauthorized("Endorserlist limit exceeded.")
+			return types.ErrTokenLimitExceeded("Update endorser list")
 		}
 
 	case maintenance.MsgProposal:
