@@ -1,12 +1,11 @@
-
-# ![https://maxonrow.com](https://maxonrow.com/images/maxonrow_gold.png)
+# ![https://maxonrow.com](https://raw.githubusercontent.com/maxonrow/docs/master/logo.png) [![Build Status](https://travis-ci.com/maxonrow/maxonrow-go.svg?branch=master)](https://travis-ci.com/maxonrow/maxonrow-go)
 
 Maxonrow is the sole main chain service provider in the world to offer real-name identity verification for KYC process and AML safety measures. Its a blockchain powered by Tendermint & Cosmos-SDK. We utilize GDPOS (Governed Delegated Proof of Stake) as a consensus mechanism, which is a mechanism of equity entrustment unique to Maxonrow.
 
 # Building the source
 
 Prerequisites
-* Go 1.12.5+ [installed](https://github.com/golang/go)
+* Go 1.14+ [installed](https://github.com/golang/go)
 * Docker [installed](https://docs.docker.com/engine/installation/)(Optional)
 * Docker Compose [installed](https://docs.docker.com/compose/install/)(Optional)
 
@@ -65,4 +64,4 @@ Prerequisites
 * To run our test case:
 
     `make test`
-    
+

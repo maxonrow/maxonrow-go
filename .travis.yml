@@ -24,4 +24,4 @@ matrix:
     script: make all
   - os: osx
     go: master
-    script: make all && make docker
+    script: make all
