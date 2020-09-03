@@ -200,7 +200,7 @@ func handleMsgCreateMultiSigTx(ctx sdkTypes.Context, msg MsgCreateMultiSigTx, ac
 		resultLog = resultLog.WithInternalHash(internalHash)
 	}
 
-	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(ptx.GetID())}
+	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), fmt.Sprint(ptx.GetID())}
 	eventSignature := "CreatedMultiSigTx(string,string,string)"
 
 	return sdkTypes.Result{
@@ -262,7 +262,7 @@ func handleMsgSignMultiSigTx(ctx sdkTypes.Context, msg MsgSignMultiSigTx, accoun
 		resultLog = resultLog.WithInternalHash(internalHash)
 	}
 
-	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(msg.TxID)}
+	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), fmt.Sprint(msg.TxID)}
 	eventSignature := "SignedMultiSigTx(string,string,string)"
 	events := types.MakeMxwEvents(eventSignature, msg.Sender.String(), eventParam)
 
@@ -310,7 +310,7 @@ func handleMsgDeleteMultiSigTx(ctx sdkTypes.Context, msg MsgDeleteMultiSigTx, ac
 	accountSequence := senderAccount.GetSequence()
 	resultLog := types.NewResultLog(accountSequence, ctx.TxBytes())
 
-	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), string(msg.TxID)}
+	eventParam := []string{msg.Sender.String(), msg.GroupAddress.String(), fmt.Sprint(msg.TxID)}
 	eventSignature := "DeletedMultiSigTx(string,string,string)"
 
 	return sdkTypes.Result{
@@ -356,7 +356,7 @@ func checkIsMetric(ctx sdkTypes.Context, txID uint64, groupAcc exported.Account,
 		}()
 
 		// Event: broadcast tx
-		broadcastedEventParam := []string{groupAcc.GetAddress().String(), string(txID), string(internalHash)}
+		broadcastedEventParam := []string{groupAcc.GetAddress().String(), fmt.Sprint(txID), string(internalHash)}
 		broadcastedEventSignature := "BroadcastedTx(string,string,string)"
 		broadcastedEvents = types.MakeMxwEvents(broadcastedEventSignature, groupAcc.GetAddress().String(), broadcastedEventParam)
 

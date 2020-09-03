@@ -1,6 +1,8 @@
 package auth
 
 import (
+	"fmt"
+
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	sdkAuth "github.com/cosmos/cosmos-sdk/x/auth"
 )
@@ -33,7 +35,7 @@ func (msg MsgCreateMultiSigAccount) ValidateBasic() sdkTypes.Error {
 	}
 
 	if len(msg.Signers) < msg.Threshold {
-		return sdkTypes.ErrInternal("Invalid signers/ threshold signers: " + string(len(msg.Signers)) + " <  threshold: " + string(msg.Threshold))
+		return sdkTypes.ErrInternal("Invalid signers/ threshold signers: " + fmt.Sprint(len(msg.Signers)) + " <  threshold: " + fmt.Sprint(msg.Threshold))
 	}
 
 	return nil
@@ -76,7 +78,7 @@ func (msg MsgUpdateMultiSigAccount) ValidateBasic() sdkTypes.Error {
 	}
 
 	if len(msg.NewSigners) < msg.NewThreshold {
-		return sdkTypes.ErrInternal("Invalid signers/ threshold signers: " + string(len(msg.NewSigners)) + " <  threshold: " + string(msg.NewThreshold))
+		return sdkTypes.ErrInternal("Invalid signers/ threshold signers: " + fmt.Sprint(len(msg.NewSigners)) + " <  threshold: " + fmt.Sprint(msg.NewThreshold))
 	}
 	return nil
 }

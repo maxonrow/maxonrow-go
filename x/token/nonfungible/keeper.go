@@ -1,6 +1,8 @@
 package nonfungible
 
 import (
+	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
@@ -947,8 +949,8 @@ func (k *Keeper) GetEndorserList(ctx sdkTypes.Context, symbol string) []sdkTypes
 // Querying
 func (k *Keeper) ListTokens(ctx sdkTypes.Context) []Token {
 	store := ctx.KVStore(k.key)
-	start := getTokenKey(string(0x00))
-	end := getTokenKey(string(0xFF))
+	start := getTokenKey(fmt.Sprint(0x00))
+	end := getTokenKey(fmt.Sprint(0xFF))
 	iter := store.Iterator(start, end)
 	defer iter.Close()
 

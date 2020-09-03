@@ -61,12 +61,12 @@ func handleMsgSubmitProposal(ctx sdkTypes.Context, keeper *Keeper, msg MsgPropos
 	}
 
 	// Event: Submit Proposal
-	proposalEventParam := []string{string(proposal.ProposalID), msg.Proposer.String(), proposal.ProposalType().String()}
+	proposalEventParam := []string{fmt.Sprint(proposal.ProposalID), msg.Proposer.String(), proposal.ProposalType().String()}
 	proposalEventSignature := "SubmittedProposal(string,string,string)"
 	proposalEvents := types.MakeMxwEvents(proposalEventSignature, msg.Proposer.String(), proposalEventParam)
 
 	// Event: Add Vote
-	approveEventParam := []string{APPROVE, string(proposal.ProposalID), msg.Proposer.String()}
+	approveEventParam := []string{APPROVE, fmt.Sprint(proposal.ProposalID), msg.Proposer.String()}
 	approveEventSignature := "ApprovedProposal(string,string,string)"
 	approveEvents := types.MakeMxwEvents(approveEventSignature, msg.Proposer.String(), approveEventParam)
 
@@ -101,7 +101,7 @@ func handleMsgCastAction(ctx sdkTypes.Context, keeper *Keeper, msg MsgCastAction
 		}
 
 		// Event: approve proposal
-		approveEventParam := []string{APPROVE, string(msg.ProposalID), msg.Owner.String()}
+		approveEventParam := []string{APPROVE, fmt.Sprint(msg.ProposalID), msg.Owner.String()}
 		approveEventSignature := "ApprovedProposal(string,string,string)"
 		approveEvents := types.MakeMxwEvents(approveEventSignature, msg.Owner.String(), approveEventParam)
 
@@ -123,7 +123,7 @@ func handleMsgCastAction(ctx sdkTypes.Context, keeper *Keeper, msg MsgCastAction
 		}
 
 		// Event: reject proposal
-		rejectEventParam := []string{REJECT, string(msg.ProposalID), msg.Owner.String()}
+		rejectEventParam := []string{REJECT, fmt.Sprint(msg.ProposalID), msg.Owner.String()}
 		rejectEventSignature := "RejectedProposal(string,string,string)"
 		rejectEvents := types.MakeMxwEvents(rejectEventSignature, msg.Owner.String(), rejectEventParam)
 
