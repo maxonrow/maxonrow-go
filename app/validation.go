@@ -412,7 +412,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsItemTransferLimitExceeded(ctx, msg.Symbol, msg.ItemID) {
-			return types.ErrTokenLimitExceededError("Transfer non-fungible item")
+			return types.ErrTokenLimitExceeded("Transfer non-fungible item")
 		}
 
 	case nonFungible.MsgMintNonFungibleItem:
@@ -428,7 +428,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		}
 
 		if app.nonFungibleTokenKeeper.IsMintLimitExceeded(ctx, msg.Symbol, msg.To) {
-			return types.ErrTokenLimitExceededError("Mint non-fungible item")
+			return types.ErrTokenLimitExceeded("Mint non-fungible item")
 		}
 
 		//1. checking: (flag of Public equals to TRUE)
@@ -564,7 +564,7 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if sdkTypes.NewUint(uint64(len(msg.Endorsers))).GT(token.EndorserListLimit) {
-			return types.ErrTokenLimitExceededError("Update endorser list")
+			return types.ErrTokenLimitExceeded("Update endorser list")
 		}
 
 	case maintenance.MsgProposal:
