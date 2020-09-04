@@ -420,6 +420,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrReceiverNotKyc()
 		}
 
+		if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.Owner) {
+			return types.ErrInvalidTokenOwner()
+		}
+
 		if !app.nonFungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
 		}
