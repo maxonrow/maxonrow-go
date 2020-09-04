@@ -95,6 +95,8 @@
 
 # Version 0.7.4
 - Added fee cli enable deleting account fee setting
+- Added docker file to create image from develop and master branch
+- Fix validation for minting nft item to check for token owner
 
 # Version 0.7.3
 - Fix fee multiplier/ token multiplier for fee calculation
