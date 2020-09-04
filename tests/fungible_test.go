@@ -197,7 +197,7 @@ func makeFungibleTokenTxs() []*testCase {
 		{"token", false, false, "Transfer token - Happy path", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, false, false, "0", "", "", "", "", ""}, "", nil},
 		{"token", true, true, "Transfer token - Invalid fee", "acc-40", "1cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
 		{"token", false, false, "Transfer token - The remaining balance which allow to transfer same TT-1 again", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, false, false, "0", "", "", "", "", ""}, "", nil},
-		{"token", true, true, "Transfer token - Not enough balance to transfer same TT-1 again", "acc-40", "100000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, false, false, "1000000000000000", "", "", "", "", ""}, "", nil},
+		{"token", true, true, "Transfer token - Not enough balance to transfer same TT-1 again", "acc-40", "1000000000cin", 0, TokenInfo{"transfer", "", "", "", "TT-1", 8, "acc-40", "eve", "", false, "", true, false, false, "1000000000000000", "", "", "", "", ""}, "", nil},
 
 		// transfer ownership
 		{"token", true, true, "Transfer token ownership - Token not existed", "acc-40", "100000000cin", 0, TokenInfo{"transfer-ownership", "", "", "", "TT-3", 8, "acc-40", "carlo", "", true, "", true, false, false, "1", "", "", "", "", ""}, "", nil},
