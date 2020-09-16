@@ -83,8 +83,8 @@ func makeKycTxs() []*testCase {
 		{"bank", false, false, "receiving after revoking an account", "alice", "200000000cin", 0, bankInfo{"alice", "josephin", "1cin"}, "", nil},
 
 		//=============================================start : used by nft modules
-		{"kyc", false, false, "Doing kyc - nft-yk - commit", "nft-kyc-auth-1", "0cin", 0, kycInfo{"nft-kyc-auth-1", "nft-kyc-issuer-1", "nft-kyc-prov-1", "whitelist", "nft-yk", "nft-yk", "testKyc123451111", "0"}, "", nil},
-		{"kyc", false, false, "Doing kyc - nft-mostafa - commit", "nft-kyc-auth-1", "0cin", 0, kycInfo{"nft-kyc-auth-1", "nft-kyc-issuer-1", "nft-kyc-prov-1", "whitelist", "nft-mostafa", "nft-mostafa", "testKyc123452222", "0"}, "", nil},
+		{"kyc", false, false, "Doing kyc - nft-yk - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "nft-yk", "nft-yk", "testKyc123451111", "0"}, "", nil},
+		{"kyc", false, false, "Doing kyc - nft-mostafa - commit", "kyc-auth-1", "0cin", 0, kycInfo{"kyc-auth-1", "kyc-issuer-1", "kyc-prov-1", "whitelist", "nft-mostafa", "nft-mostafa", "testKyc123452222", "0"}, "", nil},
 	}
 
 	return tcs
