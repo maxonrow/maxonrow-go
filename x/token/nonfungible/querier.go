@@ -20,6 +20,11 @@ const (
 	QueryEndorserList        = "get_endorser_list"
 )
 
+type ItemInfo struct {
+	Owner sdkTypes.AccAddress
+	Item  *Item
+}
+
 func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
 	return func(ctx sdkTypes.Context, path []string, req abci.RequestQuery) ([]byte, sdkTypes.Error) {
 		switch path[0] {
@@ -75,10 +80,15 @@ func queryItemData(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci
 	itemID := path[1]
 
 	item := keeper.GetNonFungibleItem(ctx, symbol, itemID)
+	owner := keeper.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 
-	tokenInfo := cdc.MustMarshalJSON(item)
+	var itemInfo ItemInfo
+	itemInfo.Item = item
+	itemInfo.Owner = owner
 
-	return tokenInfo, nil
+	js := cdc.MustMarshalJSON(itemInfo)
+
+	return js, nil
 }
 
 func queryEndorserList(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
