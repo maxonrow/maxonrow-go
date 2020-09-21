@@ -5,7 +5,7 @@ import "fmt"
 const (
 	Maj = "1"
 	Min = "3"
-	Fix = "6"
+	Fix = "7"
 )
 
 var (

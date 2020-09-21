@@ -166,6 +166,17 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.From, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
 		}
+
+		var account = new(fungible.FungibleTokenAccount)
+		account = app.fungibleTokenKeeper.GetFungibleAccount(ctx, msg.Symbol, msg.From)
+
+		if account == nil {
+			return types.ErrInvalidTokenAccount()
+		}
+		if account.Balance.LT(msg.Value) {
+			return types.ErrInvalidTokenAccountBalance(fmt.Sprintf("Not enough tokens to transfer. Have only %v.", account.Balance.String()))
+		}
+
 		//check receiver
 		if app.fungibleTokenKeeper.IsFungibleTokenAccountFrozen(ctx, msg.To, msg.Symbol) {
 			return types.ErrTokenAccountFrozen()
@@ -178,6 +189,10 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 
 		if !app.fungibleTokenKeeper.CheckApprovedToken(ctx, msg.Symbol) {
 			return types.ErrTokenInvalid()
+		}
+
+		if !app.fungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.Owner) {
+			return types.ErrInvalidTokenOwner()
 		}
 
 		if app.fungibleTokenKeeper.IsTokenFrozen(ctx, msg.Symbol) {
@@ -431,14 +446,18 @@ func (app *mxwApp) validateMsg(ctx sdkTypes.Context, msg sdkTypes.Msg) sdkTypes.
 			return types.ErrTokenLimitExceeded("Mint non-fungible item")
 		}
 
-		//1. checking: (flag of Public equals to TRUE)
+		// RULES:
+		// 1. If pub flag is true (public nft), the minter has to be equals to receiver.
+		// 2. If there is no pub flag (private nft), the minter has to be the owner of the nft.
 		var token = new(nonFungible.Token)
 		app.nonFungibleTokenKeeper.GetNonfungibleTokenDataInfo(ctx, msg.Symbol, token)
 		if token.Flags.HasFlag(nonFungible.PubFlag) {
-			ownerAcc := msg.Owner
-			newOwnerAcc := msg.To
-			if !ownerAcc.Equals(newOwnerAcc) {
+			if !msg.Owner.Equals(msg.To) {
 				return sdkTypes.ErrInternal("Public token can only be minted to oneself.")
+			}
+		} else {
+			if !app.nonFungibleTokenKeeper.IsTokenOwner(ctx, msg.Symbol, msg.Owner) {
+				return types.ErrInvalidTokenOwner()
 			}
 		}
 
