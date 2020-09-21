@@ -246,7 +246,7 @@ func SetFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("No such token symbol.")
 			}
 
-			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_token_action_valid/%s", tokenAction), nil)
+			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_fungible_token_action_valid/%s", tokenAction), nil)
 			if err != nil {
 				return err
 			}
@@ -299,7 +299,7 @@ func SetNonFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 				return fmt.Errorf("No such token symbol.")
 			}
 
-			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_token_action_valid/%s", tokenAction), nil)
+			isValid, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/is_nonFungible_token_action_valid/%s", tokenAction), nil)
 			if err != nil {
 				return err
 			}
