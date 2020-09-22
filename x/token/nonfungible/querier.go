@@ -21,8 +21,12 @@ const (
 )
 
 type ItemInfo struct {
-	Owner sdkTypes.AccAddress
-	Item  *Item
+	Owner         sdkTypes.AccAddress
+	ID            string
+	Properties    string
+	Metadata      string
+	TransferLimit sdkTypes.Uint
+	Frozen        bool
 }
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
@@ -82,9 +86,14 @@ func queryItemData(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci
 	item := keeper.GetNonFungibleItem(ctx, symbol, itemID)
 	owner := keeper.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 
-	var itemInfo ItemInfo
-	itemInfo.Item = item
-	itemInfo.Owner = owner
+	var itemInfo = ItemInfo{
+		Owner:         owner,
+		ID:            item.ID,
+		Properties:    item.Properties,
+		Metadata:      item.Metadata,
+		TransferLimit: item.TransferLimit,
+		Frozen:        item.Frozen,
+	}
 
 	js := cdc.MustMarshalJSON(itemInfo)
 
