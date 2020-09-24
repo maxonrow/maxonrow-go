@@ -3,15 +3,16 @@ package kyc
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/maxonrow/maxonrow-go/x/fee"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
-	QueryIsWhitelisted = "is_whitelisted"
-	QueryIsAuthorised  = "is_authorised"
-	QueryGetKycAddress = "get_kyc_address"
-	QueryGetFee        = "get_fee"
+	QueryIsWhitelisted             = "is_whitelisted"
+	QueryIsAuthorised              = "is_authorised"
+	QueryGetKycAddress             = "get_kyc_address"
+	QueryGetFee                    = "get_fee"
+	QueryGetKycMaintainerAddresses = "get_kyc_maintainer_addresses"
 )
 
 func NewQuerier(keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
@@ -23,6 +24,8 @@ func NewQuerier(keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
 			return queryIsAuthorised(ctx, path[1:], req, keeper)
 		case QueryGetKycAddress:
 			return queryGetKycAddress(ctx, path[1:], req, keeper)
+		case QueryGetKycMaintainerAddresses:
+			return queryGetKycMaintainerAddresses(ctx, path[1:], req, keeper)
 		case QueryGetFee:
 			return queryGetFee(ctx, path[1:], req, keeper, feeKeeper)
 		default:
@@ -100,4 +103,17 @@ func queryGetFee(ctx sdkTypes.Context, path []string, req abci.RequestQuery, kee
 
 	return respData, nil
 
+}
+
+func queryGetKycMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+
+	kycAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	kycIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	kycProviderAddresses := keeper.GetProviderAddresses(ctx)
+
+	kycAuthorisedAddresses.AppendAccAddrs(kycIssuerAddresses)
+	kycAuthorisedAddresses.AppendAccAddrs(kycProviderAddresses)
+
+	respData := codec.Cdc.MustMarshalJSON(kycAuthorisedAddresses)
+	return respData, nil
 }

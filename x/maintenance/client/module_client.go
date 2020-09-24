@@ -2,9 +2,9 @@ package client
 
 import (
 	"github.com/cosmos/cosmos-sdk/client"
+	maintenanceCmd "github.com/maxonrow/maxonrow-go/x/maintenance/client/cli"
 	"github.com/spf13/cobra"
 	"github.com/tendermint/go-amino"
-	maintenanceCmd "github.com/maxonrow/maxonrow-go/x/maintenance/client/cli"
 )
 
 type ModuleClient struct {
@@ -24,6 +24,11 @@ func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 
 	queryCmd.AddCommand(client.GetCommands(
 		maintenanceCmd.GetCmdGetProposal(mc.storeKey, mc.cdc),
+		maintenanceCmd.GetCmdGetKycMaintainerAddresses("kyc", mc.cdc),
+		maintenanceCmd.GetCmdGetNameserviceMaintainerAddresses("nameservice", mc.cdc),
+		maintenanceCmd.GetCmdGetFeeMaintainerAddresses("fee", mc.cdc),
+		maintenanceCmd.GetCmdGetFungibleTokenMaintainerAddresses("token", mc.cdc),
+		maintenanceCmd.GetCmdGetNonfungibleTokenMaintainerAddresses("nonFungible", mc.cdc),
 	)...)
 
 	return queryCmd

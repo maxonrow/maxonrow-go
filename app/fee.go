@@ -159,7 +159,7 @@ func (app *mxwApp) getTokenFeeSetting(msg sdkTypes.Msg, ctx sdkTypes.Context) (*
 
 	switch msgType := msg.(type) {
 	case ft.MsgTransferFungibleToken:
-		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.TransferToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.TransferToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
@@ -174,7 +174,7 @@ func (app *mxwApp) getTokenFeeSetting(msg sdkTypes.Msg, ctx sdkTypes.Context) (*
 		amt = transferAmtCoins
 
 	case ft.MsgMintFungibleToken:
-		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.MintToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.MintToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
@@ -188,7 +188,7 @@ func (app *mxwApp) getTokenFeeSetting(msg sdkTypes.Msg, ctx sdkTypes.Context) (*
 		amt = mintAmtCoins
 
 	case ft.MsgBurnFungibleToken:
-		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.BurnToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.BurnToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
@@ -202,60 +202,60 @@ func (app *mxwApp) getTokenFeeSetting(msg sdkTypes.Msg, ctx sdkTypes.Context) (*
 		amt = burnAmtCoins
 
 	case ft.MsgTransferFungibleTokenOwnership:
-		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.TransferTokenOwnership)
+		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.TransferTokenOwnership)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case ft.MsgAcceptFungibleTokenOwnership:
-		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.AcceptTokenOwnership)
+		feeSetting, feeSettingErr = app.feeKeeper.GetFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.AcceptTokenOwnership)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	// nft's
 	case nft.MsgTransferNonFungibleItem:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.TransferToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.TransferToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case nft.MsgMintNonFungibleItem:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.MintToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.MintToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case nft.MsgBurnNonFungibleItem:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.BurnToken)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.BurnToken)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case nft.MsgTransferNonFungibleTokenOwnership:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.TransferTokenOwnership)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.TransferTokenOwnership)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case nft.MsgAcceptNonFungibleTokenOwnership:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.AcceptTokenOwnership)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.AcceptTokenOwnership)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 
 	case nft.MsgEndorsement:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.Endorse)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.Endorse)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 	case nft.MsgUpdateEndorserList:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.UpdateNFTEndorserList)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.UpdateNFTEndorserList)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}
 	case nft.MsgUpdateItemMetadata:
-		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSetting(ctx, msgType.Symbol, fee.UpdateNFTItemMetadata)
+		feeSetting, feeSettingErr = app.feeKeeper.GetNonFungibleTokenFeeSettingByAction(ctx, msgType.Symbol, fee.UpdateNFTItemMetadata)
 		if feeSettingErr != nil {
 			return nil, nil, feeSettingErr
 		}

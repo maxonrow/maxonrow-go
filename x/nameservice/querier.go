@@ -4,17 +4,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/fee"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
-	QueryResolve       = "resolve"
-	QueryWhois         = "whois"
-	QueryGetFee        = "get_fee"
-	QueryListUsedAlias = "list_used_alias"
-	QueryPendingAlias  = "pending"
+	QueryResolve                           = "resolve"
+	QueryWhois                             = "whois"
+	QueryGetFee                            = "get_fee"
+	QueryListUsedAlias                     = "list_used_alias"
+	QueryPendingAlias                      = "pending"
+	QueryGetNameserviceMaintainerAddresses = "get_nameservice_maintainer_addresses"
 )
 
 type Resolve struct {
@@ -35,6 +36,8 @@ func NewQuerier(cdc *codec.Codec, keeper Keeper, feeKeeper fee.Keeper) sdk.Queri
 			return queryListUsedAlias(cdc, ctx, path[1:], req, keeper)
 		case QueryPendingAlias:
 			return queryPendingAlias(cdc, ctx, path[1:], req, keeper)
+		case QueryGetNameserviceMaintainerAddresses:
+			return queryGetNameserviceMaintainerAddresses(ctx, path[1:], req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown nameservice query endpoint")
 		}
@@ -134,4 +137,17 @@ func queryPendingAlias(cdc *codec.Codec, ctx sdk.Context, path []string, req abc
 
 type listAliasResponse struct {
 	UsedAlias []string `json:"alias"`
+}
+
+func queryGetNameserviceMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, sdkTypes.Error) {
+
+	nameserviceAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	nameserviceIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	nameserviceProviderAddresses := keeper.GetProviderAddresses(ctx)
+
+	nameserviceAuthorisedAddresses.AppendAccAddrs(nameserviceIssuerAddresses)
+	nameserviceAuthorisedAddresses.AppendAccAddrs(nameserviceProviderAddresses)
+
+	respData := codec.Cdc.MustMarshalJSON(nameserviceAuthorisedAddresses)
+	return respData, nil
 }
