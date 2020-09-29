@@ -3,6 +3,9 @@ package cli
 import (
 	"fmt"
 
+	"github.com/maxonrow/maxonrow-go/x/token/fungible"
+	"github.com/maxonrow/maxonrow-go/x/token/nonfungible"
+
 	"github.com/maxonrow/maxonrow-go/x/fee"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
@@ -71,8 +74,14 @@ func GetFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryFungibleTokenFeeSetting, symbol), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "token", fungible.QueryTokenData, symbol), nil)
 			if err != nil {
+				fmt.Printf("Could not get fungible token fee setting: %s\n", err)
+				return nil
+			}
+
+			res, _, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryFungibleTokenFeeSetting, symbol), nil)
+			if err != nil {	
 				fmt.Printf("Could not get fungible token fee setting: %s\n", err)
 				return nil
 			}
@@ -96,7 +105,13 @@ func GetNonFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 
 			symbol := args[0]
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryNonFungibleTokenFeeSetting, symbol), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "nonFungible", nonfungible.QueryTokenData, symbol), nil)
+			if err != nil {
+				fmt.Printf("Could not get non-fungible token fee setting: %s\n", err)
+				return nil
+			}
+
+			res, _, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryNonFungibleTokenFeeSetting, symbol), nil)
 			if err != nil {
 				fmt.Printf("Could not get non-fungible token fee setting: %s\n", err)
 				return nil

@@ -67,17 +67,6 @@ func getAccFeeSettingKey(acc sdkTypes.AccAddress) []byte {
 	return append(prefixAccFeeSetting, acc.Bytes()...)
 }
 
-func getFungibleTokenFeeSettingKey(symbol string) []byte {
-	tokenSymbol := "ft:" + symbol
-	return append(prefixTokenFeeSetting, []byte(tokenSymbol)...)
-}
-
-func getNonFungibleTokenFeeSettingKey(symbol string) []byte {
-	tokenSymbol := "nft:" + symbol
-	return append(prefixTokenFeeSetting, []byte(tokenSymbol)...)
-
-}
-
 func getFungibleTokenFeeSettingKeyByAction(symbol string, action string) []byte {
 	tokenAction := "ft:" + symbol + ":" + action
 	return append(prefixTokenFeeSetting, []byte(tokenAction)...)
@@ -531,10 +520,20 @@ func (k *Keeper) GetAccFeeSetting(ctx sdkTypes.Context, acc sdkTypes.AccAddress)
 	return nil, nil
 }
 
-func (k *Keeper) GetFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol string) (*FeeSetting, sdkTypes.Error) {
-	store := ctx.KVStore(k.key)
-	var feeSetting = new(FeeSetting)
+type TokenFeeSetting struct {
+	Symbol                    string                      `json:"symbol"`
+	TokenActionWithFeeSetting []TokenActionWithFeeSetting `json:"tokenActionWithFeeSetting"`
+}
 
+type TokenActionWithFeeSetting struct {
+	TokenAction string     `json:"tokenAction"`
+	FeeSetting  FeeSetting `json:"feeSetting"`
+}
+
+func (k *Keeper) GetFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol string) (*TokenFeeSetting, sdkTypes.Error) {
+	store := ctx.KVStore(k.key)
+
+	var tokenFeeSettings []TokenActionWithFeeSetting
 	for _, action := range fungibleTokenActions {
 
 		keyTokenFeeSetting := getFungibleTokenFeeSettingKeyByAction(tokenSymbol, action)
@@ -549,24 +548,27 @@ func (k *Keeper) GetFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol st
 			return nil, err
 		}
 
-		return feeSetting, nil
+		fs := *feeSetting
+		tokenActionWithFeeSetting := TokenActionWithFeeSetting{action, fs}
+
+		tokenFeeSettings = append(tokenFeeSettings, tokenActionWithFeeSetting)
 
 	}
 
-	return feeSetting, nil
-
+	tokenFeeSetting := TokenFeeSetting{tokenSymbol, tokenFeeSettings}
+	return &tokenFeeSetting, nil
 }
 
-func (k *Keeper) GetNonFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol string) (*FeeSetting, sdkTypes.Error) {
+func (k *Keeper) GetNonFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol string) (*TokenFeeSetting, sdkTypes.Error) {
 	store := ctx.KVStore(k.key)
-	var feeSetting = new(FeeSetting)
 
+	var tokenFeeSettings []TokenActionWithFeeSetting
 	for _, action := range nonFungibleTokenActions {
 
 		keyTokenFeeSetting := getNonFungibleTokenFeeSettingKeyByAction(tokenSymbol, action)
 		feeName := store.Get(keyTokenFeeSetting)
 		if feeName == nil {
-			ctx.Logger().Debug("No such tx fee setting. Try to get default fee setting.", "nft:symbol: ", tokenSymbol)
+			ctx.Logger().Debug("No such tx fee setting. Try to get default fee setting.", "nft:symbol: ", "action: ", tokenSymbol, action)
 			feeName = []byte("nft_" + action + "_" + "default")
 		}
 
@@ -575,11 +577,15 @@ func (k *Keeper) GetNonFungibleTokenFeeSetting(ctx sdkTypes.Context, tokenSymbol
 			return nil, err
 		}
 
-		return feeSetting, nil
+		fs := *feeSetting
+		tokenActionWithFeeSetting := TokenActionWithFeeSetting{action, fs}
+
+		tokenFeeSettings = append(tokenFeeSettings, tokenActionWithFeeSetting)
 
 	}
 
-	return feeSetting, nil
+	tokenFeeSetting := TokenFeeSetting{tokenSymbol, tokenFeeSettings}
+	return &tokenFeeSetting, nil
 
 }
 

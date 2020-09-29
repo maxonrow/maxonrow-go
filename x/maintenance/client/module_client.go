@@ -24,11 +24,11 @@ func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 
 	queryCmd.AddCommand(client.GetCommands(
 		maintenanceCmd.GetCmdGetProposal(mc.storeKey, mc.cdc),
-		maintenanceCmd.GetCmdGetKycMaintainerAddresses("kyc", mc.cdc),
-		maintenanceCmd.GetCmdGetNameserviceMaintainerAddresses("nameservice", mc.cdc),
-		maintenanceCmd.GetCmdGetFeeMaintainerAddresses("fee", mc.cdc),
-		maintenanceCmd.GetCmdGetFungibleTokenMaintainerAddresses("token", mc.cdc),
-		maintenanceCmd.GetCmdGetNonfungibleTokenMaintainerAddresses("nonFungible", mc.cdc),
+		maintenanceCmd.GetCmdGetKycMaintainerAddresses(mc.cdc),
+		maintenanceCmd.GetCmdGetNameserviceMaintainerAddresses(mc.cdc),
+		maintenanceCmd.GetCmdGetFeeMaintainerAddresses(mc.cdc),
+		maintenanceCmd.GetCmdGetFungibleTokenMaintainerAddresses(mc.cdc),
+		maintenanceCmd.GetCmdGetNonfungibleTokenMaintainerAddresses(mc.cdc),
 	)...)
 
 	return queryCmd

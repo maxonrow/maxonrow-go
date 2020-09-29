@@ -123,15 +123,33 @@ type listTokenSymbolResponse struct {
 	Nonfungible []string `json:"nonfungible"`
 }
 
+type NonfungibleTokenMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
 func queryGetNonfungibleTokenMaintainerAddresses(cdc *codec.Codec, ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 
-	nftAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
-	nftIssuerAddresses := keeper.GetIssuerAddresses(ctx)
-	nftProviderAddresses := keeper.GetProviderAddresses(ctx)
+	var nonfungibleTokenMaintainerSettings []MaintainerSetting
 
-	nftAuthorisedAddresses.AppendAccAddrs(nftIssuerAddresses)
-	nftAuthorisedAddresses.AppendAccAddrs(nftProviderAddresses)
+	nonfungibleTokenIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"issuer_addresses", nonfungibleTokenIssuerAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
 
-	respData := cdc.MustMarshalJSON(nftAuthorisedAddresses)
+	nonfungibleTokenProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"provider_addresses", nonfungibleTokenProviderAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
+
+	nonfungibleTokenAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"authorised_addresses", nonfungibleTokenAuthorisedAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
+
+	nonfungibleTokenMaintainerSetting := NonfungibleTokenMaintainerSetting{"nonfungible-token", nonfungibleTokenMaintainerSettings}
+	respData := cdc.MustMarshalJSON(nonfungibleTokenMaintainerSetting)
 	return respData, nil
 }

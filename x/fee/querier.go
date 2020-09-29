@@ -201,7 +201,6 @@ func queryNonFungibleTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, pat
 	}
 
 	respData := cdc.MustMarshalJSON(feeSetting)
-
 	return respData, nil
 }
 
@@ -292,13 +291,38 @@ func queryListFeeSettings(cdc *codec.Codec, ctx sdkTypes.Context, path []string,
 	return respData, nil
 }
 
+type FeeMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
 func queryGetFeeMaintainerAddresses(cdc *codec.Codec, ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 
-	feeAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
-	feeCollectorAddresses := keeper.GetFeeCollectorAddresses(ctx, "fee")
-	feeAuthorisedAddresses.AppendAccAddrs(feeCollectorAddresses)
+	var feeMaintainerSettings []MaintainerSetting
 
-	respData := cdc.MustMarshalJSON(feeAuthorisedAddresses)
+	feeAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData := MaintainerSetting{"authorised_addresses", feeAuthorisedAddresses}
+	feeMaintainerSettings = append(feeMaintainerSettings, maintainerData)
+
+	// check in each module - for Fee-collector Addresses if any, by refer FeeInfo
+	var modules = []string{
+		"token", "nonFungible", "alias",
+	}
+
+	for _, module := range modules {
+		feeCollectorAddresses := keeper.GetFeeCollectorAddresses(ctx, module)
+		maintainerData = MaintainerSetting{module + "_fee_collector_addresses", feeCollectorAddresses}
+		feeMaintainerSettings = append(feeMaintainerSettings, maintainerData)
+	}
+
+	feeMaintainerSetting := FeeMaintainerSetting{"fee", feeMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(feeMaintainerSetting)
+
 	return respData, nil
 
 }

@@ -139,15 +139,34 @@ type listAliasResponse struct {
 	UsedAlias []string `json:"alias"`
 }
 
+type NameserviceMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
 func queryGetNameserviceMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, sdkTypes.Error) {
 
-	nameserviceAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	var nameserviceMaintainerSettings []MaintainerSetting
+
 	nameserviceIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"issuer_addresses", nameserviceIssuerAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
+
 	nameserviceProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"provider_addresses", nameserviceProviderAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
 
-	nameserviceAuthorisedAddresses.AppendAccAddrs(nameserviceIssuerAddresses)
-	nameserviceAuthorisedAddresses.AppendAccAddrs(nameserviceProviderAddresses)
+	nameserviceAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"authorised_addresses", nameserviceAuthorisedAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
 
-	respData := codec.Cdc.MustMarshalJSON(nameserviceAuthorisedAddresses)
+	nameserviceMaintainerSetting := NameserviceMaintainerSetting{"nameservice", nameserviceMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(nameserviceMaintainerSetting)
+
 	return respData, nil
 }

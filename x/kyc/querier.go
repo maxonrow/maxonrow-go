@@ -105,15 +105,33 @@ func queryGetFee(ctx sdkTypes.Context, path []string, req abci.RequestQuery, kee
 
 }
 
+type KycMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
 func queryGetKycMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 
-	kycAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	var kycMaintainerSettings []MaintainerSetting
+
 	kycIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"issuer_addresses", kycIssuerAddresses}
+	kycMaintainerSettings = append(kycMaintainerSettings, maintainerData)
+
 	kycProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"provider_addresses", kycProviderAddresses}
+	kycMaintainerSettings = append(kycMaintainerSettings, maintainerData)
 
-	kycAuthorisedAddresses.AppendAccAddrs(kycIssuerAddresses)
-	kycAuthorisedAddresses.AppendAccAddrs(kycProviderAddresses)
+	kycAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"authorised_addresses", kycAuthorisedAddresses}
+	kycMaintainerSettings = append(kycMaintainerSettings, maintainerData)
 
-	respData := codec.Cdc.MustMarshalJSON(kycAuthorisedAddresses)
+	kycMaintainerSetting := KycMaintainerSetting{"kyc", kycMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(kycMaintainerSetting)
 	return respData, nil
 }

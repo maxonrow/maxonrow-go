@@ -47,7 +47,7 @@ func GetCmdGetProposal(queryRoute string, cdc *codec.Codec) *cobra.Command {
 	}
 }
 
-func GetCmdGetKycMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetKycMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "kyc",
 		Short: "query kyc maintenance parties address for Issuer, Provider, Middleware",
@@ -56,7 +56,7 @@ func GetCmdGetKycMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, kyc.QueryGetKycMaintainerAddresses), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/kyc/%s", kyc.QueryGetKycMaintainerAddresses), nil)
 			if err != nil {
 				fmt.Printf("Could not get kyc maintenance parties addresses: %s\n", err)
 				return nil
@@ -69,7 +69,7 @@ func GetCmdGetKycMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra
 	}
 }
 
-func GetCmdGetFungibleTokenMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetFungibleTokenMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "token",
 		Short: "query fungible token maintenance parties address for Issuer, Provider, Middleware",
@@ -78,7 +78,7 @@ func GetCmdGetFungibleTokenMaintainerAddresses(queryRoute string, cdc *codec.Cod
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, fungible.QueryGetFungibleTokenMaintainerAddresses), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/token/%s", fungible.QueryGetFungibleTokenMaintainerAddresses), nil)
 			if err != nil {
 				fmt.Printf("Could not get fungible token maintenance parties addresses: %s\n", err)
 				return nil
@@ -91,16 +91,16 @@ func GetCmdGetFungibleTokenMaintainerAddresses(queryRoute string, cdc *codec.Cod
 	}
 }
 
-func GetCmdGetNonfungibleTokenMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetNonfungibleTokenMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
-		Use:   "nonfungible-token",
+		Use:   "nonfungible",
 		Short: "query nonfungible-token maintenance parties address for Issuer, Provider, Middleware",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, nonfungible.QueryGetNonfungibleTokenMaintainerAddresses), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nonFungible/%s", nonfungible.QueryGetNonfungibleTokenMaintainerAddresses), nil)
 			if err != nil {
 				fmt.Printf("Could not get nonfungible token maintenance parties addresses: %s\n", err)
 				return nil
@@ -113,7 +113,7 @@ func GetCmdGetNonfungibleTokenMaintainerAddresses(queryRoute string, cdc *codec.
 	}
 }
 
-func GetCmdGetNameserviceMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetNameserviceMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "nameservice",
 		Short: "query nameservice maintenance parties address for Issuer, Provider, Middleware",
@@ -122,7 +122,7 @@ func GetCmdGetNameserviceMaintainerAddresses(queryRoute string, cdc *codec.Codec
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, nameservice.QueryGetNameserviceMaintainerAddresses), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nameservice/%s", nameservice.QueryGetNameserviceMaintainerAddresses), nil)
 			if err != nil {
 				fmt.Printf("Could not get nameservice maintenance parties addresses: %s\n", err)
 				return nil
@@ -135,7 +135,7 @@ func GetCmdGetNameserviceMaintainerAddresses(queryRoute string, cdc *codec.Codec
 	}
 }
 
-func GetCmdGetFeeMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra.Command {
+func GetCmdGetFeeMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
 	return &cobra.Command{
 		Use:   "fee",
 		Short: "query fee maintenance parties address for Middleware, Fee-collector",
@@ -144,7 +144,7 @@ func GetCmdGetFeeMaintainerAddresses(queryRoute string, cdc *codec.Codec) *cobra
 
 			cliCtx := context.NewCLIContext().WithCodec(cdc)
 
-			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", queryRoute, fee.QueryGetFeeMaintainerAddresses), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/%s", fee.QueryGetFeeMaintainerAddresses), nil)
 			if err != nil {
 				fmt.Printf("Could not get fee maintenance parties addresses: %s\n", err)
 				return nil

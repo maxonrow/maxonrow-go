@@ -98,15 +98,33 @@ type listTokenSymbolResponse struct {
 	Nonfungible []string `json:"nonfungible"`
 }
 
+type FungibleTokenMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
 func queryGetFungibleTokenMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 
-	tokenAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
-	tokenIssuerAddresses := keeper.GetIssuerAddresses(ctx)
-	tokenProviderAddresses := keeper.GetProviderAddresses(ctx)
+	var fungibleTokenMaintainerSettings []MaintainerSetting
 
-	tokenAuthorisedAddresses.AppendAccAddrs(tokenIssuerAddresses)
-	tokenAuthorisedAddresses.AppendAccAddrs(tokenProviderAddresses)
+	fungibleTokenIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"Issuer", fungibleTokenIssuerAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
 
-	respData := codec.Cdc.MustMarshalJSON(tokenAuthorisedAddresses)
+	fungibleTokenProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"Provider", fungibleTokenProviderAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
+
+	fungibleTokenAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"Middleware", fungibleTokenAuthorisedAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
+
+	fungibleTokenMaintainerSetting := FungibleTokenMaintainerSetting{"token", fungibleTokenMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(fungibleTokenMaintainerSetting)
 	return respData, nil
 }
