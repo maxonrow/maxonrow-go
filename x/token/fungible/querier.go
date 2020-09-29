@@ -6,16 +6,17 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/maxonrow/maxonrow-go/x/fee"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
-	QueryListTokenSymbol     = "list_token_symbol"
-	QueryTokenData           = "token_data"
-	QueryAccount             = "account"
-	QueryGetFee              = "get_fee"
-	QueryGetTokenTransferFee = "get_token_transfer_fee"
+	QueryListTokenSymbol                     = "list_token_symbol"
+	QueryTokenData                           = "token_data"
+	QueryAccount                             = "account"
+	QueryGetFee                              = "get_fee"
+	QueryGetTokenTransferFee                 = "get_token_transfer_fee"
+	QueryGetFungibleTokenMaintainerAddresses = "get_token_maintainer_addresses"
 )
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
@@ -27,6 +28,8 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkType
 			return queryTokenData(cdc, ctx, path[1:], req, keeper)
 		case QueryAccount:
 			return queryAccount(cdc, ctx, path[1:], req, keeper)
+		case QueryGetFungibleTokenMaintainerAddresses:
+			return queryGetFungibleTokenMaintainerAddresses(ctx, path[1:], req, keeper)
 		default:
 			return nil, sdkTypes.ErrUnknownRequest("unknown token query endpoint")
 		}
@@ -93,4 +96,35 @@ func queryAccount(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.
 type listTokenSymbolResponse struct {
 	Fungible    []string `json:"fungible"`
 	Nonfungible []string `json:"nonfungible"`
+}
+
+type FungibleTokenMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
+func queryGetFungibleTokenMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+
+	var fungibleTokenMaintainerSettings []MaintainerSetting
+
+	fungibleTokenIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"Issuer", fungibleTokenIssuerAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
+
+	fungibleTokenProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"Provider", fungibleTokenProviderAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
+
+	fungibleTokenAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"Middleware", fungibleTokenAuthorisedAddresses}
+	fungibleTokenMaintainerSettings = append(fungibleTokenMaintainerSettings, maintainerData)
+
+	fungibleTokenMaintainerSetting := FungibleTokenMaintainerSetting{"token", fungibleTokenMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(fungibleTokenMaintainerSetting)
+	return respData, nil
 }

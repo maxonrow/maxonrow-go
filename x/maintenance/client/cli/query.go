@@ -4,7 +4,13 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/maxonrow/maxonrow-go/x/token/fungible"
+	"github.com/maxonrow/maxonrow-go/x/token/nonfungible"
+
+	"github.com/maxonrow/maxonrow-go/x/fee"
+	"github.com/maxonrow/maxonrow-go/x/kyc"
 	"github.com/maxonrow/maxonrow-go/x/maintenance"
+	"github.com/maxonrow/maxonrow-go/x/nameservice"
 
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -32,6 +38,116 @@ func GetCmdGetProposal(queryRoute string, cdc *codec.Codec) *cobra.Command {
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/proposal", queryRoute), bz)
 			if err != nil {
 				return err
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+}
+
+func GetCmdGetKycMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "kyc",
+		Short: "query kyc maintenance parties address for Issuer, Provider, Middleware",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/kyc/%s", kyc.QueryGetKycMaintainerAddresses), nil)
+			if err != nil {
+				fmt.Printf("Could not get kyc maintenance parties addresses: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+}
+
+func GetCmdGetFungibleTokenMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "token",
+		Short: "query fungible token maintenance parties address for Issuer, Provider, Middleware",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/token/%s", fungible.QueryGetFungibleTokenMaintainerAddresses), nil)
+			if err != nil {
+				fmt.Printf("Could not get fungible token maintenance parties addresses: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+}
+
+func GetCmdGetNonfungibleTokenMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "nonfungible",
+		Short: "query nonfungible-token maintenance parties address for Issuer, Provider, Middleware",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nonFungible/%s", nonfungible.QueryGetNonfungibleTokenMaintainerAddresses), nil)
+			if err != nil {
+				fmt.Printf("Could not get nonfungible token maintenance parties addresses: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+}
+
+func GetCmdGetNameserviceMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "nameservice",
+		Short: "query nameservice maintenance parties address for Issuer, Provider, Middleware",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/nameservice/%s", nameservice.QueryGetNameserviceMaintainerAddresses), nil)
+			if err != nil {
+				fmt.Printf("Could not get nameservice maintenance parties addresses: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+}
+
+func GetCmdGetFeeMaintainerAddresses(cdc *codec.Codec) *cobra.Command {
+	return &cobra.Command{
+		Use:   "fee",
+		Short: "query fee maintenance parties address for Middleware, Fee-collector",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/fee/%s", fee.QueryGetFeeMaintainerAddresses), nil)
+			if err != nil {
+				fmt.Printf("Could not get fee maintenance parties addresses: %s\n", err)
+				return nil
 			}
 
 			fmt.Println(string(res))
