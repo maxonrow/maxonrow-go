@@ -76,12 +76,12 @@ func GetFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "token", fungible.QueryTokenData, symbol), nil)
 			if err != nil {
-				fmt.Printf("Could not get fungible token fee setting: %s\n", err)
+				fmt.Printf("This fungible token does not exist\n")
 				return nil
 			}
 
 			res, _, err = cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "fee", fee.QueryFungibleTokenFeeSetting, symbol), nil)
-			if err != nil {	
+			if err != nil {
 				fmt.Printf("Could not get fungible token fee setting: %s\n", err)
 				return nil
 			}
@@ -107,7 +107,7 @@ func GetNonFungibleTokenFeeSetting(cdc *codec.Codec) *cobra.Command {
 
 			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", "nonFungible", nonfungible.QueryTokenData, symbol), nil)
 			if err != nil {
-				fmt.Printf("Could not get non-fungible token fee setting: %s\n", err)
+				fmt.Printf("This non-fungible token does not exist\n")
 				return nil
 			}
 
