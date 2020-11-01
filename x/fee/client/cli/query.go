@@ -206,3 +206,26 @@ func GetNonFungibleTokenFeeMultiplier(cdc *codec.Codec) *cobra.Command {
 
 	return cmd
 }
+
+func GetNonFungibleTokenFeeCollector(cdc *codec.Codec) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nonFungible-token-fee-collector",
+		Short: "get nonFungible token fee multiplier",
+		Args:  cobra.ExactArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cliCtx := context.NewCLIContext().WithCodec(cdc)
+
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s", "fee", fee.QueryNonFungibleTokenFeeCollector), nil)
+			if err != nil {
+				fmt.Printf("Could not get nonFungible-token fee collector: %s\n", err)
+				return nil
+			}
+
+			fmt.Println(string(res))
+
+			return nil
+		},
+	}
+
+	return cmd
+}
