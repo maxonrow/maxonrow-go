@@ -49,7 +49,7 @@ func TestFeeCalc(t *testing.T) {
 
 func TestFeeCalcBadPercentage(t *testing.T) {
 	ctx := sdkTypes.Context{}
-	min, _ := sdkTypes.ParseCoins("1000000000000000cin,")
+	min, _ := sdkTypes.ParseCoins("0cin")
 	max, _ := sdkTypes.ParseCoins("1000000000000000000000000cin")
 	feeSetting1 := &fee.FeeSetting{
 		Name: "test",
@@ -70,7 +70,7 @@ func TestFeeCalcBadPercentage(t *testing.T) {
 
 func TestFeeCalcBadMax(t *testing.T) {
 	ctx := sdkTypes.Context{}
-	min, _ := sdkTypes.ParseCoins("1000000000000000cin,")
+	min, _ := sdkTypes.ParseCoins("0cin")
 	max, _ := sdkTypes.ParseCoins("100000cin")
 	feeSetting1 := &fee.FeeSetting{
 		Name: "test",
@@ -91,7 +91,7 @@ func TestFeeCalcBadMax(t *testing.T) {
 
 func TestFeeCalc100mxw(t *testing.T) {
 	ctx := sdkTypes.Context{}
-	min, _ := sdkTypes.ParseCoins("1000000000000000cin,")
+	min, _ := sdkTypes.ParseCoins("0cin")
 	max, _ := sdkTypes.ParseCoins("1000000000000000000000000cin")
 	feeSetting1 := &fee.FeeSetting{
 		Name: "test",
@@ -116,7 +116,7 @@ func TestFeeCalc100mxw(t *testing.T) {
 
 func TestFeeCalc1000890000000000cin(t *testing.T) {
 	ctx := sdkTypes.Context{}
-	min, _ := sdkTypes.ParseCoins("1000000000000000cin,")
+	min, _ := sdkTypes.ParseCoins("0cin")
 	max, _ := sdkTypes.ParseCoins("1000000000000000000000000cin")
 	feeSetting1 := &fee.FeeSetting{
 		Name: "test",
