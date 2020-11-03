@@ -27,6 +27,7 @@ const (
 	QueryIsFungibleTokenActionValid         = "is_fungible_token_action_valid"
 	QueryIsNonFungibleTokenActionValid      = "is_nonFungible_token_action_valid"
 	QueryGetFeeMaintainerAddresses          = "get_fee_maintainer_addresses"
+	QueryNonFungibleTokenFeeCollector       = "get_nonFungible_token_fee_Collector"
 )
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
@@ -62,6 +63,8 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
 			return queryIsFungibleTokenActionValid(cdc, ctx, path[1:], req, keeper)
 		case QueryIsNonFungibleTokenActionValid:
 			return queryIsNonFungibleTokenActionValid(cdc, ctx, path[1:], req, keeper)
+		case QueryNonFungibleTokenFeeCollector:
+			return queryNonFungibleTokenFeeCollector(cdc, ctx, path[1:], req, keeper)
 		case QueryGetFeeMaintainerAddresses:
 			return queryGetFeeMaintainerAddresses(cdc, ctx, path[1:], req, keeper)
 		default:
@@ -277,6 +280,23 @@ func queryNonFungibleTokenFeeMultiplier(cdc *codec.Codec, ctx sdkTypes.Context, 
 	}
 
 	return []byte(tokenFeemultiplier), nil
+}
+
+func queryNonFungibleTokenFeeCollector(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+	if len(path) != 0 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
+	}
+	tokenFeeCollectors := keeper.GetFeeCollectorAddresses(ctx, "nonFungible")
+	var tokenFeeCollector string
+	for i := 0; i < len(tokenFeeCollectors); i++{
+		tokenFeeCollector += string(tokenFeeCollectors[i])
+		tokenFeeCollector += "\n" //TODO: not Smart
+	}
+	if len(tokenFeeCollector) == 0 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("No token fee colloector found"))
+	}
+
+	return []byte(tokenFeeCollector), nil
 }
 
 func queryListFeeSettings(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
