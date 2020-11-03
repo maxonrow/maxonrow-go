@@ -68,7 +68,7 @@ func ErrReceiverNotKyc() sdkTypes.Error {
 
 /// --- Fee errors
 func ErrFeeSettingNotExists(feeName string) sdkTypes.Error {
-	return newErrorWithMXWCodespace(CodeFeeNotFound, "Fee setting in not valid: %s", feeName)
+	return newErrorWithMXWCodespace(CodeFeeNotFound, "Fee setting is not valid: %s", feeName)
 }
 func ErrTokenFeeSettingNotExists(symbol string) sdkTypes.Error {
 	return newErrorWithMXWCodespace(CodeTokenFeeSettingNotFound, "Token fee setting not found, token symbol: %s", symbol)

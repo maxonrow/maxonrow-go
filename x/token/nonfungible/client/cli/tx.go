@@ -49,7 +49,7 @@ func CreateNonFungibleTokenCmd(cdc *codec.Codec) *cobra.Command {
 	cmd.Flags().String("metadata", "", "IPFS hash link to attach to this process")
 	cmd.Flags().Bool("fixed-supply", false, "To set the token fixed supply")
 	cmd.Flags().String("total-supply", "0", "Total supply in case the supply is fixed")
-	cmd.Flags().String("pay-fee-to", "mxw1p8qrka5ua840quqa3a3yzae5k25wpssq9njng8", "Wallet address") //9n7890
+	cmd.Flags().String("pay-fee-to", "", "Wallet address")
 	cmd.Flags().String("fee-value", "1000000000cin", "Fee amount")
 
 	return cmd
