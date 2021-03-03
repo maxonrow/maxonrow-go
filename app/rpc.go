@@ -59,6 +59,18 @@ type KYCInfo struct {
 	NumOfWhitelisted int
 }
 
+type FTInfo struct {
+	Providers        []sdkTypes.AccAddress
+	Issuers          []sdkTypes.AccAddress
+	Authorizers      []sdkTypes.AccAddress
+}
+
+type NFTInfo struct {
+	Providers        []sdkTypes.AccAddress
+	Issuers          []sdkTypes.AccAddress
+	Authorizers      []sdkTypes.AccAddress
+}
+
 func (app *mxwApp) DecodeTx(ctx *rpctypes.Context, bz []byte) (string, error) {
 	tx, err := app.txDecoder(bz)
 	if err != nil {
@@ -228,6 +240,30 @@ func (app *mxwApp) KYCInfo(ctx *rpctypes.Context) (KYCInfo, error) {
 	i.Issuers = app.kycKeeper.GetIssuerAddresses(appCtx)
 	i.Authorizers = app.kycKeeper.GetAuthorisedAddresses(appCtx)
 	i.NumOfWhitelisted = app.kycKeeper.NumOfWhitelisted(appCtx)
+	return i, nil
+}
+
+
+func (app *mxwApp) FTAuth(ctx *rpctypes.Context) (FTInfo, error) {
+	appCtx := app.NewContext(true, abci.Header{})
+
+	var i FTInfo
+	i.Providers = app.fungibleTokenKeeper.GetProviderAddresses(appCtx)
+	i.Issuers = app.fungibleTokenKeeper.GetIssuerAddresses(appCtx)
+	i.Authorizers = app.fungibleTokenKeeper.GetAuthorisedAddresses(appCtx)
+	
+	return i, nil
+}
+
+
+func (app *mxwApp) NFTAuth(ctx *rpctypes.Context) (NFTInfo, error) {
+	appCtx := app.NewContext(true, abci.Header{})
+
+	var i NFTInfo
+	i.Providers = app.nonFungibleTokenKeeper.GetProviderAddresses(appCtx)
+	i.Issuers = app.nonFungibleTokenKeeper.GetIssuerAddresses(appCtx)
+	i.Authorizers = app.nonFungibleTokenKeeper.GetAuthorisedAddresses(appCtx)
+
 	return i, nil
 }
 

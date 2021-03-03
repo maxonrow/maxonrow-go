@@ -11,19 +11,23 @@ import (
 )
 
 const (
-	QuerySysFeeSetting                 = "get_sys_fee_setting"
-	QueryMsgFeeSetting                 = "get_msg_fee_setting"
-	QueryAccFeeSetting                 = "get_acc_fee_setting"
-	QueryFungibleTokenFeeSetting       = "get_fungible_token_fee_setting"
-	QueryNonFungibleTokenFeeSetting    = "get_nonFungible_token_fee_setting"
-	QueryFeeMultiplier                 = "get_fee_multiplier"
-	QueryFungibleTokenFeeMultiplier    = "get_fungible_token_fee_multiplier"
-	QueryNonFungibleTokenFeeMultiplier = "get_nonFungible_token_fee_multiplier"
-	QueryListFeeSettings               = "list_all_fee_settings"
-	QueryIsFeeSettingExist             = "is_fee_setting_exist"
-	QueryIsFeeSettingInUsed            = "is_fee_setting_in_used"
-	QueryIsFungibleTokenActionValid    = "is_fungible_token_action_valid"
-	QueryIsNonFungibleTokenActionValid = "is_nonFungible_token_action_valid"
+	QuerySysFeeSetting                      = "get_sys_fee_setting"
+	QueryMsgFeeSetting                      = "get_msg_fee_setting"
+	QueryAccFeeSetting                      = "get_acc_fee_setting"
+	QueryFungibleTokenFeeSetting            = "get_fungible_token_fee_setting"
+	QueryNonFungibleTokenFeeSetting         = "get_nonFungible_token_fee_setting"
+	QueryFungibleTokenFeeSettingByAction    = "get_fungible_token_fee_setting_by_action"
+	QueryNonFungibleTokenFeeSettingByAction = "get_nonFungible_token_fee_setting_by_action"
+	QueryFeeMultiplier                      = "get_fee_multiplier"
+	QueryFungibleTokenFeeMultiplier         = "get_fungible_token_fee_multiplier"
+	QueryNonFungibleTokenFeeMultiplier      = "get_nonFungible_token_fee_multiplier"
+	QueryListFeeSettings                    = "list_all_fee_settings"
+	QueryIsFeeSettingExist                  = "is_fee_setting_exist"
+	QueryIsFeeSettingInUsed                 = "is_fee_setting_in_used"
+	QueryIsFungibleTokenActionValid         = "is_fungible_token_action_valid"
+	QueryIsNonFungibleTokenActionValid      = "is_nonFungible_token_action_valid"
+	QueryGetFeeMaintainerAddresses          = "get_fee_maintainer_addresses"
+	QueryNonFungibleTokenFeeCollector       = "get_nonFungible_token_fee_Collector"
 )
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
@@ -39,6 +43,10 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
 			return queryFungibleTokenFeeSetting(cdc, ctx, path[1:], req, keeper)
 		case QueryNonFungibleTokenFeeSetting:
 			return queryNonFungibleTokenFeeSetting(cdc, ctx, path[1:], req, keeper)
+		case QueryFungibleTokenFeeSettingByAction:
+			return queryFungibleTokenFeeSettingByAction(cdc, ctx, path[1:], req, keeper)
+		case QueryNonFungibleTokenFeeSettingByAction:
+			return queryNonFungibleTokenFeeSettingByAction(cdc, ctx, path[1:], req, keeper)
 		case QueryFeeMultiplier:
 			return queryFeeMultiplier(cdc, ctx, path[1:], req, keeper)
 		case QueryFungibleTokenFeeMultiplier:
@@ -55,6 +63,10 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper) sdkTypes.Querier {
 			return queryIsFungibleTokenActionValid(cdc, ctx, path[1:], req, keeper)
 		case QueryIsNonFungibleTokenActionValid:
 			return queryIsNonFungibleTokenActionValid(cdc, ctx, path[1:], req, keeper)
+		case QueryNonFungibleTokenFeeCollector:
+			return queryNonFungibleTokenFeeCollector(cdc, ctx, path[1:], req, keeper)
+		case QueryGetFeeMaintainerAddresses:
+			return queryGetFeeMaintainerAddresses(cdc, ctx, path[1:], req, keeper)
 		default:
 			return nil, sdkTypes.ErrUnknownRequest("unknown fee query endpoint")
 		}
@@ -163,14 +175,13 @@ func queryIsNonFungibleTokenActionValid(cdc *codec.Codec, ctx sdkTypes.Context, 
 }
 
 func queryFungibleTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
-	if len(path) != 2 {
+	if len(path) != 1 {
 		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
 	}
 
 	tokenSymbol := path[0]
-	tokenAction := path[1]
 
-	feeSetting, err := keeper.GetFungibleTokenFeeSetting(ctx, tokenSymbol, tokenAction)
+	feeSetting, err := keeper.GetFungibleTokenFeeSetting(ctx, tokenSymbol)
 	if err != nil {
 		return nil, err
 	}
@@ -181,6 +192,22 @@ func queryFungibleTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, path [
 }
 
 func queryNonFungibleTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+	if len(path) != 1 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
+	}
+
+	tokenSymbol := path[0]
+
+	feeSetting, err := keeper.GetNonFungibleTokenFeeSetting(ctx, tokenSymbol)
+	if err != nil {
+		return nil, err
+	}
+
+	respData := cdc.MustMarshalJSON(feeSetting)
+	return respData, nil
+}
+
+func queryFungibleTokenFeeSettingByAction(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 	if len(path) != 2 {
 		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
 	}
@@ -188,7 +215,25 @@ func queryNonFungibleTokenFeeSetting(cdc *codec.Codec, ctx sdkTypes.Context, pat
 	tokenSymbol := path[0]
 	tokenAction := path[1]
 
-	feeSetting, err := keeper.GetNonFungibleTokenFeeSetting(ctx, tokenSymbol, tokenAction)
+	feeSetting, err := keeper.GetFungibleTokenFeeSettingByAction(ctx, tokenSymbol, tokenAction)
+	if err != nil {
+		return nil, err
+	}
+
+	respData := cdc.MustMarshalJSON(feeSetting)
+
+	return respData, nil
+}
+
+func queryNonFungibleTokenFeeSettingByAction(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+	if len(path) != 2 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
+	}
+
+	tokenSymbol := path[0]
+	tokenAction := path[1]
+
+	feeSetting, err := keeper.GetNonFungibleTokenFeeSettingByAction(ctx, tokenSymbol, tokenAction)
 	if err != nil {
 		return nil, err
 	}
@@ -237,6 +282,23 @@ func queryNonFungibleTokenFeeMultiplier(cdc *codec.Codec, ctx sdkTypes.Context, 
 	return []byte(tokenFeemultiplier), nil
 }
 
+func queryNonFungibleTokenFeeCollector(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+	if len(path) != 0 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
+	}
+	tokenFeeCollectors := keeper.GetFeeCollectorAddresses(ctx, "nonFungible")
+	var tokenFeeCollector string
+	for i := 0; i < len(tokenFeeCollectors); i++{
+		tokenFeeCollector += string(tokenFeeCollectors[i])
+		tokenFeeCollector += "\n" //TODO: not Smart
+	}
+	if len(tokenFeeCollector) == 0 {
+		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("No token fee colloector found"))
+	}
+
+	return []byte(tokenFeeCollector), nil
+}
+
 func queryListFeeSettings(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
 	if len(path) != 0 {
 		return nil, sdkTypes.ErrUnknownRequest(fmt.Sprintf("Invalid path %s", strings.Join(path, "/")))
@@ -247,4 +309,40 @@ func queryListFeeSettings(cdc *codec.Codec, ctx sdkTypes.Context, path []string,
 	respData := cdc.MustMarshalJSON(feeSettings)
 
 	return respData, nil
+}
+
+type FeeMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
+func queryGetFeeMaintainerAddresses(cdc *codec.Codec, ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+
+	var feeMaintainerSettings []MaintainerSetting
+
+	feeAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData := MaintainerSetting{"authorised_addresses", feeAuthorisedAddresses}
+	feeMaintainerSettings = append(feeMaintainerSettings, maintainerData)
+
+	// check in each module - for Fee-collector Addresses if any, by refer FeeInfo
+	var modules = []string{
+		"token", "nonFungible", "alias",
+	}
+
+	for _, module := range modules {
+		feeCollectorAddresses := keeper.GetFeeCollectorAddresses(ctx, module)
+		maintainerData = MaintainerSetting{module + "_fee_collector_addresses", feeCollectorAddresses}
+		feeMaintainerSettings = append(feeMaintainerSettings, maintainerData)
+	}
+
+	feeMaintainerSetting := FeeMaintainerSetting{"fee", feeMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(feeMaintainerSetting)
+
+	return respData, nil
+
 }

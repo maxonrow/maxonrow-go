@@ -11,14 +11,24 @@ import (
 )
 
 const (
-	QueryListTokenSymbol     = "list_token_symbol"
-	QueryTokenData           = "token_data"
-	QueryItemData            = "item_data"
-	QueryAccount             = "account"
-	QueryGetFee              = "get_fee"
-	QueryGetTokenTransferFee = "get_token_transfer_fee"
-	QueryEndorserList        = "get_endorser_list"
+	QueryListTokenSymbol                        = "list_token_symbol"
+	QueryTokenData                              = "token_data"
+	QueryItemData                               = "item_data"
+	QueryAccount                                = "account"
+	QueryGetFee                                 = "get_fee"
+	QueryGetTokenTransferFee                    = "get_token_transfer_fee"
+	QueryEndorserList                           = "get_endorser_list"
+	QueryGetNonfungibleTokenMaintainerAddresses = "get_nonfungible_maintainer_addresses"
 )
+
+type ItemInfo struct {
+	Owner         sdkTypes.AccAddress
+	ID            string
+	Properties    string
+	Metadata      string
+	TransferLimit sdkTypes.Uint
+	Frozen        bool
+}
 
 func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkTypes.Querier {
 	return func(ctx sdkTypes.Context, path []string, req abci.RequestQuery) ([]byte, sdkTypes.Error) {
@@ -31,6 +41,8 @@ func NewQuerier(cdc *codec.Codec, keeper *Keeper, feeKeeper *fee.Keeper) sdkType
 			return queryItemData(cdc, ctx, path[1:], req, keeper)
 		case QueryEndorserList:
 			return queryEndorserList(cdc, ctx, path[1:], req, keeper)
+		case QueryGetNonfungibleTokenMaintainerAddresses:
+			return queryGetNonfungibleTokenMaintainerAddresses(cdc, ctx, path[1:], req, keeper)
 		default:
 			return nil, sdkTypes.ErrUnknownRequest("unknown token query endpoint")
 		}
@@ -75,10 +87,20 @@ func queryItemData(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci
 	itemID := path[1]
 
 	item := keeper.GetNonFungibleItem(ctx, symbol, itemID)
+	owner := keeper.GetNonFungibleItemOwnerInfo(ctx, symbol, itemID)
 
-	tokenInfo := cdc.MustMarshalJSON(item)
+	var itemInfo = ItemInfo{
+		Owner:         owner,
+		ID:            item.ID,
+		Properties:    item.Properties,
+		Metadata:      item.Metadata,
+		TransferLimit: item.TransferLimit,
+		Frozen:        item.Frozen,
+	}
 
-	return tokenInfo, nil
+	js := cdc.MustMarshalJSON(itemInfo)
+
+	return js, nil
 }
 
 func queryEndorserList(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
@@ -99,4 +121,35 @@ func queryEndorserList(cdc *codec.Codec, ctx sdkTypes.Context, path []string, _ 
 type listTokenSymbolResponse struct {
 	Fungible    []string `json:"fungible"`
 	Nonfungible []string `json:"nonfungible"`
+}
+
+type NonfungibleTokenMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
+func queryGetNonfungibleTokenMaintainerAddresses(cdc *codec.Codec, ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper *Keeper) ([]byte, sdkTypes.Error) {
+
+	var nonfungibleTokenMaintainerSettings []MaintainerSetting
+
+	nonfungibleTokenIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"issuer_addresses", nonfungibleTokenIssuerAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
+
+	nonfungibleTokenProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"provider_addresses", nonfungibleTokenProviderAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
+
+	nonfungibleTokenAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"authorised_addresses", nonfungibleTokenAuthorisedAddresses}
+	nonfungibleTokenMaintainerSettings = append(nonfungibleTokenMaintainerSettings, maintainerData)
+
+	nonfungibleTokenMaintainerSetting := NonfungibleTokenMaintainerSetting{"nonfungible-token", nonfungibleTokenMaintainerSettings}
+	respData := cdc.MustMarshalJSON(nonfungibleTokenMaintainerSetting)
+	return respData, nil
 }

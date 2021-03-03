@@ -2,9 +2,11 @@ package cli
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/client/context"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
+	"github.com/maxonrow/maxonrow-go/x/kyc"
 	"github.com/spf13/cobra"
 )
 
@@ -22,7 +24,7 @@ func GetCmdIsWhitelisted(queryRoute string, cdc *codec.Codec) *cobra.Command {
 				return sdkTypes.ErrInvalidAddress(err.Error())
 			}
 
-			res,_, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/is_whitelisted/%s", queryRoute, addressStr), nil)
+			res, _, err := cliCtx.QueryWithData(fmt.Sprintf("custom/%s/%s/%s", queryRoute, kyc.QueryIsWhitelisted, addressStr), nil)
 			if err != nil {
 				fmt.Printf("Could not check %s: %s\n", addressStr, err)
 				return nil

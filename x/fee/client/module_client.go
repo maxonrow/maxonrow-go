@@ -26,11 +26,14 @@ func (mc ModuleClient) GetQueryCmd() *cobra.Command {
 		feeCmd.GetSysFeeSetting(mc.cdc),
 		feeCmd.GetMsgFeeSetting(mc.cdc),
 		feeCmd.GetFungibleTokenFeeSetting(mc.cdc),
+		feeCmd.GetFungibleTokenFeeSettingByAction(mc.cdc),
 		feeCmd.GetNonFungibleTokenFeeSetting(mc.cdc),
+		feeCmd.GetNonFungibleTokenFeeSettingByAction(mc.cdc),
 		feeCmd.GetFeeMultiplier(mc.cdc),
 		feeCmd.GetFungibleTokenFeeMultiplier(mc.cdc),
 		feeCmd.GetNonFungibleTokenFeeMultiplier(mc.cdc),
 		feeCmd.GetAccFeeSetting(mc.cdc),
+		feeCmd.GetNonFungibleTokenFeeCollector(mc.cdc),
 	)...)
 
 	return queryCmd

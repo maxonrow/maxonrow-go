@@ -4,17 +4,18 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkTypes "github.com/cosmos/cosmos-sdk/types"
-	abci "github.com/tendermint/tendermint/abci/types"
 	"github.com/maxonrow/maxonrow-go/types"
 	"github.com/maxonrow/maxonrow-go/x/fee"
+	abci "github.com/tendermint/tendermint/abci/types"
 )
 
 const (
-	QueryResolve       = "resolve"
-	QueryWhois         = "whois"
-	QueryGetFee        = "get_fee"
-	QueryListUsedAlias = "list_used_alias"
-	QueryPendingAlias  = "pending"
+	QueryResolve                           = "resolve"
+	QueryWhois                             = "whois"
+	QueryGetFee                            = "get_fee"
+	QueryListUsedAlias                     = "list_used_alias"
+	QueryPendingAlias                      = "pending"
+	QueryGetNameserviceMaintainerAddresses = "get_nameservice_maintainer_addresses"
 )
 
 type Resolve struct {
@@ -35,6 +36,8 @@ func NewQuerier(cdc *codec.Codec, keeper Keeper, feeKeeper fee.Keeper) sdk.Queri
 			return queryListUsedAlias(cdc, ctx, path[1:], req, keeper)
 		case QueryPendingAlias:
 			return queryPendingAlias(cdc, ctx, path[1:], req, keeper)
+		case QueryGetNameserviceMaintainerAddresses:
+			return queryGetNameserviceMaintainerAddresses(ctx, path[1:], req, keeper)
 		default:
 			return nil, sdk.ErrUnknownRequest("unknown nameservice query endpoint")
 		}
@@ -134,4 +137,36 @@ func queryPendingAlias(cdc *codec.Codec, ctx sdk.Context, path []string, req abc
 
 type listAliasResponse struct {
 	UsedAlias []string `json:"alias"`
+}
+
+type NameserviceMaintainerSetting struct {
+	Module      string              `json:"module"`
+	Maintainers []MaintainerSetting `json:"maintainers"`
+}
+
+type MaintainerSetting struct {
+	Type    string                `json:"type"`
+	Address []sdkTypes.AccAddress `json:"address"`
+}
+
+func queryGetNameserviceMaintainerAddresses(ctx sdkTypes.Context, path []string, req abci.RequestQuery, keeper Keeper) ([]byte, sdkTypes.Error) {
+
+	var nameserviceMaintainerSettings []MaintainerSetting
+
+	nameserviceIssuerAddresses := keeper.GetIssuerAddresses(ctx)
+	maintainerData := MaintainerSetting{"issuer_addresses", nameserviceIssuerAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
+
+	nameserviceProviderAddresses := keeper.GetProviderAddresses(ctx)
+	maintainerData = MaintainerSetting{"provider_addresses", nameserviceProviderAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
+
+	nameserviceAuthorisedAddresses := keeper.GetAuthorisedAddresses(ctx)
+	maintainerData = MaintainerSetting{"authorised_addresses", nameserviceAuthorisedAddresses}
+	nameserviceMaintainerSettings = append(nameserviceMaintainerSettings, maintainerData)
+
+	nameserviceMaintainerSetting := NameserviceMaintainerSetting{"nameservice", nameserviceMaintainerSettings}
+	respData := codec.Cdc.MustMarshalJSON(nameserviceMaintainerSetting)
+
+	return respData, nil
 }
