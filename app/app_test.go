@@ -115,19 +115,19 @@ func newMxwApp(t *testing.T) (*mxwApp, sdkTypes.Context) {
 	mnemonic3 := "shove when pass black expose blouse dial glue original wonder move glad rice guide trophy dish beach legal animal kitchen maze concert ahead keep"
 	mnemonic4 := "fire milk legal six result shoulder cake globe quote absorb beauty glass ski crash tilt suspect paddle speed gather tunnel project wife fatal abstract"
 
-	proc, err := utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-1", mnemonic1, "--keyring-backend", "os"})
+	proc, err := utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-1", mnemonic1, "--keyring-backend", "test"})
 	err = proc.Cmd.Run()
 	require.NoError(t, err)
 
-	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-2", mnemonic2, "--keyring-backend", "os"})
+	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-2", mnemonic2, "--keyring-backend", "test"})
 	err = proc.Cmd.Run()
 	require.NoError(t, err)
 
-	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-3", mnemonic3, "--keyring-backend", "os"})
+	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-3", mnemonic3, "--keyring-backend", "test"})
 	err = proc.Cmd.Run()
 	require.NoError(t, err)
 
-	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-4", mnemonic4, "--keyring-backend", "os"})
+	proc, err = utils.CreateProcess("", "mxwcli", []string{"keys", "import-mnemonic", "acc-4", mnemonic4, "--keyring-backend", "test"})
 	err = proc.Cmd.Run()
 	require.NoError(t, err)
 
@@ -174,7 +174,7 @@ func signInternalTx(t *testing.T, app *mxwApp, from string, accNum, txID int) sd
 	_, err = file.WriteString(bz)
 	assert.NoError(t, err)
 
-	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "sign", "/tmp/internal_tx.json", "--from", from, "--offline", "--account-number", strconv.Itoa(accNum), "--sequence", strconv.Itoa(txID), "--chain-id", "mxw", "--keyring-backend", "os"})
+	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "sign", "/tmp/internal_tx.json", "--from", from, "--offline", "--account-number", strconv.Itoa(accNum), "--sequence", strconv.Itoa(txID), "--chain-id", "mxw", "--keyring-backend", "test"})
 	err = proc.Cmd.Start()
 	require.NoError(t, err)
 
@@ -208,7 +208,7 @@ func signMultisigTx(t *testing.T, app *mxwApp, gaddr, sender sdkTypes.AccAddress
 	_, err = file.Write(bz)
 	assert.NoError(t, err)
 
-	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "sign", "/tmp/tx.json", "--from", from, "--offline", "--account-number", from[4:], "--sequence", strconv.Itoa(seq), "--chain-id", "mxw", "--keyring-backend", "os"})
+	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "sign", "/tmp/tx.json", "--from", from, "--offline", "--account-number", from[4:], "--sequence", strconv.Itoa(seq), "--chain-id", "mxw", "--keyring-backend", "test"})
 	err = proc.Cmd.Start()
 	require.NoError(t, err)
 

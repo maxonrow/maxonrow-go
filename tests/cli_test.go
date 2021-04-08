@@ -12,7 +12,7 @@ import (
 )
 
 func TestSendCli(t *testing.T) {
-	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "send", tKeys["eve"].addrStr, tKeys["acc-20"].addrStr, "1cin", "--gas", "0", "--fees", "200000000cin", "--chain-id", "maxonrow-chain", "--home", tWorkingDir, "--broadcast-mode", "block", "-y", "--keyring-backend", "os"})
+	proc, err := utils.CreateProcess("", "mxwcli", []string{"tx", "send", tKeys["eve"].addrStr, tKeys["acc-20"].addrStr, "1cin", "--gas", "0", "--fees", "200000000cin", "--chain-id", "maxonrow-chain", "--home", tWorkingDir, "--broadcast-mode", "block", "-y", "--keyring-backend", "test"})
 
 	// key password
 	_, err = proc.StdinPipe.Write([]byte("12345678\n"))

@@ -97,7 +97,7 @@ func TestMain(m *testing.M) {
 			k.Address,
 		}
 
-		_, _, err := utils.RunProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "os"})
+		_, _, err := utils.RunProcess("", "mxwcli", []string{"keys", "import-mnemonic", k.Name, k.Mnemonic, "--encryption_passphrase", "12345678", "--home", tWorkingDir, "--keyring-backend", "test"})
 		if err != nil {
 			panic(err)
 		}
