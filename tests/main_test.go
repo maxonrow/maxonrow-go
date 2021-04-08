@@ -68,7 +68,7 @@ func startServer(done chan struct{}) *utils.Process {
 
 func TestMain(m *testing.M) {
 
-	tWorkingDir = os.TempDir() + "maxonrow"
+	tWorkingDir = os.TempDir() + "/maxonrow"
 	fmt.Println("Starting test node at " + tWorkingDir)
 	os.RemoveAll(tWorkingDir)
 
