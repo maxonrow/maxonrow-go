@@ -1,6 +1,6 @@
 language: go
 go_import_path: github.com/maxonrow/maxonrow-go
-sudo: false
+sudo: true
 
 matrix:
   include:
