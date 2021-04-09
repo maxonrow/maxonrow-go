@@ -1,3 +1,6 @@
+# Version 1.3.8
+- Added item owner into query nft item
+
 # Version 1.3.7
 - Upgrade to go version 1.15
 - Added docker file to create image from develop and master branch
