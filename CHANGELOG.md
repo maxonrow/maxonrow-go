@@ -1,5 +1,7 @@
 # Version 1.3.9
 - Added item owner into query nft item
+- Enable Un-Delegate 
+- update cosmo-sdk version
 # Version 1.3.8 
 - Get Fee Setting By NFT/FT Symbol And Action 
 - List NFT & FT Info
