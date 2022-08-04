@@ -1,3 +1,8 @@
+# Version 1.3.8 
+- Get Fee Setting By NFT/FT Symbol And Action 
+- List NFT & FT Info
+- Add Query KYC/NFT/FT/Fee/NameService Maintenancer Addresses
+
 # Version 1.3.7
 - Upgrade to go version 1.15
 - Added docker file to create image from develop and master branch
